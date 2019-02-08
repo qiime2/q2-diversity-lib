@@ -20,9 +20,9 @@ plugin = Plugin(
     website='https://github.com/qiime2/q2-diversity-lib',
     short_description='Utility exposing diversity metrics as actions',
     package='q2_diversity_lib',
-    description='Utility plugin exposing alpha- and beta-diversity metrics '
+    description='Utility plugin exposing alpha and beta diversity metrics '
                 'as discrete Actions',
-    user_support_text=('https://docs.qiime2.org'),
+    user_support_text='https://docs.qiime2.org',
 )
 
 plugin.methods.register_function(
@@ -32,18 +32,18 @@ plugin.methods.register_function(
     outputs=[('faith_pd',
               SampleData[AlphaDiversity] % Properties('phylogenetic'))],
     input_descriptions={
-        'table': ("The feature table containing the samples for which Faith's"
-                  ' phylogenetic diversity should be computed.'),
-        'phylogeny': ('Phylogenetic tree containing tip identifiers that '
-                      'correspond to the feature identifiers in the table. '
-                      'This tree can contain tip ids that are not present in '
-                      'the table, but all feature ids in the table must be '
-                      'present in this tree.')},
+        'table': 'The feature table containing the samples for which Faith\'s '
+                 'phylogenetic diversity should be computed.',
+        'phylogeny': 'Phylogenetic tree containing tip identifiers that '
+                     'correspond to the feature identifiers in the table. '
+                     'This tree can contain tip ids that are not present in '
+                     'the table, but all feature ids in the table must be '
+                     'present in this tree.'},
     parameter_descriptions=None,
-    output_descriptions={'faith_pd': ('Vector containing per-sample values for'
-                                      " Faith's Phylogenetic Diversity.")},
-    name="Faith's Phylogenetic Diversity",
-    description=("Computes Faith's Phylogenetic Diversity for all samples in "
-                 'a feature table.'),
+    output_descriptions={'faith_pd': 'Vector containing per-sample values for '
+                                     'Faith\'s Phylogenetic Diversity.'},
+    name='Faith\'s Phylogenetic Diversity',
+    description='Computes Faith\'s Phylogenetic Diversity for all samples in '
+                'a feature table.',
     citations=[citations['faith1992conservation']]
 )

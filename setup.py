@@ -14,7 +14,7 @@ setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
-    author="QIIME 2 development team",
+    author="Chris Keefe",
     author_email="crk239@nau.edu",
     description="Utility exposing diversity metrics/measures as Actions",
     entry_points={
