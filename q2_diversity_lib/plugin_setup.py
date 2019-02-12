@@ -18,10 +18,10 @@ plugin = Plugin(
     name='diversity-lib',
     version=q2_diversity_lib.__version__,
     website='https://github.com/qiime2/q2-diversity-lib',
-    short_description='Utility exposing diversity metrics as actions',
+    short_description='Plugin for computing community diversity.',
     package='q2_diversity_lib',
-    description='Utility plugin exposing alpha and beta diversity metrics '
-                'as discrete Actions',
+    description='This QIIME 2 plugin computes individual metrics for '
+    ' community alpha and beta diversity.',
     user_support_text='https://docs.qiime2.org',
 )
 
