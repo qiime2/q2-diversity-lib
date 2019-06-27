@@ -9,7 +9,8 @@
 import q2_diversity_lib
 from qiime2.plugin import (Plugin, Citations, Properties)
 
-from q2_types.feature_table import (FeatureTable, Frequency)
+from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
+                                    PresenceAbsence)
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.sample_data import AlphaDiversity, SampleData
 
@@ -27,13 +28,17 @@ plugin = Plugin(
 
 plugin.methods.register_function(
     function=q2_diversity_lib.faith_pd,
-    inputs={'table': FeatureTable[Frequency], 'phylogeny': Phylogeny[Rooted]},
+    inputs={'table': FeatureTable[PresenceAbsence | RelativeFrequency
+            | Frequency],
+            'phylogeny': Phylogeny[Rooted]},
     parameters=None,
     outputs=[('faith_pd',
-              SampleData[AlphaDiversity] % Properties('phylogenetic'))],
+              SampleData[AlphaDiversity %
+                         Properties('phylogenetic', 'qualitative')])],
     input_descriptions={
         'table': 'The feature table containing the samples for which Faith\'s '
-                 'phylogenetic diversity should be computed.',
+                 'phylogenetic diversity should be computed. Table data will '
+                 'be converted to presence/absence.',
         'phylogeny': 'Phylogenetic tree containing tip identifiers that '
                      'correspond to the feature identifiers in the table. '
                      'This tree can contain tip ids that are not present in '

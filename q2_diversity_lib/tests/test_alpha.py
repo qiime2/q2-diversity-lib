@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
 
+import copy
+
 
 class AlphaTests(TestPluginBase):
 
@@ -44,6 +46,22 @@ class AlphaTests(TestPluginBase):
         with self.assertRaisesRegex(skbio.tree.MissingNodeError,
                                     'feature_ids.*phylogeny'):
             faith_pd(table=self.input_table, phylogeny=tree)
+
+
+# TODO: adjust test tree to ensure our results are diagnostic
+    def test_accepted_types_consistent_behavior(self):
+        tree = skbio.TreeNode.read(io.StringIO(
+            '((O1:0.25, O2:0.50):0.25, O3:0.75)root;'))
+        freq_table = self.input_table
+        rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
+                                                              inplace=False)
+        p_a_table = copy.deepcopy(self.input_table).pa()
+        accepted_tables = [freq_table, rel_freq_table, p_a_table]
+        expected = pd.Series({'S1': 0.75, 'S2': 1.0, 'S3': 1.0},
+                             name='faith_pd')
+        for table in accepted_tables:
+            actual = faith_pd(table=table, phylogeny=tree)
+            pdt.assert_series_equal(actual, expected)
 
     def test_alpha_phylogenetic_empty_table(self):
         empty_table = biom.Table(np.array([]), [], [])
