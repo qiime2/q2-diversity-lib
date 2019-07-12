@@ -35,7 +35,7 @@ def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
     return result
 
 
-def pielou_evenness(table: biom.Table, drop_nans: bool=False) -> pd.Series:
+def pielou_evenness(table: biom.Table, drop_nans: bool = False) -> pd.Series:
     if table.is_empty():
         raise ValueError("The provided table object is empty")
     counts = table.matrix_data.toarray().T
