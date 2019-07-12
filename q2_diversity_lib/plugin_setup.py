@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 import q2_diversity_lib
-from qiime2.plugin import (Plugin, Citations, Properties)
+from qiime2.plugin import (Plugin, Citations, Properties, Bool)
 
 from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
                                     PresenceAbsence)
@@ -51,4 +51,25 @@ plugin.methods.register_function(
     description='Computes Faith\'s Phylogenetic Diversity for all samples in '
                 'a feature table.',
     citations=[citations['faith1992conservation']]
+)
+
+plugin.methods.register_function(
+    function=q2_diversity_lib.pielou_evenness,
+    inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
+    parameters={'drop_nans': Bool},
+    outputs=[('vector',
+             SampleData[AlphaDiversity % Properties('non-phylogenetic',
+                                                    'quantitative')])],
+    input_descriptions={'table': 'The feature table containing the samples '
+                        'for which Pielou\'s evenness should be computed.'},
+    parameter_descriptions={'drop_nans': 'Samples with fewer than two observed'
+                            ' features produce undefined (NaN) values. '
+                            'Passing \'True\' drops these samples from the '
+                            'output vector'},
+    output_descriptions={'vector': 'Vector containing per-sample values '
+                                   'for Pielou\'s Evenness.'},
+    name='Pielou\'s Evenness',
+    description='Compute Pielou\'s Evenness for all samples in a '
+                'feature table',
+    citations=[citations['pielou1966measurement']]
 )

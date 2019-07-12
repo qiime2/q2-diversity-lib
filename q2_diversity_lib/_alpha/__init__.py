@@ -6,5 +6,5 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from ._method import (faith_pd)
-__all__ = ['faith_pd']
+from ._method import (faith_pd, pielou_evenness)
+__all__ = ['faith_pd', 'pielou_evenness']
