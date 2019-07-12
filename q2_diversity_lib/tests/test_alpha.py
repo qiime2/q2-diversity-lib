@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from qiime2.plugin.testing import TestPluginBase
-from q2_diversity_lib import faith_pd
+from q2_diversity_lib import faith_pd, pielou_evenness
 
 import io
 import biom
@@ -19,7 +19,26 @@ import pandas.util.testing as pdt
 import copy
 
 
-class AlphaTests(TestPluginBase):
+class DriverTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.input_tree = skbio.TreeNode.read(io.StringIO(
+                '((A:0.3, B:0.50):0.2, C:100)root;'))
+
+    def test_alpha_receives_empty_table(self):
+        empty_table = biom.Table(np.array([]), [], [])
+        with self.assertRaisesRegex(ValueError, "empty"):
+            pielou_evenness(table=empty_table)
+
+    def test_alpha_phylogenetic_empty_table(self):
+        empty_table = biom.Table(np.array([]), [], [])
+        with self.assertRaisesRegex(ValueError, "empty"):
+            faith_pd(table=empty_table, phylogeny=self.input_tree)
+
+
+class FaithPDTests(TestPluginBase):
 
     package = 'q2_diversity_lib.tests'
 
@@ -40,14 +59,7 @@ class AlphaTests(TestPluginBase):
         actual = faith_pd(table=self.input_table, phylogeny=self.input_tree)
         pdt.assert_series_equal(actual, self.faith_pd_expected)
 
-    def test_faith_pd_error_rewriting(self):
-        tree = skbio.TreeNode.read(io.StringIO(
-            '((A:0.3):0.2, C:100)root;'))
-        with self.assertRaisesRegex(skbio.tree.MissingNodeError,
-                                    'feature_ids.*phylogeny'):
-            faith_pd(table=self.input_table, phylogeny=tree)
-
-    def test_all_accepted_types_have_consistent_behavior(self):
+    def test_faith_pd_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
         rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
                                                               inplace=False)
@@ -57,7 +69,63 @@ class AlphaTests(TestPluginBase):
             actual = faith_pd(table=table, phylogeny=self.input_tree)
             pdt.assert_series_equal(actual, self.faith_pd_expected)
 
-    def test_alpha_phylogenetic_empty_table(self):
-        empty_table = biom.Table(np.array([]), [], [])
-        with self.assertRaisesRegex(ValueError, "empty"):
-            faith_pd(table=empty_table, phylogeny=self.input_tree)
+    def test_faith_pd_error_rewriting(self):
+        tree = skbio.TreeNode.read(io.StringIO(
+            '((A:0.3):0.2, C:100)root;'))
+        with self.assertRaisesRegex(skbio.tree.MissingNodeError,
+                                    'feature_ids.*phylogeny'):
+            faith_pd(table=self.input_table, phylogeny=tree)
+
+
+class PielouEvennessTests(TestPluginBase):
+
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.input_table = biom.Table(np.array([[0, 1, 1, 1, 999, 1],
+                                                [0, 0, 1, 1, 999, 1],
+                                                [0, 0, 0, 1, 999, 2]]),
+                                      ['A', 'B', 'C'],
+                                      ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
+        # Calculated by hand:
+        self.pielou_evenness_expected = pd.Series(
+                {'S1': np.NaN, 'S2': np.NaN, 'S3': 1, 'S4': 1,
+                 'S5': 1, 'S6': 0.946394630357186},
+                name='pielou_e')
+
+    def test_pielou_evenness(self):
+        actual = pielou_evenness(table=self.input_table)
+        pdt.assert_series_equal(actual, self.pielou_evenness_expected)
+
+    def test_pielou_accepted_types_have_consistent_behavior(self):
+        freq_table = self.input_table
+        rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
+                                                              inplace=False)
+        accepted_tables = [freq_table, rel_freq_table]
+        for table in accepted_tables:
+            actual = pielou_evenness(table)
+            pdt.assert_series_equal(actual, self.pielou_evenness_expected)
+
+    def test_pielou_evenness_drop_NaNs(self):
+        NaN_table = biom.Table(np.array([[0, 1, 0, 0, 1, 1],
+                                         [0, 0, 1, 0, 1, 1],
+                                         [0, 0, 0, 1, 0, 1]]),
+                               ['A', 'B', 'C'],
+                               ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
+        expected = pd.Series({'S5': 1, 'S6': 1}, name='pielou_e')
+        actual = pielou_evenness(table=NaN_table, drop_nans=True)
+        pdt.assert_series_equal(actual, expected, check_dtype=False)
+
+    def test_do_not_drop_NaNs(self):
+        NaN_table = biom.Table(np.array([[0, 1, 0, 0, 1, 1],
+                                         [0, 0, 1, 0, 1, 1],
+                                         [0, 0, 0, 1, 0, 1]]),
+                               ['A', 'B', 'C'],
+                               ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
+        expected = pd.Series({'S1': np.NaN, 'S2': np.NaN, 'S3': np.NaN,
+                              'S4': np.NaN, 'S5': 1, 'S6': 1},
+                             name='pielou_e')
+        actual = pielou_evenness(table=NaN_table, drop_nans=False)
+        print(actual, expected)
+        pdt.assert_series_equal(actual, expected)

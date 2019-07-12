@@ -32,7 +32,7 @@ plugin.methods.register_function(
             | Frequency],
             'phylogeny': Phylogeny[Rooted]},
     parameters=None,
-    outputs=[('faith_pd',
+    outputs=[('vector',
               SampleData[AlphaDiversity %
                          Properties('phylogenetic', 'qualitative')])],
     input_descriptions={
@@ -45,8 +45,8 @@ plugin.methods.register_function(
                      'the table, but all feature ids in the table must be '
                      'present in this tree.'},
     parameter_descriptions=None,
-    output_descriptions={'faith_pd': 'Vector containing per-sample values for '
-                                     'Faith\'s Phylogenetic Diversity.'},
+    output_descriptions={'vector': 'Vector containing per-sample values for '
+                                   'Faith\'s Phylogenetic Diversity.'},
     name='Faith\'s Phylogenetic Diversity',
     description='Computes Faith\'s Phylogenetic Diversity for all samples in '
                 'a feature table.',
