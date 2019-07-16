@@ -19,25 +19,6 @@ import pandas.util.testing as pdt
 import copy
 
 
-class DriverTests(TestPluginBase):
-    package = 'q2_diversity_lib.tests'
-
-    def setUp(self):
-        super().setUp()
-        self.input_tree = skbio.TreeNode.read(io.StringIO(
-                '((A:0.3, B:0.50):0.2, C:100)root;'))
-
-    def test_alpha_receives_empty_table(self):
-        empty_table = biom.Table(np.array([]), [], [])
-        with self.assertRaisesRegex(ValueError, "empty"):
-            pielou_evenness(table=empty_table)
-
-    def test_alpha_phylogenetic_empty_table(self):
-        empty_table = biom.Table(np.array([]), [], [])
-        with self.assertRaisesRegex(ValueError, "empty"):
-            faith_pd(table=empty_table, phylogeny=self.input_tree)
-
-
 class FaithPDTests(TestPluginBase):
 
     package = 'q2_diversity_lib.tests'
@@ -54,6 +35,11 @@ class FaithPDTests(TestPluginBase):
         self.faith_pd_expected = pd.Series({'S1': 0.5, 'S2': 0.7, 'S3': 1.0,
                                             'S4': 100.5, 'S5': 101},
                                            name='faith_pd')
+
+    def test_faith_pd_receives_empty_table(self):
+        empty_table = biom.Table(np.array([]), [], [])
+        with self.assertRaisesRegex(ValueError, "empty"):
+            faith_pd(table=empty_table, phylogeny=self.input_tree)
 
     def test_faith_pd(self):
         actual = faith_pd(table=self.input_table, phylogeny=self.input_tree)
@@ -93,6 +79,11 @@ class PielouEvennessTests(TestPluginBase):
                 {'S1': np.NaN, 'S2': np.NaN, 'S3': 1, 'S4': 1,
                  'S5': 1, 'S6': 0.946394630357186},
                 name='pielou_e')
+
+    def test_pielou_evenness_receives_empty_table(self):
+        empty_table = biom.Table(np.array([]), [], [])
+        with self.assertRaisesRegex(ValueError, "empty"):
+            pielou_evenness(table=empty_table)
 
     def test_pielou_evenness(self):
         actual = pielou_evenness(table=self.input_table)
@@ -147,6 +138,11 @@ class ShannonEntropyTests(TestPluginBase):
                 {'S1': np.NaN, 'S2': 0, 'S3': 1, 'S4': np.NaN,
                  'S5': 1.584962500721156, 'S6': 2},
                 name='shannon_entropy')
+
+    def test_shannon_entropy_receives_empty_table(self):
+        empty_table = biom.Table(np.array([]), [], [])
+        with self.assertRaisesRegex(ValueError, "empty"):
+            shannon_entropy(table=empty_table)
 
     def test_shannon_entropy(self):
         actual = shannon_entropy(table=self.input_table)
