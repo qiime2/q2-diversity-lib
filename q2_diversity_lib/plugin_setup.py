@@ -65,11 +65,31 @@ plugin.methods.register_function(
     parameter_descriptions={'drop_nans': 'Samples with fewer than two observed'
                             ' features produce undefined (NaN) values. '
                             'Passing \'True\' drops these samples from the '
-                            'output vector'},
+                            'output vector.'},
     output_descriptions={'vector': 'Vector containing per-sample values '
                                    'for Pielou\'s Evenness.'},
     name='Pielou\'s Evenness',
     description='Compute Pielou\'s Evenness for all samples in a '
                 'feature table',
     citations=[citations['pielou1966measurement']]
+)
+
+plugin.methods.register_function(
+    function=q2_diversity_lib.shannon_entropy,
+    inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
+    parameters={'drop_nans': Bool},
+    outputs=[('vector',
+             SampleData[AlphaDiversity % Properties('non-phylogenetic',
+                                                    'quantitative')])],
+    input_descriptions={'table': 'The feature table containing the samples '
+                        'for which Shannon\'s Entropy should be computed.'},
+    parameter_descriptions={'drop_nans': 'Samples with no observed features '
+                            'produce undefined (NaN) values. Passing \'True\' '
+                            'drops these samples from the output vector.'},
+    output_descriptions={'vector': 'Vector containing per-sample values '
+                                   'for Shannon\'s Entropy.'},
+    name='Shannon\'s Entropy',
+    description='Compute Shannon\'s Entropy for all samples in a '
+                'feature table',
+    citations=[citations['shannon1948communication']]
 )

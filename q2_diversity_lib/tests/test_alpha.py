@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from qiime2.plugin.testing import TestPluginBase
-from q2_diversity_lib import faith_pd, pielou_evenness
+from q2_diversity_lib import faith_pd, pielou_evenness, shannon_entropy
 
 import io
 import biom
@@ -127,5 +127,46 @@ class PielouEvennessTests(TestPluginBase):
                               'S4': np.NaN, 'S5': 1, 'S6': 1},
                              name='pielou_e')
         actual = pielou_evenness(table=NaN_table, drop_nans=False)
-        print(actual, expected)
         pdt.assert_series_equal(actual, expected)
+
+
+class ShannonEntropyTests(TestPluginBase):
+    # TODO: Actually implement tests for Shannon
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.input_table = biom.Table(np.array([[0, 0, 0, 0, 1, 1],
+                                                [0, 1, 0, 0, 1, 1],
+                                                [0, 0, 1, 0, 1, 1],
+                                                [0, 0, 1, 0, 0, 1]]),
+                                      ['A', 'B', 'C', 'D'],
+                                      ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
+        # Calculated by hand:
+        self.shannon_entropy_expected = pd.Series(
+                {'S1': np.NaN, 'S2': 0, 'S3': 1, 'S4': np.NaN,
+                 'S5': 1.584962500721156, 'S6': 2},
+                name='shannon_entropy')
+
+    def test_shannon_entropy(self):
+        actual = shannon_entropy(table=self.input_table)
+        pdt.assert_series_equal(actual, self.shannon_entropy_expected)
+
+    def test_shannon_accepted_types_have_consistent_behavior(self):
+        freq_table = self.input_table
+        rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
+                                                              inplace=False)
+        accepted_tables = [freq_table, rel_freq_table]
+        for table in accepted_tables:
+            actual = shannon_entropy(table)
+            pdt.assert_series_equal(actual, self.shannon_entropy_expected)
+
+    def test_shannon_entropy_drop_NaNs(self):
+        expected = pd.Series({'S2': 0, 'S3': 1, 'S5': 1.584962500721156,
+                              'S6': 2}, name='shannon_entropy')
+        actual = shannon_entropy(table=self.input_table, drop_nans=True)
+        pdt.assert_series_equal(actual, expected, check_dtype=False)
+
+    def test_do_not_drop_NaNs(self):
+        actual = shannon_entropy(table=self.input_table, drop_nans=False)
+        pdt.assert_series_equal(actual, self.shannon_entropy_expected)
