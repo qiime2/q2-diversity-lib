@@ -7,7 +7,8 @@
 # ----------------------------------------------------------------------------
 
 from qiime2.plugin.testing import TestPluginBase
-from q2_diversity_lib import faith_pd, pielou_evenness, shannon_entropy
+from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
+                              shannon_entropy)
 
 import io
 import biom
@@ -61,6 +62,43 @@ class FaithPDTests(TestPluginBase):
         with self.assertRaisesRegex(skbio.tree.MissingNodeError,
                                     'feature_ids.*phylogeny'):
             faith_pd(table=self.input_table, phylogeny=tree)
+
+
+class ObservedFeaturesTests(TestPluginBase):
+
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.input_table = biom.Table(np.array([[1, 0, .5, 999, 1],
+                                                [0, 1, 2, 0, 5],
+                                                [0, 0, 0, 1, 10]]),
+                                      ['A', 'B', 'C'],
+                                      ['S1', 'S2', 'S3', 'S4', 'S5'])
+        # Calculated by hand:
+        self.observed_features_expected = pd.Series(
+                {'S1': 1, 'S2': 1, 'S3': 2, 'S4': 2,
+                 'S5': 3},
+                name='observed_features')
+
+    def test_observed_features_receives_empty_table(self):
+        empty_table = biom.Table(np.array([]), [], [])
+        with self.assertRaisesRegex(ValueError, "empty"):
+            observed_features(table=empty_table)
+
+    def test_observed_features(self):
+        actual = observed_features(table=self.input_table)
+        pdt.assert_series_equal(actual, self.observed_features_expected)
+
+    def test_observed_features_accepted_types_have_consistent_behavior(self):
+        freq_table = self.input_table
+        rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
+                                                              inplace=False)
+        p_a_table = copy.deepcopy(self.input_table).pa()
+        accepted_tables = [freq_table, rel_freq_table, p_a_table]
+        for table in accepted_tables:
+            actual = observed_features(table)
+            pdt.assert_series_equal(actual, self.observed_features_expected)
 
 
 class PielouEvennessTests(TestPluginBase):
@@ -122,7 +160,6 @@ class PielouEvennessTests(TestPluginBase):
 
 
 class ShannonEntropyTests(TestPluginBase):
-    # TODO: Actually implement tests for Shannon
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):

@@ -6,10 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from ._alpha import (faith_pd, pielou_evenness, shannon_entropy)
+from ._alpha import (faith_pd, observed_features, pielou_evenness,
+                     shannon_entropy)
 from ._version import get_versions
 
 __version__ = get_versions()['version']
 del get_versions
 
-__all__ = ['faith_pd', 'pielou_evenness', 'shannon_entropy']
+
+__all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
+           'shannon_entropy']

@@ -35,6 +35,18 @@ def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
     return result
 
 
+def observed_features(table: biom.Table) -> pd.Series:
+    if table.is_empty():
+        raise ValueError("The provided table object is empty")
+    presence_absence_table = table.pa()
+    counts = presence_absence_table.matrix_data.toarray().astype(int).T
+    sample_ids = presence_absence_table.ids(axis='sample')
+    result = skbio.diversity.alpha_diversity(metric='observed_otus',
+                                             counts=counts, ids=sample_ids)
+    result.name = 'observed_features'
+    return result
+
+
 def pielou_evenness(table: biom.Table, drop_nans: bool = False) -> pd.Series:
     if table.is_empty():
         raise ValueError("The provided table object is empty")

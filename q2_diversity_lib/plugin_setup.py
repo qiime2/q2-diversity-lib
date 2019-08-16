@@ -54,6 +54,26 @@ plugin.methods.register_function(
 )
 
 plugin.methods.register_function(
+    function=q2_diversity_lib.observed_features,
+    inputs={'table': FeatureTable[Frequency | RelativeFrequency
+            | PresenceAbsence]},
+    parameters=None,
+    outputs=[('vector',
+             SampleData[AlphaDiversity % Properties('non-phylogenetic',
+                                                    'qualitative')])],
+    input_descriptions={'table': 'The feature table containing the samples '
+                        'for which the number of observed features should be '
+                        'calculated.'},
+    parameter_descriptions=None,
+    output_descriptions={'vector': 'Vector containing per-sample counts of '
+                                   'observed features.'},
+    name='Observed Features',
+    description='Compute the number of observed features for all samples in a '
+                'feature table',
+    citations=[citations['sokal1963principles']]
+)
+
+plugin.methods.register_function(
     function=q2_diversity_lib.pielou_evenness,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'drop_nans': Bool},
