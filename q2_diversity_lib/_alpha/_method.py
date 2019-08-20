@@ -7,9 +7,10 @@
 # ----------------------------------------------------------------------------
 
 import biom
-import numpy as np
 import pandas as pd
 import skbio.diversity
+
+from .._util import _drop_nans
 
 
 def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
@@ -53,11 +54,8 @@ def pielou_evenness(table: biom.Table, drop_nans: bool = False) -> pd.Series:
     counts = table.matrix_data.toarray().T
     sample_ids = table.ids(axis='sample')
     if drop_nans:
-        non_zero_elements_per_sample = (counts != 0).sum(1)
-        counts = np.delete(counts,
-                           np.where(non_zero_elements_per_sample < 2), 0)
-        sample_ids = np.delete(sample_ids, np.where(
-                non_zero_elements_per_sample < 2))
+        counts, sample_ids = _drop_nans(
+                counts, sample_ids, minimum_nonzero_elements=2)
 
     result = skbio.diversity.alpha_diversity(metric='pielou_e', counts=counts,
                                              ids=sample_ids)
@@ -71,11 +69,8 @@ def shannon_entropy(table: biom.Table, drop_nans: bool = False) -> pd.Series:
     counts = table.matrix_data.toarray().T
     sample_ids = table.ids(axis='sample')
     if drop_nans:
-        non_zero_elements_per_sample = (counts != 0).sum(1)
-        counts = np.delete(counts,
-                           np.where(non_zero_elements_per_sample < 1), 0)
-        sample_ids = np.delete(sample_ids, np.where(
-                non_zero_elements_per_sample < 1))
+        counts, sample_ids = _drop_nans(
+                counts, sample_ids, minimum_nonzero_elements=1)
     result = skbio.diversity.alpha_diversity(metric='shannon', counts=counts,
                                              ids=sample_ids)
     result.name = 'shannon_entropy'

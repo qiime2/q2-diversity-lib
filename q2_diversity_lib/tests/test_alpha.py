@@ -19,6 +19,22 @@ import pandas.util.testing as pdt
 
 import copy
 
+nonphylogenetic_measures = [observed_features, pielou_evenness,
+                            shannon_entropy]
+
+
+class GeneralTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.empty_table = biom.Table(np.array([]), [], [])
+
+    def test_non_phylogenetic_passed_empty_table(self):
+        for measure in nonphylogenetic_measures:
+            with self.assertRaisesRegex(ValueError, "empty"):
+                measure(table=self.empty_table)
+
 
 class FaithPDTests(TestPluginBase):
 
@@ -81,11 +97,6 @@ class ObservedFeaturesTests(TestPluginBase):
                  'S5': 3},
                 name='observed_features')
 
-    def test_observed_features_receives_empty_table(self):
-        empty_table = biom.Table(np.array([]), [], [])
-        with self.assertRaisesRegex(ValueError, "empty"):
-            observed_features(table=empty_table)
-
     def test_observed_features(self):
         actual = observed_features(table=self.input_table)
         pdt.assert_series_equal(actual, self.observed_features_expected)
@@ -117,11 +128,6 @@ class PielouEvennessTests(TestPluginBase):
                 {'S1': np.NaN, 'S2': np.NaN, 'S3': 1, 'S4': 1,
                  'S5': 1, 'S6': 0.946394630357186},
                 name='pielou_e')
-
-    def test_pielou_evenness_receives_empty_table(self):
-        empty_table = biom.Table(np.array([]), [], [])
-        with self.assertRaisesRegex(ValueError, "empty"):
-            pielou_evenness(table=empty_table)
 
     def test_pielou_evenness(self):
         actual = pielou_evenness(table=self.input_table)
@@ -175,11 +181,6 @@ class ShannonEntropyTests(TestPluginBase):
                 {'S1': np.NaN, 'S2': 0, 'S3': 1, 'S4': np.NaN,
                  'S5': 1.584962500721156, 'S6': 2},
                 name='shannon_entropy')
-
-    def test_shannon_entropy_receives_empty_table(self):
-        empty_table = biom.Table(np.array([]), [], [])
-        with self.assertRaisesRegex(ValueError, "empty"):
-            shannon_entropy(table=empty_table)
 
     def test_shannon_entropy(self):
         actual = shannon_entropy(table=self.input_table)

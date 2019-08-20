@@ -68,7 +68,7 @@ plugin.methods.register_function(
     output_descriptions={'vector': 'Vector containing per-sample counts of '
                                    'observed features.'},
     name='Observed Features',
-    description='Compute the number of observed features for all samples in a '
+    description='Compute the number of observed features for each sample in a '
                 'feature table',
     citations=[citations['sokal1963principles']]
 )
@@ -89,7 +89,7 @@ plugin.methods.register_function(
     output_descriptions={'vector': 'Vector containing per-sample values '
                                    'for Pielou\'s Evenness.'},
     name='Pielou\'s Evenness',
-    description='Compute Pielou\'s Evenness for all samples in a '
+    description='Compute Pielou\'s Evenness for each sample in a '
                 'feature table',
     citations=[citations['pielou1966measurement']]
 )
@@ -109,7 +109,7 @@ plugin.methods.register_function(
     output_descriptions={'vector': 'Vector containing per-sample values '
                                    'for Shannon\'s Entropy.'},
     name='Shannon\'s Entropy',
-    description='Compute Shannon\'s Entropy for all samples in a '
+    description='Compute Shannon\'s Entropy for each sample in a '
                 'feature table',
     citations=[citations['shannon1948communication']]
 )
