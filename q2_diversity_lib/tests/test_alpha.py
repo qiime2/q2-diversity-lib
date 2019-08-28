@@ -23,7 +23,7 @@ nonphylogenetic_measures = [observed_features, pielou_evenness,
                             shannon_entropy]
 
 
-class GeneralTests(TestPluginBase):
+class SmokeTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
@@ -53,16 +53,17 @@ class FaithPDTests(TestPluginBase):
                                             'S4': 100.5, 'S5': 101},
                                            name='faith_pd')
 
-    def test_faith_pd_receives_empty_table(self):
+    def test_receives_empty_table(self):
         empty_table = biom.Table(np.array([]), [], [])
         with self.assertRaisesRegex(ValueError, "empty"):
             faith_pd(table=empty_table, phylogeny=self.input_tree)
 
-    def test_faith_pd(self):
+# NOTE: Example
+    def test_method(self):
         actual = faith_pd(table=self.input_table, phylogeny=self.input_tree)
         pdt.assert_series_equal(actual, self.faith_pd_expected)
 
-    def test_faith_pd_accepted_types_have_consistent_behavior(self):
+    def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
         rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
                                                               inplace=False)
@@ -72,7 +73,7 @@ class FaithPDTests(TestPluginBase):
             actual = faith_pd(table=table, phylogeny=self.input_tree)
             pdt.assert_series_equal(actual, self.faith_pd_expected)
 
-    def test_faith_pd_error_rewriting(self):
+    def test_error_rewriting(self):
         tree = skbio.TreeNode.read(io.StringIO(
             '((A:0.3):0.2, C:100)root;'))
         with self.assertRaisesRegex(skbio.tree.MissingNodeError,
@@ -97,11 +98,11 @@ class ObservedFeaturesTests(TestPluginBase):
                  'S5': 3},
                 name='observed_features')
 
-    def test_observed_features(self):
+    def test_method(self):
         actual = observed_features(table=self.input_table)
         pdt.assert_series_equal(actual, self.observed_features_expected)
 
-    def test_observed_features_accepted_types_have_consistent_behavior(self):
+    def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
         rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
                                                               inplace=False)
@@ -127,13 +128,13 @@ class PielouEvennessTests(TestPluginBase):
         self.pielou_evenness_expected = pd.Series(
                 {'S1': np.NaN, 'S2': np.NaN, 'S3': 1, 'S4': 1,
                  'S5': 1, 'S6': 0.946394630357186},
-                name='pielou_e')
+                name='pielou_evenness')
 
-    def test_pielou_evenness(self):
+    def test_method(self):
         actual = pielou_evenness(table=self.input_table)
         pdt.assert_series_equal(actual, self.pielou_evenness_expected)
 
-    def test_pielou_accepted_types_have_consistent_behavior(self):
+    def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
         rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
                                                               inplace=False)
@@ -142,17 +143,17 @@ class PielouEvennessTests(TestPluginBase):
             actual = pielou_evenness(table)
             pdt.assert_series_equal(actual, self.pielou_evenness_expected)
 
-    def test_pielou_evenness_drop_NaNs(self):
+    def test_drop_undefined_samples(self):
         NaN_table = biom.Table(np.array([[0, 1, 0, 0, 1, 1],
                                          [0, 0, 1, 0, 1, 1],
                                          [0, 0, 0, 1, 0, 1]]),
                                ['A', 'B', 'C'],
                                ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
-        expected = pd.Series({'S5': 1, 'S6': 1}, name='pielou_e')
-        actual = pielou_evenness(table=NaN_table, drop_nans=True)
+        expected = pd.Series({'S5': 1, 'S6': 1}, name='pielou_evenness')
+        actual = pielou_evenness(table=NaN_table, drop_undefined_samples=True)
         pdt.assert_series_equal(actual, expected, check_dtype=False)
 
-    def test_do_not_drop_NaNs(self):
+    def test_do_not_drop_undefined_samples(self):
         NaN_table = biom.Table(np.array([[0, 1, 0, 0, 1, 1],
                                          [0, 0, 1, 0, 1, 1],
                                          [0, 0, 0, 1, 0, 1]]),
@@ -160,8 +161,8 @@ class PielouEvennessTests(TestPluginBase):
                                ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
         expected = pd.Series({'S1': np.NaN, 'S2': np.NaN, 'S3': np.NaN,
                               'S4': np.NaN, 'S5': 1, 'S6': 1},
-                             name='pielou_e')
-        actual = pielou_evenness(table=NaN_table, drop_nans=False)
+                             name='pielou_evenness')
+        actual = pielou_evenness(table=NaN_table, drop_undefined_samples=False)
         pdt.assert_series_equal(actual, expected)
 
 
@@ -182,11 +183,11 @@ class ShannonEntropyTests(TestPluginBase):
                  'S5': 1.584962500721156, 'S6': 2},
                 name='shannon_entropy')
 
-    def test_shannon_entropy(self):
+    def test_method(self):
         actual = shannon_entropy(table=self.input_table)
         pdt.assert_series_equal(actual, self.shannon_entropy_expected)
 
-    def test_shannon_accepted_types_have_consistent_behavior(self):
+    def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
         rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
                                                               inplace=False)
@@ -195,12 +196,14 @@ class ShannonEntropyTests(TestPluginBase):
             actual = shannon_entropy(table)
             pdt.assert_series_equal(actual, self.shannon_entropy_expected)
 
-    def test_shannon_entropy_drop_NaNs(self):
+    def test_drop_undefined_samples(self):
         expected = pd.Series({'S2': 0, 'S3': 1, 'S5': 1.584962500721156,
                               'S6': 2}, name='shannon_entropy')
-        actual = shannon_entropy(table=self.input_table, drop_nans=True)
+        actual = shannon_entropy(table=self.input_table,
+                                 drop_undefined_samples=True)
         pdt.assert_series_equal(actual, expected, check_dtype=False)
 
-    def test_do_not_drop_NaNs(self):
-        actual = shannon_entropy(table=self.input_table, drop_nans=False)
+    def test_do_not_drop_undefined_samples(self):
+        actual = shannon_entropy(table=self.input_table,
+                                 drop_undefined_samples=False)
         pdt.assert_series_equal(actual, self.shannon_entropy_expected)

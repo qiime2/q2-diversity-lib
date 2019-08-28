@@ -10,7 +10,7 @@ import biom
 import pandas as pd
 import skbio.diversity
 
-from .._util import _drop_nans
+from .._util import _drop_undefined_samples
 
 
 def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
@@ -48,28 +48,30 @@ def observed_features(table: biom.Table) -> pd.Series:
     return result
 
 
-def pielou_evenness(table: biom.Table, drop_nans: bool = False) -> pd.Series:
+def pielou_evenness(table: biom.Table,
+                    drop_undefined_samples: bool = False) -> pd.Series:
     if table.is_empty():
         raise ValueError("The provided table object is empty")
     counts = table.matrix_data.toarray().T
     sample_ids = table.ids(axis='sample')
-    if drop_nans:
-        counts, sample_ids = _drop_nans(
+    if drop_undefined_samples:
+        counts, sample_ids = _drop_undefined_samples(
                 counts, sample_ids, minimum_nonzero_elements=2)
 
     result = skbio.diversity.alpha_diversity(metric='pielou_e', counts=counts,
                                              ids=sample_ids)
-    result.name = 'pielou_e'
+    result.name = 'pielou_evenness'
     return result
 
 
-def shannon_entropy(table: biom.Table, drop_nans: bool = False) -> pd.Series:
+def shannon_entropy(table: biom.Table,
+                    drop_undefined_samples: bool = False) -> pd.Series:
     if table.is_empty():
         raise ValueError("The provided table object is empty")
     counts = table.matrix_data.toarray().T
     sample_ids = table.ids(axis='sample')
-    if drop_nans:
-        counts, sample_ids = _drop_nans(
+    if drop_undefined_samples:
+        counts, sample_ids = _drop_undefined_samples(
                 counts, sample_ids, minimum_nonzero_elements=1)
     result = skbio.diversity.alpha_diversity(metric='shannon', counts=counts,
                                              ids=sample_ids)

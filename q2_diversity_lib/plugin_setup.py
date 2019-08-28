@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 import q2_diversity_lib
-from qiime2.plugin import (Plugin, Citations, Properties, Bool)
+from qiime2.plugin import (Plugin, Citations, Bool)
 
 from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
                                     PresenceAbsence)
@@ -23,22 +23,20 @@ plugin = Plugin(
     package='q2_diversity_lib',
     description='This QIIME 2 plugin computes individual metrics for '
     ' community alpha and beta diversity.',
-    user_support_text='https://docs.qiime2.org',
 )
 
 plugin.methods.register_function(
     function=q2_diversity_lib.faith_pd,
-    inputs={'table': FeatureTable[PresenceAbsence | RelativeFrequency
-            | Frequency],
+    inputs={'table': FeatureTable[Frequency | RelativeFrequency
+            | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
     parameters=None,
     outputs=[('vector',
-              SampleData[AlphaDiversity %
-                         Properties('phylogenetic', 'qualitative')])],
+              SampleData[AlphaDiversity])],
     input_descriptions={
         'table': 'The feature table containing the samples for which Faith\'s '
-                 'phylogenetic diversity should be computed. Table data will '
-                 'be converted to presence/absence.',
+                 'phylogenetic diversity should be computed. Table values '
+                 'will be converted to presence/absence.',
         'phylogeny': 'Phylogenetic tree containing tip identifiers that '
                      'correspond to the feature identifiers in the table. '
                      'This tree can contain tip ids that are not present in '
@@ -59,11 +57,11 @@ plugin.methods.register_function(
             | PresenceAbsence]},
     parameters=None,
     outputs=[('vector',
-             SampleData[AlphaDiversity % Properties('non-phylogenetic',
-                                                    'qualitative')])],
+             SampleData[AlphaDiversity])],
     input_descriptions={'table': 'The feature table containing the samples '
                         'for which the number of observed features should be '
-                        'calculated.'},
+                        'calculated. Table values will be converted to '
+                        'presence/absence.'},
     parameter_descriptions=None,
     output_descriptions={'vector': 'Vector containing per-sample counts of '
                                    'observed features.'},
@@ -76,16 +74,15 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2_diversity_lib.pielou_evenness,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
-    parameters={'drop_nans': Bool},
+    parameters={'drop_undefined_samples': Bool},
     outputs=[('vector',
-             SampleData[AlphaDiversity % Properties('non-phylogenetic',
-                                                    'quantitative')])],
+             SampleData[AlphaDiversity])],
     input_descriptions={'table': 'The feature table containing the samples '
                         'for which Pielou\'s evenness should be computed.'},
-    parameter_descriptions={'drop_nans': 'Samples with fewer than two observed'
-                            ' features produce undefined (NaN) values. '
-                            'Passing \'True\' drops these samples from the '
-                            'output vector.'},
+    parameter_descriptions={'drop_undefined_samples': 'Samples with fewer than'
+                            ' two observed features produce undefined (NaN) '
+                            'values. If true, these samples are dropped '
+                            'from the output vector.'},
     output_descriptions={'vector': 'Vector containing per-sample values '
                                    'for Pielou\'s Evenness.'},
     name='Pielou\'s Evenness',
@@ -97,15 +94,15 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2_diversity_lib.shannon_entropy,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
-    parameters={'drop_nans': Bool},
+    parameters={'drop_undefined_samples': Bool},
     outputs=[('vector',
-             SampleData[AlphaDiversity % Properties('non-phylogenetic',
-                                                    'quantitative')])],
+             SampleData[AlphaDiversity])],
     input_descriptions={'table': 'The feature table containing the samples '
                         'for which Shannon\'s Entropy should be computed.'},
-    parameter_descriptions={'drop_nans': 'Samples with no observed features '
-                            'produce undefined (NaN) values. Passing \'True\' '
-                            'drops these samples from the output vector.'},
+    parameter_descriptions={'drop_undefined_samples': 'Samples with no '
+                            'observed features produce undefined (NaN) values.'
+                            ' If true, these samples are dropped from the '
+                            'output vector.'},
     output_descriptions={'vector': 'Vector containing per-sample values '
                                    'for Shannon\'s Entropy.'},
     name='Shannon\'s Entropy',
