@@ -10,7 +10,7 @@ import biom
 import pandas as pd
 import skbio.diversity
 
-from .._util import _drop_undefined_samples
+from ._util import _drop_undefined_samples
 
 
 def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
