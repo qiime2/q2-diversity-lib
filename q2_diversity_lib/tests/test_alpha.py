@@ -58,7 +58,6 @@ class FaithPDTests(TestPluginBase):
         with self.assertRaisesRegex(ValueError, "empty"):
             faith_pd(table=empty_table, phylogeny=self.input_tree)
 
-# NOTE: Example
     def test_method(self):
         actual = faith_pd(table=self.input_table, phylogeny=self.input_tree)
         pdt.assert_series_equal(actual, self.faith_pd_expected)

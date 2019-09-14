@@ -10,12 +10,11 @@ import biom
 import pandas as pd
 import skbio.diversity
 
-from ._util import _drop_undefined_samples
+from ._util import _drop_undefined_samples, _disallow_empty_tables
 
 
+@_disallow_empty_tables
 def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
-    if table.is_empty():
-        raise ValueError("The provided table object is empty")
     presence_absence_table = table.pa()
     counts = presence_absence_table.matrix_data.toarray().astype(int).T
     sample_ids = presence_absence_table.ids(axis='sample')
@@ -36,9 +35,8 @@ def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
     return result
 
 
+@_disallow_empty_tables
 def observed_features(table: biom.Table) -> pd.Series:
-    if table.is_empty():
-        raise ValueError("The provided table object is empty")
     presence_absence_table = table.pa()
     counts = presence_absence_table.matrix_data.toarray().astype(int).T
     sample_ids = presence_absence_table.ids(axis='sample')
@@ -48,10 +46,9 @@ def observed_features(table: biom.Table) -> pd.Series:
     return result
 
 
+@_disallow_empty_tables
 def pielou_evenness(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
-    if table.is_empty():
-        raise ValueError("The provided table object is empty")
     counts = table.matrix_data.toarray().T
     sample_ids = table.ids(axis='sample')
     if drop_undefined_samples:
@@ -64,10 +61,9 @@ def pielou_evenness(table: biom.Table,
     return result
 
 
+@_disallow_empty_tables
 def shannon_entropy(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
-    if table.is_empty():
-        raise ValueError("The provided table object is empty")
     counts = table.matrix_data.toarray().T
     sample_ids = table.ids(axis='sample')
     if drop_undefined_samples:

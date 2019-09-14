@@ -7,6 +7,8 @@
 # ----------------------------------------------------------------------------
 
 import numpy as np
+from functools import wraps
+from inspect import signature
 
 
 def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
@@ -18,3 +20,19 @@ def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
     filtered_counts = np.delete(counts, fancy_index, 0)
     filtered_sample_ids = np.delete(sample_ids, fancy_index)
     return (filtered_counts, filtered_sample_ids)
+
+
+def _disallow_empty_tables(some_function):
+    @wraps(some_function)
+    def wrapper(*args, **kwargs):
+        try:
+            bound_signature = signature(wrapper).bind(*args, **kwargs)
+            table = bound_signature.arguments['table']
+        except KeyError as ex:
+            raise TypeError("The wrapped function has no parameter "
+                            + str(ex) + ".")
+        else:
+            if table.is_empty():
+                raise ValueError("The provided table object is empty")
+        return some_function(*args, **kwargs)
+    return wrapper
