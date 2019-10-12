@@ -9,6 +9,7 @@
 import numpy as np
 from functools import wraps
 from inspect import signature
+import psutil
 
 
 def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
@@ -34,5 +35,33 @@ def _disallow_empty_tables(some_function):
         else:
             if table.is_empty():
                 raise ValueError("The provided table object is empty")
+        return some_function(*args, **kwargs)
+    return wrapper
+
+
+def _safely_count_cpus(some_function):
+    @wraps(some_function)
+    def wrapper(*args, **kwargs):
+        # https://psutil.readthedocs.io/en/latest/index.html#psutil.cpu_count
+        # `Process.cpu_affinity` may not be available on all systems. If not,
+        # fall back to the original cpu counting mechanism.
+        sig = signature(wrapper)
+        try:
+            cpus = len(psutil.Process().cpu_affinity())
+            print(sig.parameters)
+            if 'system_cpus' in sig.parameters:
+                kwargs['system_cpus'] = cpus
+            else:
+                raise AttributeError("The _safely_count_cpus decorator may "
+                                     "not be applied to callables without "
+                                     "'system_cpus' parameter.")
+        except AttributeError:
+            cpus = psutil.cpu_count(logical=False)
+            if 'system_cpus' in sig.parameters:
+                kwargs['system_cpus'] = cpus
+            else:
+                raise AttributeError("The _safely_count_cpus decorator may "
+                                     "not be applied to callables without "
+                                     "'system_cpus' parameter.")
         return some_function(*args, **kwargs)
     return wrapper
