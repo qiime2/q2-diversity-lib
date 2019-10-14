@@ -68,7 +68,6 @@ plugin.methods.register_function(
     name='Observed Features',
     description='Compute the number of observed features for each sample in a '
                 'feature table',
-    citations=[citations['sokal1963principles']]
 )
 
 plugin.methods.register_function(
