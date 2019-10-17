@@ -49,9 +49,10 @@ class FaithPDTests(TestPluginBase):
                                       ['S1', 'S2', 'S3', 'S4', 'S5'])
         self.input_tree = skbio.TreeNode.read(io.StringIO(
                 '((A:0.3, B:0.50):0.2, C:100)root;'))
-        self.faith_pd_expected = pd.Series({'S1': 0.5, 'S2': 0.7, 'S3': 1.0,
-                                            'S4': 100.5, 'S5': 101},
-                                           name='faith_pd')
+
+        self.expected = pd.Series({'S1': 0.5, 'S2': 0.7, 'S3': 1.0,
+                                   'S4': 100.5, 'S5': 101},
+                                  name='faith_pd')
 
     def test_receives_empty_table(self):
         empty_table = biom.Table(np.array([]), [], [])
@@ -60,7 +61,7 @@ class FaithPDTests(TestPluginBase):
 
     def test_method(self):
         actual = faith_pd(table=self.input_table, phylogeny=self.input_tree)
-        pdt.assert_series_equal(actual, self.faith_pd_expected)
+        pdt.assert_series_equal(actual, self.expected)
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
@@ -70,7 +71,7 @@ class FaithPDTests(TestPluginBase):
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
             actual = faith_pd(table=table, phylogeny=self.input_tree)
-            pdt.assert_series_equal(actual, self.faith_pd_expected)
+            pdt.assert_series_equal(actual, self.expected)
 
     def test_error_rewriting(self):
         tree = skbio.TreeNode.read(io.StringIO(
@@ -92,14 +93,14 @@ class ObservedFeaturesTests(TestPluginBase):
                                       ['A', 'B', 'C'],
                                       ['S1', 'S2', 'S3', 'S4', 'S5'])
         # Calculated by hand:
-        self.observed_features_expected = pd.Series(
+        self.expected = pd.Series(
                 {'S1': 1, 'S2': 1, 'S3': 2, 'S4': 2,
                  'S5': 3},
                 name='observed_features')
 
     def test_method(self):
         actual = observed_features(table=self.input_table)
-        pdt.assert_series_equal(actual, self.observed_features_expected)
+        pdt.assert_series_equal(actual, self.expected)
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
@@ -109,7 +110,7 @@ class ObservedFeaturesTests(TestPluginBase):
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
             actual = observed_features(table)
-            pdt.assert_series_equal(actual, self.observed_features_expected)
+            pdt.assert_series_equal(actual, self.expected)
 
 
 class PielouEvennessTests(TestPluginBase):
@@ -124,14 +125,14 @@ class PielouEvennessTests(TestPluginBase):
                                       ['A', 'B', 'C'],
                                       ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
         # Calculated by hand:
-        self.pielou_evenness_expected = pd.Series(
+        self.expected = pd.Series(
                 {'S1': np.NaN, 'S2': np.NaN, 'S3': 1, 'S4': 1,
                  'S5': 1, 'S6': 0.946394630357186},
                 name='pielou_evenness')
 
     def test_method(self):
         actual = pielou_evenness(table=self.input_table)
-        pdt.assert_series_equal(actual, self.pielou_evenness_expected)
+        pdt.assert_series_equal(actual, self.expected)
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
@@ -140,7 +141,7 @@ class PielouEvennessTests(TestPluginBase):
         accepted_tables = [freq_table, rel_freq_table]
         for table in accepted_tables:
             actual = pielou_evenness(table)
-            pdt.assert_series_equal(actual, self.pielou_evenness_expected)
+            pdt.assert_series_equal(actual, self.expected)
 
     def test_drop_undefined_samples(self):
         NaN_table = biom.Table(np.array([[0, 1, 0, 0, 1, 1],
@@ -177,14 +178,14 @@ class ShannonEntropyTests(TestPluginBase):
                                       ['A', 'B', 'C', 'D'],
                                       ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
         # Calculated by hand:
-        self.shannon_entropy_expected = pd.Series(
+        self.expected = pd.Series(
                 {'S1': np.NaN, 'S2': 0, 'S3': 1, 'S4': np.NaN,
                  'S5': 1.584962500721156, 'S6': 2},
                 name='shannon_entropy')
 
     def test_method(self):
         actual = shannon_entropy(table=self.input_table)
-        pdt.assert_series_equal(actual, self.shannon_entropy_expected)
+        pdt.assert_series_equal(actual, self.expected)
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
@@ -193,7 +194,7 @@ class ShannonEntropyTests(TestPluginBase):
         accepted_tables = [freq_table, rel_freq_table]
         for table in accepted_tables:
             actual = shannon_entropy(table)
-            pdt.assert_series_equal(actual, self.shannon_entropy_expected)
+            pdt.assert_series_equal(actual, self.expected)
 
     def test_drop_undefined_samples(self):
         expected = pd.Series({'S2': 0, 'S3': 1, 'S5': 1.584962500721156,
@@ -205,4 +206,4 @@ class ShannonEntropyTests(TestPluginBase):
     def test_do_not_drop_undefined_samples(self):
         actual = shannon_entropy(table=self.input_table,
                                  drop_undefined_samples=False)
-        pdt.assert_series_equal(actual, self.shannon_entropy_expected)
+        pdt.assert_series_equal(actual, self.expected)
