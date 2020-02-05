@@ -10,10 +10,12 @@ import biom
 import pandas as pd
 import skbio.diversity
 
-from ._util import _drop_undefined_samples, _disallow_empty_tables
+from ._util import (_drop_undefined_samples,
+                    _disallow_empty_tables_passed_object)
 
-
-@_disallow_empty_tables
+# TODO: FaithPD may be implemented using Daniel's Unifrac implementation
+# This will clear up citations significantly
+@_disallow_empty_tables_passed_object
 def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
     presence_absence_table = table.pa()
     counts = presence_absence_table.matrix_data.toarray().astype(int).T
@@ -29,13 +31,13 @@ def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
     except skbio.tree.MissingNodeError as e:
         message = str(e).replace('otu_ids', 'feature_ids')
         message = message.replace('tree', 'phylogeny')
-        raise skbio.tree.MissingNodeError(message)
+        raise skbio.tree.MissingNodeError(message) from e
 
     result.name = 'faith_pd'
     return result
 
 
-@_disallow_empty_tables
+@_disallow_empty_tables_passed_object
 def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa()
     counts = presence_absence_table.matrix_data.toarray().astype(int).T
@@ -46,7 +48,7 @@ def observed_features(table: biom.Table) -> pd.Series:
     return result
 
 
-@_disallow_empty_tables
+@_disallow_empty_tables_passed_object
 def pielou_evenness(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
     counts = table.matrix_data.toarray().T
@@ -61,7 +63,7 @@ def pielou_evenness(table: biom.Table,
     return result
 
 
-@_disallow_empty_tables
+@_disallow_empty_tables_passed_object
 def shannon_entropy(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
     counts = table.matrix_data.toarray().T
