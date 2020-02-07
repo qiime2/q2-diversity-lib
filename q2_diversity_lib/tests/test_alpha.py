@@ -17,8 +17,6 @@ import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
 
-import copy
-
 nonphylogenetic_measures = [observed_features, pielou_evenness,
                             shannon_entropy]
 
@@ -65,9 +63,9 @@ class FaithPDTests(TestPluginBase):
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
-        rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
-                                                              inplace=False)
-        p_a_table = copy.deepcopy(self.input_table).pa()
+        rel_freq_table = self.input_table.norm(axis='sample',
+                                               inplace=False)
+        p_a_table = self.input_table.pa(inplace=False)
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
             actual = faith_pd(table=table, phylogeny=self.input_tree)
@@ -79,6 +77,24 @@ class FaithPDTests(TestPluginBase):
         with self.assertRaisesRegex(skbio.tree.MissingNodeError,
                                     'feature_ids.*phylogeny'):
             faith_pd(table=self.input_table, phylogeny=tree)
+
+# TODO: Include these tests when faith_pd converted to unifrac
+    # def test_passed_emptytree_fp(self):
+    #     with self.assertRaisesRegex(ValueError, "newick"):
+    #         faith_pd(table=self.valid_table_fp,
+    #                 phylogeny=self.empty_tree_fp)
+
+    # def test_passed_rootonlytree_fp(self):
+    #     with self.assertRaisesRegex(ValueError,
+    #                                 "table.*not.*completely represented"):
+    #         faith_pd(table=self.valid_table_fp,
+    #                 phylogeny=self.root_only_tree_fp)
+
+    # def test_passed_tree_missing_tip_fp(self):
+    #     with self.assertRaisesRegex(ValueError,
+    #                                 "table.*not.*completely represented"):
+    #         faith_pd(table=self.valid_table_fp,
+    #                 phylogeny=self.missing_tip_tree_fp)
 
 
 class ObservedFeaturesTests(TestPluginBase):
@@ -104,9 +120,9 @@ class ObservedFeaturesTests(TestPluginBase):
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
-        rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
-                                                              inplace=False)
-        p_a_table = copy.deepcopy(self.input_table).pa()
+        rel_freq_table = self.input_table.norm(axis='sample',
+                                               inplace=False)
+        p_a_table = self.input_table.pa(inplace=False)
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
             actual = observed_features(table)
@@ -136,8 +152,8 @@ class PielouEvennessTests(TestPluginBase):
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
-        rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
-                                                              inplace=False)
+        rel_freq_table = self.input_table.norm(axis='sample',
+                                               inplace=False)
         accepted_tables = [freq_table, rel_freq_table]
         for table in accepted_tables:
             actual = pielou_evenness(table)
@@ -189,8 +205,8 @@ class ShannonEntropyTests(TestPluginBase):
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table
-        rel_freq_table = copy.deepcopy(self.input_table).norm(axis='sample',
-                                                              inplace=False)
+        rel_freq_table = self.input_table.norm(axis='sample',
+                                               inplace=False)
         accepted_tables = [freq_table, rel_freq_table]
         for table in accepted_tables:
             actual = shannon_entropy(table)
