@@ -16,7 +16,6 @@ import skbio
 import numpy as np
 import numpy.testing as npt
 
-# TODO: is there a more neutral word than 'measures' I can use here?
 nonphylogenetic_measures = [jaccard, bray_curtis]
 phylogenetic_measures = [unweighted_unifrac, weighted_unifrac]
 
@@ -225,7 +224,7 @@ class UnweightedUnifrac(TestPluginBase):
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.table_fp
         rel_freq_table = self.get_data_path(
-                    'two_feature_relative_freq_table.biom')
+                    'two_feature_rf_table.biom')
         p_a_table = self.get_data_path('two_feature_p_a_table.biom')
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
