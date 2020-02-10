@@ -9,30 +9,17 @@
 import biom
 import pandas as pd
 import skbio.diversity
-
+from unifrac import faith_pd as f_pd
 from ._util import (_drop_undefined_samples,
-                    _disallow_empty_tables_passed_object)
+                    _disallow_empty_tables_passed_object,
+                    _disallow_empty_tables_passed_filepath)
+from q2_types.feature_table import BIOMV210Format
+from q2_types.tree import NewickFormat
 
-# TODO: FaithPD may be implemented using Daniel's Unifrac implementation
-# This will clear up citations significantly
-@_disallow_empty_tables_passed_object
-def faith_pd(table: biom.Table, phylogeny: skbio.TreeNode) -> pd.Series:
-    presence_absence_table = table.pa()
-    counts = presence_absence_table.matrix_data.toarray().astype(int).T
-    sample_ids = presence_absence_table.ids(axis='sample')
-    feature_ids = presence_absence_table.ids(axis='observation')
 
-    try:
-        result = skbio.diversity.alpha_diversity(metric='faith_pd',
-                                                 counts=counts,
-                                                 ids=sample_ids,
-                                                 otu_ids=feature_ids,
-                                                 tree=phylogeny)
-    except skbio.tree.MissingNodeError as e:
-        message = str(e).replace('otu_ids', 'feature_ids')
-        message = message.replace('tree', 'phylogeny')
-        raise skbio.tree.MissingNodeError(message) from e
-
+@_disallow_empty_tables_passed_filepath
+def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
+    result = f_pd(table, phylogeny)
     result.name = 'faith_pd'
     return result
 
