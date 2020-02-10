@@ -10,9 +10,7 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
                               shannon_entropy)
 
-import io
 import biom
-import skbio
 import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
@@ -30,75 +28,66 @@ class SmokeTests(TestPluginBase):
 
     def test_non_phylogenetic_passed_empty_table(self):
         for measure in nonphylogenetic_measures:
-            with self.assertRaisesRegex(ValueError, "empty"):
+            with self.assertRaisesRegex(ValueError, 'empty'):
                 measure(table=self.empty_table)
 
 
 class FaithPDTests(TestPluginBase):
-
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
         super().setUp()
-        self.input_table = biom.Table(np.array([[1, 0, .5, 999, 1],
-                                                [0, 1, 2, 0, 1],
-                                                [0, 0, 0, 1, 1]]),
-                                      ['A', 'B', 'C'],
-                                      ['S1', 'S2', 'S3', 'S4', 'S5'])
-        self.input_tree = skbio.TreeNode.read(io.StringIO(
-                '((A:0.3, B:0.50):0.2, C:100)root;'))
-
+        self.input_table_fp = self.get_data_path('faith_test_table.biom')
+        self.input_tree_fp = self.get_data_path('faith_test.tree')
+        self.rf_table = self.get_data_path('faith_test_table_rf.biom')
+        self.pa_table = self.get_data_path('faith_test_table_pa.biom')
+        self.empty_tree_fp = self.get_data_path('empty.tree')
+        self.root_only_tree_fp = self.get_data_path('root_only.tree')
+        self.missing_tip_tree_fp = self.get_data_path('missing_tip.tree')
         self.expected = pd.Series({'S1': 0.5, 'S2': 0.7, 'S3': 1.0,
                                    'S4': 100.5, 'S5': 101},
                                   name='faith_pd')
 
     def test_receives_empty_table(self):
-        empty_table = biom.Table(np.array([]), [], [])
-        with self.assertRaisesRegex(ValueError, "empty"):
-            faith_pd(table=empty_table, phylogeny=self.input_tree)
+        # empty table generated from self.empty_table with biom v2.1.7
+        empty_table = self.get_data_path('empty_table.biom')
+        with self.assertRaisesRegex(ValueError, 'empty'):
+            faith_pd(table=empty_table, phylogeny=self.input_tree_fp)
 
     def test_method(self):
-        actual = faith_pd(table=self.input_table, phylogeny=self.input_tree)
+        actual = faith_pd(table=self.input_table_fp,
+                          phylogeny=self.input_tree_fp)
         pdt.assert_series_equal(actual, self.expected)
 
     def test_accepted_types_have_consistent_behavior(self):
-        freq_table = self.input_table
-        rel_freq_table = self.input_table.norm(axis='sample',
-                                               inplace=False)
-        p_a_table = self.input_table.pa(inplace=False)
+        freq_table = self.input_table_fp
+        rel_freq_table = self.rf_table
+        p_a_table = self.pa_table
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
-            actual = faith_pd(table=table, phylogeny=self.input_tree)
+            actual = faith_pd(table=table, phylogeny=self.input_tree_fp)
             pdt.assert_series_equal(actual, self.expected)
 
-    def test_error_rewriting(self):
-        tree = skbio.TreeNode.read(io.StringIO(
-            '((A:0.3):0.2, C:100)root;'))
-        with self.assertRaisesRegex(skbio.tree.MissingNodeError,
-                                    'feature_ids.*phylogeny'):
-            faith_pd(table=self.input_table, phylogeny=tree)
+    def test_passed_emptytree_fp(self):
+        with self.assertRaisesRegex(ValueError,
+                                    'table.*not.*completely represented'):
+            faith_pd(table=self.input_table_fp,
+                     phylogeny=self.empty_tree_fp)
 
-# TODO: Include these tests when faith_pd converted to unifrac
-    # def test_passed_emptytree_fp(self):
-    #     with self.assertRaisesRegex(ValueError, "newick"):
-    #         faith_pd(table=self.valid_table_fp,
-    #                 phylogeny=self.empty_tree_fp)
+    def test_passed_rootonlytree_fp(self):
+        with self.assertRaisesRegex(ValueError,
+                                    'table.*not.*completely represented'):
+            faith_pd(table=self.input_table_fp,
+                     phylogeny=self.root_only_tree_fp)
 
-    # def test_passed_rootonlytree_fp(self):
-    #     with self.assertRaisesRegex(ValueError,
-    #                                 "table.*not.*completely represented"):
-    #         faith_pd(table=self.valid_table_fp,
-    #                 phylogeny=self.root_only_tree_fp)
-
-    # def test_passed_tree_missing_tip_fp(self):
-    #     with self.assertRaisesRegex(ValueError,
-    #                                 "table.*not.*completely represented"):
-    #         faith_pd(table=self.valid_table_fp,
-    #                 phylogeny=self.missing_tip_tree_fp)
+    def test_passed_tree_missing_tip_fp(self):
+        with self.assertRaisesRegex(ValueError,
+                                    'table.*not.*completely represented'):
+            faith_pd(table=self.input_table_fp,
+                     phylogeny=self.missing_tip_tree_fp)
 
 
 class ObservedFeaturesTests(TestPluginBase):
-
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
@@ -130,7 +119,6 @@ class ObservedFeaturesTests(TestPluginBase):
 
 
 class PielouEvennessTests(TestPluginBase):
-
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
