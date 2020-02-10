@@ -118,12 +118,12 @@ class SafelyCountCPUSTests(TestPluginBase):
             return n_jobs
         self.function_w_n_jobs_param = function_w_param
 
-    def smoke_test_function_has_no_n_jobs_param(self):
+    def test_function_without_n_jobs_param(self):
         with self.assertRaisesRegex(TypeError, 'without \'n_jobs'):
             self.function_no_params()
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def smoke_test_function_with_an_n_jobs_param(self, mock_cpu_affinity):
+    def test_function_with_an_n_jobs_param(self, mock_cpu_affinity):
         mock_cpu_affinity = psutil.Process()
         mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(3), 3)
