@@ -10,6 +10,8 @@ from qiime2.plugin.testing import TestPluginBase
 from .._util import (_disallow_empty_tables_passed_object,
                      _safely_constrain_n_jobs,
                      _disallow_empty_tables_passed_filepath)
+from .test_beta import phylogenetic_measures, nonphylogenetic_measures
+
 import biom
 import numpy as np
 import unittest.mock as mock
@@ -55,7 +57,7 @@ class DisallowEmptyTablesPassedObjectTests(TestPluginBase):
 
     def test_passed_filepath_not_table_object(self):
         with self.assertRaisesRegex(
-                    AttributeError, "no attribute \'is_empty\'"):
+                    TypeError, "requires a biom.Table"):
             self.function_with_table_param(table=self.empty_table_fp)
 
 
@@ -102,7 +104,7 @@ class DisallowEmptyTablesPassedFilePathTests(TestPluginBase):
             self.test_function(table=self.empty_table)
 
 
-class SafelyCountCPUSTests(TestPluginBase):
+class SafelyConstrainNJobsTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
@@ -114,9 +116,13 @@ class SafelyCountCPUSTests(TestPluginBase):
         self.function_no_params = function_no_params
 
         @_safely_constrain_n_jobs
-        def function_w_param(n_jobs):
+        def function_w_param(n_jobs=3):
             return n_jobs
         self.function_w_n_jobs_param = function_w_param
+
+        self.valid_table_fp = self.get_data_path('two_feature_table.biom')
+        self.valid_tree_fp = self.get_data_path('three_feature.tree')
+        self.valid_table = biom.load_table(self.valid_table_fp)
 
     def test_function_without_n_jobs_param(self):
         with self.assertRaisesRegex(TypeError, 'without \'n_jobs'):
@@ -139,3 +145,39 @@ class SafelyCountCPUSTests(TestPluginBase):
         mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         with self.assertRaisesRegex(ValueError, "n_jobs cannot exceed"):
             self.function_w_n_jobs_param(4)
+
+    @mock.patch("q2_diversity_lib._util.psutil.Process")
+    def test_n_jobs_passed_as_kwarg(self, mock_cpu_affinity):
+        mock_cpu_affinity = psutil.Process()
+        mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
+        self.assertEqual(self.function_w_n_jobs_param(n_jobs=3), 3)
+
+    @mock.patch("q2_diversity_lib._util.psutil.Process")
+    def test_n_jobs_passed_as_default(self, mock_cpu_affinity):
+        mock_cpu_affinity = psutil.Process()
+        mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
+        self.assertEqual(self.function_w_n_jobs_param(), 3)
+
+    # This test confirms appropriate handling of dependency-specific behaviors,
+    # so is coupled to methods from those dependencies
+    def test_pass_n_jobs_edge_cases_phylogenetic(self):
+        for measure in phylogenetic_measures:
+            with self.assertRaisesRegex(ValueError, "0.*invalid arg.*n_jobs"):
+                measure(table=self.valid_table_fp,
+                        phylogeny=self.valid_tree_fp, n_jobs=0)
+            with self.assertRaisesRegex(ValueError, "pos.*integer.*n_jobs"):
+                measure(table=self.valid_table_fp,
+                        phylogeny=self.valid_tree_fp, n_jobs=-1)
+            with self.assertRaisesRegex(ValueError, "pos.*integer.*n_jobs"):
+                measure(table=self.valid_table_fp,
+                        phylogeny=self.valid_tree_fp, n_jobs=-2)
+
+    # This test confirms appropriate handling of dependency-specific behaviors,
+    # so is coupled to methods from those dependencies
+    def test_pass_n_jobs_edge_cases_nonphylogenetic(self):
+        for measure in nonphylogenetic_measures:
+            with self.assertRaisesRegex(ValueError, "0.*invalid arg.*n_jobs"):
+                measure(table=self.valid_table, n_jobs=0)
+            with self.assertRaisesRegex(ValueError,
+                                        "Invalid.*n_jobs.*avail.*requested"):
+                measure(table=self.valid_table, n_jobs=-9999999)

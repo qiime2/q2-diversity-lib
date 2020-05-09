@@ -19,7 +19,9 @@ from q2_types.tree import NewickFormat
 
 @_disallow_empty_tables_passed_filepath
 def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
-    result = f_pd(table, phylogeny)
+    table_str = str(table)
+    tree_str = str(phylogeny)
+    result = f_pd(table_str, tree_str)
     result.name = 'faith_pd'
     return result
 
