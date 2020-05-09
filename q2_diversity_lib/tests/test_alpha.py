@@ -69,6 +69,10 @@ class FaithPDTests(TestPluginBase):
             pdt.assert_series_equal(actual, self.expected)
 
     def test_passed_emptytree_fp(self):
+        # NOTE: different regular expressions are used here and in
+        # test_beta.test_phylogenetic_measures_passed_emptytree_fp() because
+        # Unifrac reports different error messages when an empty tree is passed
+        # to faith_pd than when the same is passed to the Unifrac methods.
         with self.assertRaisesRegex(ValueError,
                                     'table.*not.*completely represented'):
             faith_pd(table=self.input_table_fp,

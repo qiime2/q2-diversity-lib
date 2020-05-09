@@ -126,7 +126,10 @@ plugin.methods.register_function(
     parameter_descriptions={
         'n_jobs': 'The number of CPU threads to use in performing this '
                   'calculation.  More threads = faster performance. May not '
-                  'exceed the number of available physical cores.'},
+                  'exceed the number of available physical cores. If n-jobs = '
+                  '-1, all CPUs are used. For n-jobs < -1, (n_cpus + 1 + '
+                  'n-jobs) are used. E.g if n-jobs = -2, all CPUs but'
+                  ' one are used.'},
     output_descriptions={
         'distance_matrix': 'Distance matrix for Bray-Curtis dissimilarity'},
     name='Bray-Curtis Dissimilarity',
@@ -139,7 +142,7 @@ plugin.methods.register_function(
     citations=[citations['sorensen1948method']])
 
 # TODO: Do following methods need 'drop_undefined_samples' parameter?
-# TODO: Augment citations as needed
+# TODO: Augment citations as needed/
 plugin.methods.register_function(
     function=q2_diversity_lib.jaccard,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
@@ -152,7 +155,10 @@ plugin.methods.register_function(
     parameter_descriptions={
         'n_jobs': 'The number of CPU threads to use in performing this '
                   'calculation.  More threads = faster performance. May not '
-                  'exceed the number of available physical cores.'},
+                  'exceed the number of available physical cores. If n-jobs = '
+                  '-1, all CPUs are used. For n-jobs < -1, (n_cpus + 1 + '
+                  'n-jobs) are used. E.g. if n-jobs = -2, all CPUs but'
+                  ' one are used.'},
     output_descriptions={
         'distance_matrix': 'Distance matrix for Jaccard index'},
     name='Jaccard Distance',

@@ -16,7 +16,9 @@ import skbio
 import numpy as np
 import numpy.testing as npt
 
-nonphylogenetic_measures = [jaccard, bray_curtis]
+# from qiime2 import Artifact
+
+nonphylogenetic_measures = [bray_curtis, jaccard]
 phylogenetic_measures = [unweighted_unifrac, weighted_unifrac]
 
 
@@ -30,6 +32,7 @@ class SmokeTests(TestPluginBase):
                 '((A:0.3, B:0.50):0.2, C:100)root;'))
         self.valid_table_fp = self.get_data_path('two_feature_table.biom')
         self.valid_tree_fp = self.get_data_path('three_feature.tree')
+        self.valid_table = biom.load_table(self.valid_table_fp)
 
         # empty table generated from self.empty_table with biom v2.1.7
         self.empty_table_fp = self.get_data_path('empty_table.biom')
@@ -51,6 +54,10 @@ class SmokeTests(TestPluginBase):
                         phylogeny=self.valid_tree_fp)
 
     def test_phylogenetic_measures_passed_emptytree_fp(self):
+        # NOTE: different regular expressions are used here and in
+        # test_alpha.test_passed_emptytree_fp() because
+        # Unifrac reports different error messages when an empty tree is passed
+        # to faith_pd than when the same is passed to the Unifrac methods.
         for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError, "newick"):
                 measure(table=self.valid_table_fp,
@@ -234,9 +241,23 @@ class UnweightedUnifrac(TestPluginBase):
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
-# TODO: add tests - drop undefined values? error rewriting
+
+#     def test_does_it_run_through_framework(self):
+#         unweighted_unifrac_thru_framework = self.plugin.actions[
+#                     'unweighted_unifrac']
+#         table_as_artifact = Artifact.import_data(
+#                     'FeatureTable[Frequency]', self.table_fp)
+#         tree_as_artifact = Artifact.import_data(
+#                     'Phylogeny[Rooted]', self.tree_fp)
+#         unweighted_unifrac_thru_framework(table_as_artifact,
+#                                           tree_as_artifact)
+#         # If we get here, then it ran without error
+#         self.assertTrue(True)
+
+# TODO: add tests - drop undefined values?
 
 
+# TODO: This is testing UNWEIGHTED and should be weighted
 class WeightedUnifrac(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
@@ -279,6 +300,6 @@ class WeightedUnifrac(TestPluginBase):
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
-# TODO: add tests - drop undefined values? error rewriting
+# TODO: add tests - drop undefined values?
 
 # TODO: Add test classes - fancy unifracs

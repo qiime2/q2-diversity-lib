@@ -20,7 +20,6 @@ from ._util import (_disallow_empty_tables_passed_object,
 
 
 # --------------------Non-Phylogenetic-----------------------
-
 @_disallow_empty_tables_passed_object
 @_safely_constrain_n_jobs
 def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
@@ -72,6 +71,7 @@ def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
              variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
 
 
+# ------------------------TODO: FANCY-----------------------
 @_disallow_empty_tables_passed_filepath
 @_safely_constrain_n_jobs
 def weighted_normalized_unifrac(
