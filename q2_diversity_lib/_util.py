@@ -14,7 +14,6 @@ from biom import load_table
 from biom import Table as bTable
 
 unifrac_methods = ["unweighted_unifrac", "weighted_unifrac",
-                   "weighted_normalized_unifrac", "generalized_unifrac",
                    "faith_pd"]
 
 skbio_methods = ["bray_curtis", "jaccard"]

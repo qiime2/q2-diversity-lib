@@ -304,6 +304,5 @@ class WeightedUnifrac(TestPluginBase):
                                             self.expected[id1, id2])
 
 
-# TODO: Add test class - generalized unifrac
 # TODO: add tests - drop undefined values?
 # TODO: Add test classes - fancy unifracs

@@ -69,27 +69,3 @@ def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
     f = unifrac.weighted_unnormalized
     return f(str(table), str(phylogeny), threads=n_jobs,
              variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
-
-
-# ------------------------TODO: FANCY-----------------------
-@_disallow_empty_tables_passed_filepath
-@_safely_constrain_n_jobs
-def weighted_normalized_unifrac(
-        table: BIOMV210Format, phylogeny: NewickFormat,
-        n_jobs: int = 1, variance_adjusted: bool = False,
-        bypass_tips: bool = False) -> skbio.DistanceMatrix:
-    raise(NotImplementedError)
-    # TODO: spec return
-    return
-
-
-@_disallow_empty_tables_passed_filepath
-@_safely_constrain_n_jobs
-def generalized_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
-                        n_jobs: int = 1, alpha: float = None,
-                        variance_adjusted: bool = False,
-                        bypass_tips: bool = False) -> skbio.DistanceMatrix:
-    f = unifrac.generalized_unifrac
-    raise(NotImplementedError)
-    return f(str(table), str(phylogeny), threads=n_jobs, alpha=alpha,
-             variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
