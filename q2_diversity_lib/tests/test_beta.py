@@ -263,32 +263,31 @@ class UnweightedUnifrac(TestPluginBase):
 # TODO: add tests - drop undefined values?
 
 
-# TODO: This is testing UNWEIGHTED and should be weighted
 class WeightedUnifrac(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
         super().setUp()
-        # expected computed with skbio.diversity.beta_diversity
+        # expected computed with diversity.beta_phylogenetic (weighted_unifrac)
         self.expected = skbio.DistanceMatrix(
-                    np.array([0.71836067, 0.71317361, 0.69746044, 0.62587207,
-                              0.72826674, 0.72065895, 0.72640581, 0.73606053,
-                              0.70302967, 0.73407301, 0.6548042, 0.71547381,
-                              0.78397813, 0.72318399, 0.76138933, 0.61041275,
-                              0.62331299, 0.71848305, 0.70416337, 0.75258475,
-                              0.79249029, 0.64392779, 0.70052733, 0.69832716,
-                              0.77818938, 0.72959894, 0.75782689, 0.71005144,
-                              0.75065046, 0.78944369, 0.63593642, 0.71283615,
-                              0.58314638, 0.69200762, 0.68972056, 0.71514083]),
-                    ids=['10084.PC.481', '10084.PC.593', '10084.PC.356',
-                         '10084.PC.355', '10084.PC.354', '10084.PC.636',
-                         '10084.PC.635', '10084.PC.607', '10084.PC.634'])
+            np.array([0.44656238, 0.23771096, 0.30489123, 0.23446002,
+                      0.65723575, 0.44911772, 0.381904, 0.69144829,
+                      0.39611776, 0.36568012, 0.53377975, 0.48908025,
+                      0.35155196, 0.28318669, 0.57376916, 0.23395746,
+                      0.24658122, 0.60271637, 0.39802552, 0.36567394,
+                      0.68062701, 0.36862049, 0.48350632, 0.33024631,
+                      0.33266697, 0.53464744, 0.74605075, 0.53951035,
+                      0.49680733, 0.79178838, 0.37109012, 0.52629343,
+                      0.22118218, 0.32400805, 0.43189708, 0.59705893]),
+            ids=('10084.PC.481', '10084.PC.593', '10084.PC.356',
+                 '10084.PC.355', '10084.PC.354', '10084.PC.636',
+                 '10084.PC.635', '10084.PC.607', '10084.PC.634'))
         self.table_fp = self.get_data_path('crawford.biom')
         self.rel_freq_table_fp = self.get_data_path('crawford_rf.biom')
         self.tree_fp = self.get_data_path('crawford.nwk')
 
     def test_method(self):
-        actual = unweighted_unifrac(self.table_fp, self.tree_fp)
+        actual = weighted_unifrac(self.table_fp, self.tree_fp)
         self.assertEqual(actual.ids, self.expected.ids)
         for id1 in actual.ids:
             for id2 in actual.ids:
@@ -300,7 +299,7 @@ class WeightedUnifrac(TestPluginBase):
         rel_freq_table = self.rel_freq_table_fp
         accepted_tables = [freq_table, rel_freq_table]
         for table in accepted_tables:
-            actual = unweighted_unifrac(table=table, phylogeny=self.tree_fp)
+            actual = weighted_unifrac(table=table, phylogeny=self.tree_fp)
             self.assertEqual(actual.ids, self.expected.ids)
             for id1 in actual.ids:
                 for id2 in actual.ids:
