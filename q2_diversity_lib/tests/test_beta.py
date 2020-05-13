@@ -54,7 +54,7 @@ class SmokeTests(TestPluginBase):
                         phylogeny=self.valid_tree_fp)
 
     def test_phylogenetic_measures_passed_emptytree_fp(self):
-        # TODO: different regular expressions are used here for unweighted and
+        # HACK: different regular expressions are used here for unweighted and
         # all other unifracs, because tree/table validation is not being
         # applied to the other unifracs. Once unifrac PR #105 is merged, this
         # change will need to be reverted.
@@ -209,7 +209,6 @@ class JaccardTests(TestPluginBase):
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
-# TODO: add tests - drop undefined values?
 
 
 # ---------------------------------Phylogenetic-------------------------------
@@ -260,8 +259,6 @@ class UnweightedUnifrac(TestPluginBase):
 #         # If we get here, then it ran without error
 #         self.assertTrue(True)
 
-# TODO: add tests - drop undefined values?
-
 
 class WeightedUnifrac(TestPluginBase):
     package = 'q2_diversity_lib.tests'
@@ -305,6 +302,8 @@ class WeightedUnifrac(TestPluginBase):
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
-# TODO: add tests - drop undefined values?
 
+
+# TODO: Add test class - generalized unifrac
+# TODO: add tests - drop undefined values?
 # TODO: Add test classes - fancy unifracs
