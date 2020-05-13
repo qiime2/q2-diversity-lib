@@ -54,14 +54,20 @@ class SmokeTests(TestPluginBase):
                         phylogeny=self.valid_tree_fp)
 
     def test_phylogenetic_measures_passed_emptytree_fp(self):
-        # NOTE: different regular expressions are used here and in
-        # test_alpha.test_passed_emptytree_fp() because
-        # Unifrac reports different error messages when an empty tree is passed
-        # to faith_pd than when the same is passed to the Unifrac methods.
+        # TODO: different regular expressions are used here for unweighted and
+        # all other unifracs, because tree/table validation is not being
+        # applied to the other unifracs. Once unifrac PR #105 is merged, this
+        # change will need to be reverted.
         for measure in phylogenetic_measures:
-            with self.assertRaisesRegex(ValueError, "newick"):
-                measure(table=self.valid_table_fp,
-                        phylogeny=self.empty_tree_fp)
+            if (measure.__name__ == 'unweighted_unifrac'):
+                with self.assertRaisesRegex(ValueError, "newick"):
+                    measure(table=self.valid_table_fp,
+                            phylogeny=self.empty_tree_fp)
+            else:
+                with self.assertRaisesRegex(
+                        ValueError, 'table.*not.*completely represented'):
+                    measure(table=self.valid_table_fp,
+                            phylogeny=self.empty_tree_fp)
 
     def test_phylogenetic_measures_passed_rootonlytree_fp(self):
         for measure in phylogenetic_measures:
