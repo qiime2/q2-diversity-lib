@@ -53,19 +53,21 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
 # ------------------------Phylogenetic-----------------------
 @_disallow_empty_tables_passed_filepath
 @_safely_constrain_n_jobs
-def unweighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
-                       n_jobs: int = 1, variance_adjusted: bool = False,
+def unweighted_unifrac(table: BIOMV210Format,
+                       phylogeny: NewickFormat,
+                       n_jobs: int = 1,
                        bypass_tips: bool = False) -> skbio.DistanceMatrix:
     f = unifrac.unweighted
     return f(str(table), str(phylogeny), threads=n_jobs,
-             variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
+             variance_adjusted=False, bypass_tips=bypass_tips)
 
 
 @_disallow_empty_tables_passed_filepath
 @_safely_constrain_n_jobs
-def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
-                     n_jobs: int = 1, variance_adjusted: bool = False,
+def weighted_unifrac(table: BIOMV210Format,
+                     phylogeny: NewickFormat,
+                     n_jobs: int = 1,
                      bypass_tips: bool = False) -> skbio.DistanceMatrix:
     f = unifrac.weighted_unnormalized
     return f(str(table), str(phylogeny), threads=n_jobs,
-             variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
+             variance_adjusted=False, bypass_tips=bypass_tips)

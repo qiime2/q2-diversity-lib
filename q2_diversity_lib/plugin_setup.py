@@ -113,7 +113,6 @@ plugin.methods.register_function(
 )
 
 # ------------------------ beta-diversity -----------------------
-# TODO: Do following methods need 'drop_undefined_samples' parameter?
 # TODO: Augment citations as needed
 plugin.methods.register_function(
     function=q2_diversity_lib.bray_curtis,
@@ -141,7 +140,6 @@ plugin.methods.register_function(
                 'adjusted (normalized).',
     citations=[citations['sorensen1948method']])
 
-# TODO: Do following methods need 'drop_undefined_samples' parameter?
 # TODO: Augment citations as needed/
 plugin.methods.register_function(
     function=q2_diversity_lib.jaccard,
@@ -170,15 +168,12 @@ plugin.methods.register_function(
     citations=[citations['jaccard1908nouvelles']])
 
 
-# TODO: Do following methods need 'drop_undefined_samples' parameter?
-# TODO: Cut/edit parameter_descriptions
 plugin.methods.register_function(
     function=q2_diversity_lib.unweighted_unifrac,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'n_jobs': Int,
-                'variance_adjusted': Bool,
                 'bypass_tips': Bool},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
@@ -193,12 +188,6 @@ plugin.methods.register_function(
         'n_jobs': 'The number of CPU threads to use in performing this '
                   'calculation.  More threads = faster performance. May not '
                   'exceed the number of available physical cores.',
-        'variance_adjusted':
-            ('Perform variance adjustment based on Chang et '
-             'al. BMC Bioinformatics 2011. Weights distances '
-             'based on the proportion of the relative '
-             'abundance represented between the samples at a'
-             ' given node under evaluation.'),
         'bypass_tips':
             ('In a bifurcating tree, the tips make up about 50% of '
              'the nodes in a tree. By ignoring them, specificity '
@@ -218,13 +207,11 @@ plugin.methods.register_function(
         citations['mcdonald2018unifrac']]
 )
 
-# TODO: Do following methods need 'drop_undefined_samples' parameter?
 plugin.methods.register_function(
     function=q2_diversity_lib.weighted_unifrac,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'n_jobs': Int,
-                'variance_adjusted': Bool,
                 'bypass_tips': Bool},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
@@ -239,12 +226,6 @@ plugin.methods.register_function(
         'n_jobs': 'The number of CPU threads to use in performing this '
                   'calculation.  More threads = faster performance. May not '
                   'exceed the number of available physical cores.',
-        'variance_adjusted':
-            ('Perform variance adjustment based on Chang et '
-             'al. BMC Bioinformatics 2011. Weights distances '
-             'based on the proportion of the relative '
-             'abundance represented between the samples at a'
-             ' given node under evaluation.'),
         'bypass_tips':
             ('In a bifurcating tree, the tips make up about 50% of '
              'the nodes in a tree. By ignoring them, specificity '
