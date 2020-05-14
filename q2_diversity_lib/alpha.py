@@ -6,15 +6,16 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import biom
 import pandas as pd
 import skbio.diversity
+import biom
 from unifrac import faith_pd as f_pd
+
+from q2_types.feature_table import BIOMV210Format
+from q2_types.tree import NewickFormat
 from ._util import (_drop_undefined_samples,
                     _disallow_empty_tables_passed_object,
                     _disallow_empty_tables_passed_filepath)
-from q2_types.feature_table import BIOMV210Format
-from q2_types.tree import NewickFormat
 
 
 @_disallow_empty_tables_passed_filepath

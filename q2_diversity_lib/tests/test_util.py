@@ -6,16 +6,17 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import unittest.mock as mock
+
+import numpy as np
+import biom
+import psutil
+
 from qiime2.plugin.testing import TestPluginBase
 from .._util import (_disallow_empty_tables_passed_object,
                      _safely_constrain_n_jobs,
                      _disallow_empty_tables_passed_filepath)
 from .test_beta import phylogenetic_measures, nonphylogenetic_measures
-
-import biom
-import numpy as np
-import unittest.mock as mock
-import psutil
 
 
 class DisallowEmptyTablesPassedObjectTests(TestPluginBase):
