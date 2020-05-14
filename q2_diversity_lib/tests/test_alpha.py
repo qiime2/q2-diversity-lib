@@ -6,14 +6,14 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from qiime2.plugin.testing import TestPluginBase
-from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
-                              shannon_entropy)
-
-import biom
 import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
+import biom
+
+from qiime2.plugin.testing import TestPluginBase
+from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
+                              shannon_entropy)
 
 nonphylogenetic_measures = [observed_features, pielou_evenness,
                             shannon_entropy]

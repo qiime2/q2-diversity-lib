@@ -6,17 +6,21 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import numpy as np
+# TODO: remove
 from functools import wraps
 from inspect import signature
-import psutil
-from biom import load_table
-from biom import Table as bTable
 
-unifrac_methods = ["unweighted_unifrac", "weighted_unifrac",
-                   "faith_pd"]
+import numpy as np
+from decorator import decorator
+import psutil
+from biom import Table as bTable
+from biom import load_table
+
+from q2_types.feature_table import BIOMV210Format
 
 skbio_methods = ["bray_curtis", "jaccard"]
+unifrac_methods = ["unweighted_unifrac", "weighted_unifrac",
+                   "faith_pd"]
 
 
 def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,

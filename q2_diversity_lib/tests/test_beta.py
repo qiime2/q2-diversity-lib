@@ -6,15 +6,16 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import io
+
+import numpy as np
+import numpy.testing as npt
+import biom
+import skbio
+
 from qiime2.plugin.testing import TestPluginBase
 from q2_diversity_lib import (
         bray_curtis, jaccard, unweighted_unifrac, weighted_unifrac)
-
-import io
-import biom
-import skbio
-import numpy as np
-import numpy.testing as npt
 
 # from qiime2 import Artifact
 
