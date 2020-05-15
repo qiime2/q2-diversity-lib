@@ -9,6 +9,7 @@
 # TODO: remove
 from functools import wraps
 from inspect import signature
+import os
 
 import numpy as np
 from decorator import decorator
@@ -34,41 +35,33 @@ def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
     return (filtered_counts, filtered_sample_ids)
 
 
-def _disallow_empty_tables_passed_object(some_function):
-    @wraps(some_function)
-    def wrapper(*args, **kwargs):
-        try:
-            bound_signature = signature(some_function).bind(*args, **kwargs)
-            table = bound_signature.arguments['table']
-        except KeyError as ex:
-            raise TypeError("The wrapped function has no parameter "
-                            + str(ex) + ".")
-        if type(table) != bTable:
-            raise TypeError("This method requires a biom.Table object "
-                            "and received a String")
-        if table.is_empty():
-            raise ValueError("The provided table object is empty")
-        return some_function(*args, **kwargs)
-    return wrapper
+@decorator
+def _disallow_empty_tables(some_function, *args, **kwargs):
+    bound_signature = signature(some_function).bind(*args, **kwargs)
+    table = bound_signature.arguments.get('table')
+    if table is None:
+        raise TypeError("The wrapped function has no parameter 'table'")
 
+# TODO: is it possible for a string to make it this far, or does it get caught
+# by the framework's type-checking?
+# TODO: if table is an instance of BIOM, is it possible for it to have an
+# invalid filepath?
+    if isinstance(table, str) or isinstance(table, BIOMV210Format):
+        table = str(table)
+        if not os.path.exists(table):
+            raise ValueError(f'Invalid file path: {table} does not exist')
+        table_obj = load_table(table)
+    elif isinstance(table, bTable):
+        table_obj = table
+    else:
+        raise ValueError("Invalid view type: This action requires a "
+                         "BIOMV210Format, biom.Table object, or a file "
+                         "path str.")
 
-# TODO: Passing filepaths appears to be blowing up biom - load call on l52
-# This may be happening because the framework is actually passing an object to
-# this guy instead of a file path
-def _disallow_empty_tables_passed_filepath(some_function):
-    @wraps(some_function)
-    def wrapper(*args, **kwargs):
-        try:
-            bound_signature = signature(some_function).bind(*args, **kwargs)
-            table = bound_signature.arguments['table']
-        except KeyError as ex:
-            raise TypeError("The wrapped function has no parameter "
-                            + str(ex) + ".")
-        biom_table = load_table(table)
-        if biom_table.is_empty():
-            raise ValueError("The provided table object is empty")
-        return some_function(*args, **kwargs)
-    return wrapper
+    if table_obj.is_empty():
+        raise ValueError('The provided table is empty')
+
+    return some_function(*args, **kwargs)
 
 
 def _safely_constrain_n_jobs(some_function):
