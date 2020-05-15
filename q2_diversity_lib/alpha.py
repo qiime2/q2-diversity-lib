@@ -14,11 +14,10 @@ from unifrac import faith_pd as f_pd
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from ._util import (_drop_undefined_samples,
-                    _disallow_empty_tables_passed_object,
-                    _disallow_empty_tables_passed_filepath)
+                    _disallow_empty_tables)
 
 
-@_disallow_empty_tables_passed_filepath
+@_disallow_empty_tables
 def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
     table_str = str(table)
     tree_str = str(phylogeny)
@@ -27,7 +26,7 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
     return result
 
 
-@_disallow_empty_tables_passed_object
+@_disallow_empty_tables
 def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa()
     counts = presence_absence_table.matrix_data.toarray().astype(int).T
@@ -38,7 +37,7 @@ def observed_features(table: biom.Table) -> pd.Series:
     return result
 
 
-@_disallow_empty_tables_passed_object
+@_disallow_empty_tables
 def pielou_evenness(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
     counts = table.matrix_data.toarray().T
@@ -53,7 +52,7 @@ def pielou_evenness(table: biom.Table,
     return result
 
 
-@_disallow_empty_tables_passed_object
+@_disallow_empty_tables
 def shannon_entropy(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
     counts = table.matrix_data.toarray().T

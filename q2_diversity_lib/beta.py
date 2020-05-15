@@ -14,13 +14,12 @@ import unifrac
 
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from ._util import (_disallow_empty_tables_passed_object,
-                    _safely_constrain_n_jobs,
-                    _disallow_empty_tables_passed_filepath)
+from ._util import (_disallow_empty_tables,
+                    _safely_constrain_n_jobs)
 
 
 # --------------------Non-Phylogenetic-----------------------
-@_disallow_empty_tables_passed_object
+@_disallow_empty_tables
 @_safely_constrain_n_jobs
 def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     counts = table.matrix_data.toarray().T
@@ -35,7 +34,7 @@ def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     )
 
 
-@_disallow_empty_tables_passed_object
+@_disallow_empty_tables
 @_safely_constrain_n_jobs
 def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     counts = table.matrix_data.toarray().T
@@ -51,23 +50,45 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
 
 
 # ------------------------Phylogenetic-----------------------
-@_disallow_empty_tables_passed_filepath
+@_disallow_empty_tables
 @_safely_constrain_n_jobs
 def unweighted_unifrac(table: BIOMV210Format,
                        phylogeny: NewickFormat,
                        n_jobs: int = 1,
                        bypass_tips: bool = False) -> skbio.DistanceMatrix:
     f = unifrac.unweighted
-    return f(str(table), str(phylogeny), threads=n_jobs,
+
+    # TODO: is there ever a scenario in which an str will actually reach
+    # this function? If not, torch this logic, and remove str handling from
+    # _disallow_empty_tables
+    if type(table) == str:
+        table_fp = table
+    elif type(table) == BIOMV210Format:
+        table_fp = table.open().filename
+    else:
+        raise TypeError("Invalid table: must be BIOMV210Format or str.")
+
+    return f(table_fp, str(phylogeny), threads=n_jobs,
              variance_adjusted=False, bypass_tips=bypass_tips)
 
 
-@_disallow_empty_tables_passed_filepath
+@_disallow_empty_tables
 @_safely_constrain_n_jobs
 def weighted_unifrac(table: BIOMV210Format,
                      phylogeny: NewickFormat,
                      n_jobs: int = 1,
                      bypass_tips: bool = False) -> skbio.DistanceMatrix:
     f = unifrac.weighted_unnormalized
-    return f(str(table), str(phylogeny), threads=n_jobs,
+
+    # TODO: is there ever a scenario in which an str will actually reach
+    # this function? If not, torch this logic, and remove str handling from
+    # _disallow_empty_tables, and revert return from table_fp to table.open...
+    if type(table) == str:
+        table_fp = table
+    elif type(table) == BIOMV210Format:
+        table_fp = table.open().filename
+    else:
+        raise TypeError("Invalid table: must be BIOMV210Format or str.")
+
+    return f(table_fp, str(phylogeny), threads=n_jobs,
              variance_adjusted=False, bypass_tips=bypass_tips)

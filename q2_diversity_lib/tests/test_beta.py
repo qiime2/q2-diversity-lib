@@ -14,6 +14,7 @@ import biom
 import skbio
 
 from qiime2.plugin.testing import TestPluginBase
+from q2_types.feature_table import BIOMV210Format
 from q2_diversity_lib import (
         bray_curtis, jaccard, unweighted_unifrac, weighted_unifrac)
 
@@ -28,30 +29,34 @@ class SmokeTests(TestPluginBase):
 
     def setUp(self):
         super().setUp()
-        self.empty_table = biom.Table(np.array([]), [], [])
-        self.input_tree = skbio.TreeNode.read(io.StringIO(
-                '((A:0.3, B:0.50):0.2, C:100)root;'))
         self.valid_table_fp = self.get_data_path('two_feature_table.biom')
-        self.valid_tree_fp = self.get_data_path('three_feature.tree')
         self.valid_table = biom.load_table(self.valid_table_fp)
-
-        # empty table generated from self.empty_table with biom v2.1.7
+        self.valid_table_as_BIOMV210Format = \
+            BIOMV210Format(self.valid_table_fp, mode='r')
+        # empty table fp generated from self.empty_table with biom v2.1.7
+        self.empty_table = biom.Table(np.array([]), [], [])
         self.empty_table_fp = self.get_data_path('empty_table.biom')
+        self.empty_table_as_BIOMV210Format = \
+            BIOMV210Format(self.empty_table_fp, mode='r')
+
         self.empty_tree_fp = self.get_data_path('empty.tree')
         self.root_only_tree_fp = self.get_data_path('root_only.tree')
         self.missing_tip_tree_fp = self.get_data_path('missing_tip.tree')
         self.two_feature_tree_fp = self.get_data_path('two_feature.tree')
         self.extra_tip_tree_fp = self.get_data_path('extra_tip.tree')
+        self.input_tree = skbio.TreeNode.read(io.StringIO(
+                '((A:0.3, B:0.50):0.2, C:100)root;'))
+        self.valid_tree_fp = self.get_data_path('three_feature.tree')
 
     def test_nonphylogenetic_measures_passed_empty_table(self):
         for measure in nonphylogenetic_measures:
             with self.assertRaisesRegex(ValueError, "empty"):
                 measure(table=self.empty_table)
 
-    def test_phylogenetic_measures_passed_emptytable_fp(self):
+    def test_phylogenetic_measures_passed_empty_table(self):
         for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError, "empty"):
-                measure(table=self.empty_table_fp,
+                measure(table=self.empty_table_as_BIOMV210Format,
                         phylogeny=self.valid_tree_fp)
 
     def test_phylogenetic_measures_passed_emptytree_fp(self):
@@ -62,40 +67,35 @@ class SmokeTests(TestPluginBase):
         for measure in phylogenetic_measures:
             if (measure.__name__ == 'unweighted_unifrac'):
                 with self.assertRaisesRegex(ValueError, "newick"):
-                    measure(table=self.valid_table_fp,
+                    measure(table=self.valid_table_as_BIOMV210Format,
                             phylogeny=self.empty_tree_fp)
             else:
                 with self.assertRaisesRegex(
                         ValueError, 'table.*not.*completely represented'):
-                    measure(table=self.valid_table_fp,
+                    measure(table=self.valid_table_as_BIOMV210Format,
                             phylogeny=self.empty_tree_fp)
 
     def test_phylogenetic_measures_passed_rootonlytree_fp(self):
         for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError,
                                         "table.*not.*completely represented"):
-                measure(table=self.valid_table_fp,
+                measure(table=self.valid_table_as_BIOMV210Format,
                         phylogeny=self.root_only_tree_fp)
 
     def test_phylogenetic_measures_passed_tree_missing_tip_fp(self):
         for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError,
                                         "table.*not.*completely represented"):
-                measure(table=self.valid_table_fp,
+                measure(table=self.valid_table_as_BIOMV210Format,
                         phylogeny=self.missing_tip_tree_fp)
 
     def test_phylogenetic_measure_passed_tree_w_extra_tip_fp(self):
         for measure in phylogenetic_measures:
-            matched_tree_output = measure(self.valid_table_fp,
+            matched_tree_output = measure(self.valid_table_as_BIOMV210Format,
                                           self.two_feature_tree_fp)
-            extra_tip_tree_output = measure(self.valid_table_fp,
+            extra_tip_tree_output = measure(self.valid_table_as_BIOMV210Format,
                                             self.valid_tree_fp)
             self.assertEqual(matched_tree_output, extra_tip_tree_output)
-
-    def test_phylogenetic_measures_passed_object_not_string(self):
-        for measure in phylogenetic_measures:
-            with self.assertRaisesRegex(TypeError, "path should be string"):
-                measure(table=self.empty_table, phylogeny=self.valid_tree_fp)
 
 
 # ----------------------------Non-Phylogenetic---------------------------------
@@ -224,10 +224,17 @@ class UnweightedUnifrac(TestPluginBase):
                                              [0.25, 0.00, 0.00]],
                                              ids=['S1', 'S2', 'S3'])
         self.table_fp = self.get_data_path('two_feature_table.biom')
+        self.table_as_BIOMV210Format = BIOMV210Format(self.table_fp, mode='r')
+        self.rf_table_fp = self.get_data_path('two_feature_rf_table.biom')
+        self.rf_table_as_BIOMV210Format = BIOMV210Format(self.rf_table_fp,
+                                                         mode='r')
+        self.p_a_table_fp = self.get_data_path('two_feature_p_a_table.biom')
+        self.p_a_table_as_BIOMV210Format = BIOMV210Format(self.p_a_table_fp,
+                                                          mode='r')
         self.tree_fp = self.get_data_path('three_feature.tree')
 
     def test_method(self):
-        actual = unweighted_unifrac(self.table_fp, self.tree_fp)
+        actual = unweighted_unifrac(self.table_as_BIOMV210Format, self.tree_fp)
         self.assertEqual(actual.ids, self.expected.ids)
         for id1 in actual.ids:
             for id2 in actual.ids:
@@ -235,10 +242,9 @@ class UnweightedUnifrac(TestPluginBase):
                                         self.expected[id1, id2])
 
     def test_accepted_types_have_consistent_behavior(self):
-        freq_table = self.table_fp
-        rel_freq_table = self.get_data_path(
-                    'two_feature_rf_table.biom')
-        p_a_table = self.get_data_path('two_feature_p_a_table.biom')
+        freq_table = self.table_as_BIOMV210Format
+        rel_freq_table = self.rf_table_as_BIOMV210Format
+        p_a_table = self.p_a_table_as_BIOMV210Format
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
             actual = unweighted_unifrac(table=table, phylogeny=self.tree_fp)
@@ -281,11 +287,14 @@ class WeightedUnifrac(TestPluginBase):
                  '10084.PC.355', '10084.PC.354', '10084.PC.636',
                  '10084.PC.635', '10084.PC.607', '10084.PC.634'))
         self.table_fp = self.get_data_path('crawford.biom')
+        self.table_as_BIOMV210Format = BIOMV210Format(self.table_fp, mode='r')
         self.rel_freq_table_fp = self.get_data_path('crawford_rf.biom')
+        self.rf_table_as_BIOMV210Format = \
+            BIOMV210Format(self.rel_freq_table_fp, mode='r')
         self.tree_fp = self.get_data_path('crawford.nwk')
 
     def test_method(self):
-        actual = weighted_unifrac(self.table_fp, self.tree_fp)
+        actual = weighted_unifrac(self.table_as_BIOMV210Format, self.tree_fp)
         self.assertEqual(actual.ids, self.expected.ids)
         for id1 in actual.ids:
             for id2 in actual.ids:
@@ -293,8 +302,8 @@ class WeightedUnifrac(TestPluginBase):
                                         self.expected[id1, id2])
 
     def test_accepted_types_have_consistent_behavior(self):
-        freq_table = self.table_fp
-        rel_freq_table = self.rel_freq_table_fp
+        freq_table = self.table_as_BIOMV210Format
+        rel_freq_table = self.rf_table_as_BIOMV210Format
         accepted_tables = [freq_table, rel_freq_table]
         for table in accepted_tables:
             actual = weighted_unifrac(table=table, phylogeny=self.tree_fp)

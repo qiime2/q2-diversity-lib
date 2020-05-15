@@ -13,13 +13,12 @@ import biom
 import psutil
 
 from qiime2.plugin.testing import TestPluginBase
-from .._util import (_disallow_empty_tables_passed_object,
-                     _safely_constrain_n_jobs,
-                     _disallow_empty_tables_passed_filepath)
+from .._util import (_disallow_empty_tables,
+                     _safely_constrain_n_jobs)
 from .test_beta import phylogenetic_measures, nonphylogenetic_measures
 
 
-class DisallowEmptyTablesPassedObjectTests(TestPluginBase):
+class DisallowEmptyTablesTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
@@ -27,13 +26,16 @@ class DisallowEmptyTablesPassedObjectTests(TestPluginBase):
         self.empty_table = biom.Table(np.array([]), [], [])
         # empty table generated from self.empty_table with biom v2.1.7
         self.empty_table_fp = self.get_data_path('empty_table.biom')
+        self.valid_table_fp = self.get_data_path('crawford.biom')
+        self.invalid_table_fp = 'invalid_path_name.baaad'
+        self.invalid_view_type = 9999999
 
-        @_disallow_empty_tables_passed_object
+        @_disallow_empty_tables
         def f1(table: biom.Table):
             pass
         self.function_with_table_param = f1
 
-        @_disallow_empty_tables_passed_object
+        @_disallow_empty_tables
         def f2():
             pass
         self.function_without_table_param = f2
@@ -48,61 +50,22 @@ class DisallowEmptyTablesPassedObjectTests(TestPluginBase):
 
     def test_decorated_lambda_with_table_param(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            decorated_lambda = _disallow_empty_tables_passed_object(
-                        lambda table: None)
+            decorated_lambda = _disallow_empty_tables(lambda table: None)
             decorated_lambda(self.empty_table)
 
     def test_wrapped_function_has_no_table_param(self):
         with self.assertRaisesRegex(TypeError, "no parameter.*table"):
             self.function_without_table_param()
 
-    def test_passed_filepath_not_table_object(self):
+    def test_passed_invalid_file_path(self):
         with self.assertRaisesRegex(
-                    TypeError, "requires a biom.Table"):
-            self.function_with_table_param(table=self.empty_table_fp)
+                    ValueError, "file path.*invalid_path_name.baaad"):
+            self.function_with_table_param(table=self.invalid_table_fp)
 
-
-class DisallowEmptyTablesPassedFilePathTests(TestPluginBase):
-    package = 'q2_diversity_lib.tests'
-
-    def setUp(self):
-        super().setUp()
-        self.empty_table = biom.Table(np.array([]), [], [])
-        # empty table generated from self.empty_table with biom v2.1.7
-        self.empty_table_fp = self.get_data_path('empty_table.biom')
-
-        @_disallow_empty_tables_passed_filepath
-        def f1(table: biom.Table):
-            pass
-        self.function_with_table_param = f1
-        self.test_function = f1
-
-        @_disallow_empty_tables_passed_filepath
-        def f2():
-            pass
-        self.function_without_table_param = f2
-
-    def test_pass_empty_table_positionally(self):
-        with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            self.function_with_table_param(self.empty_table_fp)
-
-    def test_pass_empty_table_as_kwarg(self):
-        with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            self.function_with_table_param(table=self.empty_table_fp)
-
-    def test_decorated_lambda_with_table_param(self):
-        with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            decorated_lambda = _disallow_empty_tables_passed_filepath(
-                        lambda table: None)
-            decorated_lambda(self.empty_table_fp)
-
-    def test_wrapped_function_has_no_table_param(self):
-        with self.assertRaisesRegex(TypeError, "no parameter.*table"):
-            self.function_without_table_param()
-
-    def test_passed_object_not_filepath(self):
-        with self.assertRaisesRegex(TypeError, "path should be string"):
-            self.test_function(table=self.empty_table)
+    def test_passed_invalid_view_type(self):
+        with self.assertRaisesRegex(
+                    ValueError, "Invalid view type"):
+            self.function_with_table_param(table=self.invalid_view_type)
 
 
 class SafelyConstrainNJobsTests(TestPluginBase):
