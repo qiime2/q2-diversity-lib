@@ -18,7 +18,7 @@ from q2_types.feature_table import BIOMV210Format
 from q2_diversity_lib import (
         bray_curtis, jaccard, unweighted_unifrac, weighted_unifrac)
 
-# from qiime2 import Artifact
+from qiime2 import Artifact
 
 nonphylogenetic_measures = [bray_curtis, jaccard]
 phylogenetic_measures = [unweighted_unifrac, weighted_unifrac]
@@ -254,17 +254,17 @@ class UnweightedUnifrac(TestPluginBase):
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
 
-#     def test_does_it_run_through_framework(self):
-#         unweighted_unifrac_thru_framework = self.plugin.actions[
-#                     'unweighted_unifrac']
-#         table_as_artifact = Artifact.import_data(
-#                     'FeatureTable[Frequency]', self.table_fp)
-#         tree_as_artifact = Artifact.import_data(
-#                     'Phylogeny[Rooted]', self.tree_fp)
-#         unweighted_unifrac_thru_framework(table_as_artifact,
-#                                           tree_as_artifact)
-#         # If we get here, then it ran without error
-#         self.assertTrue(True)
+    def test_does_it_run_through_framework(self):
+        unweighted_unifrac_thru_framework = self.plugin.actions[
+                    'unweighted_unifrac']
+        table_as_artifact = Artifact.import_data(
+                    'FeatureTable[Frequency]', self.table_fp)
+        tree_as_artifact = Artifact.import_data(
+                    'Phylogeny[Rooted]', self.tree_fp)
+        unweighted_unifrac_thru_framework(table_as_artifact,
+                                          tree_as_artifact)
+        # If we get here, then it ran without error
+        self.assertTrue(True)
 
 
 class WeightedUnifrac(TestPluginBase):
