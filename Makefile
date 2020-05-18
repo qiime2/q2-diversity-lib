@@ -11,7 +11,7 @@ test: all
 	py.test
 
 test-cov: all
-	py.test --cov=q2_diversity_lib
+	py.test --cov-report=term-missing --cov=q2_diversity_lib
 
 install:
 	$(PYTHON) setup.py install
