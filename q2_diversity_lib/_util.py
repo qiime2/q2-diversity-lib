@@ -6,8 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-# TODO: remove
-from functools import wraps
 from inspect import signature
 import os
 
@@ -42,8 +40,7 @@ def _disallow_empty_tables(some_function, *args, **kwargs):
     if table is None:
         raise TypeError("The wrapped function has no parameter 'table'")
 
-# TODO: is it possible for a string to make it this far, or does it get caught
-# by the framework's type-checking?
+# TODO: It is not possible for a string passed to the framework to make it here
 # TODO: if table is an instance of BIOM, is it possible for it to have an
 # invalid filepath?
     if isinstance(table, str) or isinstance(table, BIOMV210Format):
@@ -54,9 +51,8 @@ def _disallow_empty_tables(some_function, *args, **kwargs):
     elif isinstance(table, bTable):
         table_obj = table
     else:
-        raise ValueError("Invalid view type: This action requires a "
-                         "BIOMV210Format, biom.Table object, or a file "
-                         "path str.")
+        raise ValueError("Invalid view type: table passed as "
+                         f"{type(table)}")
 
     if table_obj.is_empty():
         raise ValueError('The provided table is empty')
