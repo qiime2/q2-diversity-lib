@@ -13,6 +13,7 @@ import biom
 import psutil
 
 from qiime2.plugin.testing import TestPluginBase
+from q2_types.tree import NewickFormat
 from .._util import (_disallow_empty_tables,
                      _safely_constrain_n_jobs)
 from .test_beta import phylogenetic_measures, nonphylogenetic_measures
@@ -28,7 +29,8 @@ class DisallowEmptyTablesTests(TestPluginBase):
         self.empty_table_fp = self.get_data_path('empty_table.biom')
         self.valid_table_fp = self.get_data_path('crawford.biom')
         self.invalid_table_fp = 'invalid_path_name.baaad'
-        self.invalid_view_type = 9999999
+        self.not_a_table_fp = self.get_data_path('crawford.nwk')
+        self.invalid_view_type = NewickFormat(self.not_a_table_fp, mode='r')
 
         @_disallow_empty_tables
         def f1(table: biom.Table):
@@ -64,7 +66,7 @@ class DisallowEmptyTablesTests(TestPluginBase):
 
     def test_passed_invalid_view_type(self):
         with self.assertRaisesRegex(
-                    ValueError, "Invalid view type"):
+                    ValueError, "Invalid view type.*Newick"):
             self.function_with_table_param(table=self.invalid_view_type)
 
 
