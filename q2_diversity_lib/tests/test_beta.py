@@ -223,6 +223,7 @@ class UnweightedUnifrac(TestPluginBase):
                                              [0.25, 0.00, 0.00],
                                              [0.25, 0.00, 0.00]],
                                              ids=['S1', 'S2', 'S3'])
+
         self.table_fp = self.get_data_path('two_feature_table.biom')
         self.table_as_BIOMV210Format = BIOMV210Format(self.table_fp, mode='r')
         self.rf_table_fp = self.get_data_path('two_feature_rf_table.biom')
@@ -231,6 +232,7 @@ class UnweightedUnifrac(TestPluginBase):
         self.p_a_table_fp = self.get_data_path('two_feature_p_a_table.biom')
         self.p_a_table_as_BIOMV210Format = BIOMV210Format(self.p_a_table_fp,
                                                           mode='r')
+
         self.tree_fp = self.get_data_path('three_feature.tree')
 
     def test_method(self):
@@ -286,11 +288,13 @@ class WeightedUnifrac(TestPluginBase):
             ids=('10084.PC.481', '10084.PC.593', '10084.PC.356',
                  '10084.PC.355', '10084.PC.354', '10084.PC.636',
                  '10084.PC.635', '10084.PC.607', '10084.PC.634'))
+
         self.table_fp = self.get_data_path('crawford.biom')
         self.table_as_BIOMV210Format = BIOMV210Format(self.table_fp, mode='r')
         self.rel_freq_table_fp = self.get_data_path('crawford_rf.biom')
         self.rf_table_as_BIOMV210Format = \
             BIOMV210Format(self.rel_freq_table_fp, mode='r')
+
         self.tree_fp = self.get_data_path('crawford.nwk')
 
     def test_method(self):

@@ -39,24 +39,24 @@ class FaithPDTests(TestPluginBase):
 
     def setUp(self):
         super().setUp()
-        # TODO: re-organize tables and trees
         self.empty_table_fp = self.get_data_path('empty_table.biom')
         self.empty_table_as_BIOMV210Format = \
             BIOMV210Format(self.empty_table_fp, mode='r')
         self.input_table_fp = self.get_data_path('faith_test_table.biom')
         self.input_table_as_BIOMV210Format = \
             BIOMV210Format(self.input_table_fp, mode='r')
-        self.input_tree_fp = self.get_data_path('faith_test.tree')
-        self.input_tree_as_NewickFormat = NewickFormat(self.input_tree_fp,
-                                                       mode='r')
         self.rf_table_fp = self.get_data_path('faith_test_table_rf.biom')
         self.rf_table_as_BIOMV210Format = \
             BIOMV210Format(self.rf_table_fp, mode='r')
         self.pa_table_fp = self.get_data_path('faith_test_table_pa.biom')
         self.pa_table_as_BIOMV210Format = \
             BIOMV210Format(self.pa_table_fp, mode='r')
+
         self.empty_tree_fp = self.get_data_path('empty.tree')
         self.empty_tree_as_NewickFormat = NewickFormat(self.empty_tree_fp,
+                                                       mode='r')
+        self.input_tree_fp = self.get_data_path('faith_test.tree')
+        self.input_tree_as_NewickFormat = NewickFormat(self.input_tree_fp,
                                                        mode='r')
         self.root_only_tree_fp = self.get_data_path('root_only.tree')
         self.root_only_tree_as_NewickFormat = \
@@ -64,6 +64,7 @@ class FaithPDTests(TestPluginBase):
         self.missing_tip_tree_fp = self.get_data_path('missing_tip.tree')
         self.missing_tip_tree_as_NewickFormat = \
             NewickFormat(self.missing_tip_tree_fp, mode='r')
+
         self.expected = pd.Series({'S1': 0.5, 'S2': 0.7, 'S3': 1.0,
                                    'S4': 100.5, 'S5': 101},
                                   name='faith_pd')
