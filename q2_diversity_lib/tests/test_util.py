@@ -13,6 +13,7 @@ import biom
 import psutil
 
 from qiime2.plugin.testing import TestPluginBase
+from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from .._util import (_disallow_empty_tables,
                      _safely_constrain_n_jobs)
@@ -27,8 +28,13 @@ class DisallowEmptyTablesTests(TestPluginBase):
         self.empty_table = biom.Table(np.array([]), [], [])
         # empty table generated from self.empty_table with biom v2.1.7
         self.empty_table_fp = self.get_data_path('empty_table.biom')
+        self.empty_table_as_BIOMV210Format = \
+            BIOMV210Format(self.empty_table_fp, mode='r')
         self.valid_table_fp = self.get_data_path('crawford.biom')
-        self.invalid_table_fp = 'invalid_path_name.baaad'
+        self.valid_table_as_BIOMV210Format = \
+            BIOMV210Format(self.valid_table_fp, mode='r')
+        # TODO: remove?
+        # self.invalid_table_fp = 'invalid_path_name.baaad'
         self.not_a_table_fp = self.get_data_path('crawford.nwk')
         self.invalid_view_type = NewickFormat(self.not_a_table_fp, mode='r')
 
@@ -44,25 +50,27 @@ class DisallowEmptyTablesTests(TestPluginBase):
 
     def test_pass_empty_table_positionally(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            self.function_with_table_param(self.empty_table)
+            self.function_with_table_param(self.empty_table_as_BIOMV210Format)
 
     def test_pass_empty_table_as_kwarg(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            self.function_with_table_param(table=self.empty_table)
+            self.function_with_table_param(
+                table=self.empty_table_as_BIOMV210Format)
 
     def test_decorated_lambda_with_table_param(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
             decorated_lambda = _disallow_empty_tables(lambda table: None)
-            decorated_lambda(self.empty_table)
+            decorated_lambda(self.empty_table_as_BIOMV210Format)
 
     def test_wrapped_function_has_no_table_param(self):
         with self.assertRaisesRegex(TypeError, "no parameter.*table"):
             self.function_without_table_param()
 
-    def test_passed_invalid_file_path(self):
-        with self.assertRaisesRegex(
-                    ValueError, "file path.*invalid_path_name.baaad"):
-            self.function_with_table_param(table=self.invalid_table_fp)
+# TODO: remove?
+    # def test_passed_invalid_file_path(self):
+    #     with self.assertRaisesRegex(
+    #                 ValueError, "file path.*invalid_path_name.baaad"):
+    #         self.function_with_table_param(table=self.invalid_table_fp)
 
     def test_passed_invalid_view_type(self):
         with self.assertRaisesRegex(
@@ -86,8 +94,13 @@ class SafelyConstrainNJobsTests(TestPluginBase):
             return n_jobs
         self.function_w_n_jobs_param = function_w_param
 
+        # TODO: re-organize tables and trees
         self.valid_table_fp = self.get_data_path('two_feature_table.biom')
+        self.valid_table_as_BIOMV210Format = \
+            BIOMV210Format(self.valid_table_fp, mode='r')
         self.valid_tree_fp = self.get_data_path('three_feature.tree')
+        self.valid_tree_as_NewickFormat = \
+            NewickFormat(self.valid_tree_fp, mode='r')
         self.valid_table = biom.load_table(self.valid_table_fp)
 
     def test_function_without_n_jobs_param(self):
@@ -129,14 +142,14 @@ class SafelyConstrainNJobsTests(TestPluginBase):
     def test_pass_n_jobs_edge_cases_phylogenetic(self):
         for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError, "0.*invalid arg.*n_jobs"):
-                measure(table=self.valid_table_fp,
-                        phylogeny=self.valid_tree_fp, n_jobs=0)
+                measure(table=self.valid_table_as_BIOMV210Format,
+                        phylogeny=self.valid_tree_as_NewickFormat, n_jobs=0)
             with self.assertRaisesRegex(ValueError, "pos.*integer.*n_jobs"):
-                measure(table=self.valid_table_fp,
-                        phylogeny=self.valid_tree_fp, n_jobs=-1)
+                measure(table=self.valid_table_as_BIOMV210Format,
+                        phylogeny=self.valid_tree_as_NewickFormat, n_jobs=-1)
             with self.assertRaisesRegex(ValueError, "pos.*integer.*n_jobs"):
-                measure(table=self.valid_table_fp,
-                        phylogeny=self.valid_tree_fp, n_jobs=-2)
+                measure(table=self.valid_table_as_BIOMV210Format,
+                        phylogeny=self.valid_tree_as_NewickFormat, n_jobs=-2)
 
     # This test confirms appropriate handling of dependency-specific behaviors,
     # so is coupled to methods from those dependencies
