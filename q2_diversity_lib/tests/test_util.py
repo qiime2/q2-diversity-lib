@@ -94,14 +94,14 @@ class SafelyConstrainNJobsTests(TestPluginBase):
             return n_jobs
         self.function_w_n_jobs_param = function_w_param
 
-        # TODO: re-organize tables and trees
         self.valid_table_fp = self.get_data_path('two_feature_table.biom')
         self.valid_table_as_BIOMV210Format = \
             BIOMV210Format(self.valid_table_fp, mode='r')
+        self.valid_table = biom.load_table(self.valid_table_fp)
+
         self.valid_tree_fp = self.get_data_path('three_feature.tree')
         self.valid_tree_as_NewickFormat = \
             NewickFormat(self.valid_tree_fp, mode='r')
-        self.valid_table = biom.load_table(self.valid_table_fp)
 
     def test_function_without_n_jobs_param(self):
         with self.assertRaisesRegex(TypeError, 'without \'n_jobs'):
