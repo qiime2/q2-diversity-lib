@@ -12,6 +12,8 @@ import pandas.util.testing as pdt
 import biom
 
 from qiime2.plugin.testing import TestPluginBase
+from q2_types.feature_table import BIOMV210Format
+from q2_types.tree import NewickFormat
 from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
                               shannon_entropy)
 
@@ -37,32 +39,50 @@ class FaithPDTests(TestPluginBase):
 
     def setUp(self):
         super().setUp()
+        # TODO: re-organize tables and trees
+        self.empty_table_fp = self.get_data_path('empty_table.biom')
+        self.empty_table_as_BIOMV210Format = \
+            BIOMV210Format(self.empty_table_fp, mode='r')
         self.input_table_fp = self.get_data_path('faith_test_table.biom')
+        self.input_table_as_BIOMV210Format = \
+            BIOMV210Format(self.input_table_fp, mode='r')
         self.input_tree_fp = self.get_data_path('faith_test.tree')
-        self.rf_table = self.get_data_path('faith_test_table_rf.biom')
-        self.pa_table = self.get_data_path('faith_test_table_pa.biom')
+        self.input_tree_as_NewickFormat = NewickFormat(self.input_tree_fp,
+                                                       mode='r')
+        self.rf_table_fp = self.get_data_path('faith_test_table_rf.biom')
+        self.rf_table_as_BIOMV210Format = \
+            BIOMV210Format(self.rf_table_fp, mode='r')
+        self.pa_table_fp = self.get_data_path('faith_test_table_pa.biom')
+        self.pa_table_as_BIOMV210Format = \
+            BIOMV210Format(self.pa_table_fp, mode='r')
         self.empty_tree_fp = self.get_data_path('empty.tree')
+        self.empty_tree_as_NewickFormat = NewickFormat(self.empty_tree_fp,
+                                                       mode='r')
         self.root_only_tree_fp = self.get_data_path('root_only.tree')
+        self.root_only_tree_as_NewickFormat = \
+            NewickFormat(self.root_only_tree_fp, mode='r')
         self.missing_tip_tree_fp = self.get_data_path('missing_tip.tree')
+        self.missing_tip_tree_as_NewickFormat = \
+            NewickFormat(self.missing_tip_tree_fp, mode='r')
         self.expected = pd.Series({'S1': 0.5, 'S2': 0.7, 'S3': 1.0,
                                    'S4': 100.5, 'S5': 101},
                                   name='faith_pd')
 
     def test_receives_empty_table(self):
         # empty table generated from self.empty_table with biom v2.1.7
-        empty_table = self.get_data_path('empty_table.biom')
+        empty_table = self.empty_table_as_BIOMV210Format
         with self.assertRaisesRegex(ValueError, 'empty'):
             faith_pd(table=empty_table, phylogeny=self.input_tree_fp)
 
     def test_method(self):
-        actual = faith_pd(table=self.input_table_fp,
+        actual = faith_pd(table=self.input_table_as_BIOMV210Format,
                           phylogeny=self.input_tree_fp)
         pdt.assert_series_equal(actual, self.expected)
 
     def test_accepted_types_have_consistent_behavior(self):
-        freq_table = self.input_table_fp
-        rel_freq_table = self.rf_table
-        p_a_table = self.pa_table
+        freq_table = self.input_table_as_BIOMV210Format
+        rel_freq_table = self.rf_table_as_BIOMV210Format
+        p_a_table = self.pa_table_as_BIOMV210Format
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
             actual = faith_pd(table=table, phylogeny=self.input_tree_fp)
@@ -75,19 +95,19 @@ class FaithPDTests(TestPluginBase):
         # to faith_pd than when the same is passed to the Unifrac methods.
         with self.assertRaisesRegex(ValueError,
                                     'table.*not.*completely represented'):
-            faith_pd(table=self.input_table_fp,
+            faith_pd(table=self.input_table_as_BIOMV210Format,
                      phylogeny=self.empty_tree_fp)
 
     def test_passed_rootonlytree_fp(self):
         with self.assertRaisesRegex(ValueError,
                                     'table.*not.*completely represented'):
-            faith_pd(table=self.input_table_fp,
+            faith_pd(table=self.input_table_as_BIOMV210Format,
                      phylogeny=self.root_only_tree_fp)
 
     def test_passed_tree_missing_tip_fp(self):
         with self.assertRaisesRegex(ValueError,
                                     'table.*not.*completely represented'):
-            faith_pd(table=self.input_table_fp,
+            faith_pd(table=self.input_table_as_BIOMV210Format,
                      phylogeny=self.missing_tip_tree_fp)
 
 
