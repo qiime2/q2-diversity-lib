@@ -58,17 +58,7 @@ def unweighted_unifrac(table: BIOMV210Format,
                        bypass_tips: bool = False) -> skbio.DistanceMatrix:
     f = unifrac.unweighted
 
-    # TODO: is there ever a scenario in which an str will actually reach
-    # this function? If not, torch this logic, and remove str handling from
-    # _disallow_empty_tables
-    if type(table) == str:
-        table_fp = table
-    elif type(table) == BIOMV210Format:
-        table_fp = table.open().filename
-    else:
-        raise TypeError("Invalid table: must be BIOMV210Format or str.")
-
-    return f(table_fp, str(phylogeny), threads=n_jobs,
+    return f(str(table), str(phylogeny), threads=n_jobs,
              variance_adjusted=False, bypass_tips=bypass_tips)
 
 
@@ -80,15 +70,5 @@ def weighted_unifrac(table: BIOMV210Format,
                      bypass_tips: bool = False) -> skbio.DistanceMatrix:
     f = unifrac.weighted_unnormalized
 
-    # TODO: is there ever a scenario in which an str will actually reach
-    # this function? If not, torch this logic, and remove str handling from
-    # _disallow_empty_tables, and revert return from table_fp to table.open...
-    if type(table) == str:
-        table_fp = table
-    elif type(table) == BIOMV210Format:
-        table_fp = table.open().filename
-    else:
-        raise TypeError("Invalid table: must be BIOMV210Format or str.")
-
-    return f(table_fp, str(phylogeny), threads=n_jobs,
+    return f(str(table), str(phylogeny), threads=n_jobs,
              variance_adjusted=False, bypass_tips=bypass_tips)

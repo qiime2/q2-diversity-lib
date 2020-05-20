@@ -33,8 +33,6 @@ class DisallowEmptyTablesTests(TestPluginBase):
         self.valid_table_fp = self.get_data_path('crawford.biom')
         self.valid_table_as_BIOMV210Format = \
             BIOMV210Format(self.valid_table_fp, mode='r')
-        # TODO: remove?
-        # self.invalid_table_fp = 'invalid_path_name.baaad'
         self.not_a_table_fp = self.get_data_path('crawford.nwk')
         self.invalid_view_type = NewickFormat(self.not_a_table_fp, mode='r')
 
@@ -65,12 +63,6 @@ class DisallowEmptyTablesTests(TestPluginBase):
     def test_wrapped_function_has_no_table_param(self):
         with self.assertRaisesRegex(TypeError, "no parameter.*table"):
             self.function_without_table_param()
-
-# TODO: remove?
-    # def test_passed_invalid_file_path(self):
-    #     with self.assertRaisesRegex(
-    #                 ValueError, "file path.*invalid_path_name.baaad"):
-    #         self.function_with_table_param(table=self.invalid_table_fp)
 
     def test_passed_invalid_view_type(self):
         with self.assertRaisesRegex(
