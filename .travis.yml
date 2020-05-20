@@ -14,9 +14,12 @@ before_install:
       git clone https://github.com/MacPython/terryfy
       source terryfy/travis_tools.sh
       get_python_environment macpython 3.6.5
+      MINICONDA_BUILD_OS="MacOSX"
+    else
+      MINICONDA_BUILD_OS="Linux"
     fi
   - export MPLBACKEND='Agg'
-  - wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-$(MINICONDA_BUILD_OS)-x86_64.sh -O miniconda.sh
   - export MINICONDA_PREFIX="$HOME/miniconda"
   - bash miniconda.sh -b -p $MINICONDA_PREFIX
   - export PATH="$MINICONDA_PREFIX/bin:$PATH"
