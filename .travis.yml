@@ -11,10 +11,9 @@ osx_image: xcode9.3
 before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      if ! which python$TRAVIS_PYTHON_VERSION; then
-        brew install pyenv pipenv
-        pyenv install 3.6.10
-      fi
+      git clone https://github.com/MacPython/terryfy
+      source terryfy/travis_tools.sh
+      get_python_environment macpython 3.6.10
     fi
   - export MPLBACKEND='Agg'
   - wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
