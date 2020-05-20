@@ -7,7 +7,6 @@
 # ----------------------------------------------------------------------------
 
 from inspect import signature
-import os
 
 import numpy as np
 from decorator import decorator
@@ -40,13 +39,8 @@ def _disallow_empty_tables(some_function, *args, **kwargs):
     if table is None:
         raise TypeError("The wrapped function has no parameter 'table'")
 
-# TODO: It is not possible for a string passed to the framework to make it here
-# TODO: if table is an instance of BIOM, is it possible for it to have an
-# invalid filepath?
     if isinstance(table, BIOMV210Format):
         table = str(table)
-        # if not os.path.exists(table):
-        #     raise ValueError(f'Invalid file path: {table} does not exist')
         table_obj = load_table(table)
     elif isinstance(table, bTable):
         table_obj = table
