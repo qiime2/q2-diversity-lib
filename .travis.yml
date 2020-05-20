@@ -19,7 +19,7 @@ before_install:
       MINICONDA_BUILD_OS="Linux"
     fi
   - export MPLBACKEND='Agg'
-  - wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-$(MINICONDA_BUILD_OS)-x86_64.sh -O miniconda.sh
+  - wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-${MINICONDA_BUILD_OS}-x86_64.sh -O miniconda.sh
   - export MINICONDA_PREFIX="$HOME/miniconda"
   - bash miniconda.sh -b -p $MINICONDA_PREFIX
   - export PATH="$MINICONDA_PREFIX/bin:$PATH"
