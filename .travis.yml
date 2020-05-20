@@ -1,12 +1,12 @@
-dist: trusty
-sudo: false
 language: python
+sudo: false
 os:
   - linux
   - osx
 
-# installs catalina(10.15.4) in osx images
-osx_image: xcode11.4
+dist: trusty
+# installs MacOS 10.13 - newer versions breaking python
+osx_image: xcode9.3
 
 before_install:
   - set -x
