@@ -5,15 +5,15 @@ os:
   - osx
 
 dist: trusty
-# installs MacOS 10.13 - newer versions breaking python
-osx_image: xcode9.3
+# installs MacOS 10.15.4 catalina
+osx_image: xcode11.4
 
 before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       git clone https://github.com/MacPython/terryfy
       source terryfy/travis_tools.sh
-      get_python_environment macpython 3.6.10
+      get_python_environment macpython 3.6.5
     fi
   - export MPLBACKEND='Agg'
   - wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
