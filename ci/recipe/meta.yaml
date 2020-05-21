@@ -18,12 +18,14 @@ requirements:
     - setuptools
 
   run:
-    - pandas
-    - scikit-bio
     - biom-format >=2.1.5,<2.2.0
+    - decorator
+    - pandas
+    - psutil
     - qiime2 {{ release }}.*
     - q2-types {{ release }}.*
-    - decorator
+    - scikit-bio
+    - unifrac
 
 test:
   imports:
