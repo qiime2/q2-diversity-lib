@@ -24,7 +24,8 @@ setup(
     url="https://qiime2.org",
     license='BSD-3-Clause',
     package_data={
-        'q2_diversity_lib': ['citations.bib']
+        'q2_diversity_lib': ['citations.bib'],
+        'q2_diversity_lib.tests': ['data/*']
     },
     zip_safe=False,
 )
