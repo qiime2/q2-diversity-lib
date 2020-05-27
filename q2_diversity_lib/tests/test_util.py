@@ -105,7 +105,8 @@ class SafelyConstrainNJobsTests(TestPluginBase):
         mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(3), 3)
 
-    @mock.patch('psutil.Process.cpu_affinity', side_effect=AttributeError)
+    @mock.patch("q2_diversity_lib._util.psutil.Process.cpu_affinity",
+                side_effect=AttributeError)
     @mock.patch('psutil.cpu_count', return_value=999)
     def test_system_has_no_cpu_affinity(self, mock_cpu_count, mock_cpu_affin):
         self.assertEqual(self.function_w_n_jobs_param(999), 999)
