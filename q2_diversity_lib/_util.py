@@ -49,7 +49,7 @@ def _disallow_empty_tables(some_function, *args, **kwargs):
                          f"{type(table)}")
 
     if table_obj.is_empty():
-        raise ValueError('The provided table is empty')
+        raise ValueError("The provided table is empty")
 
     return some_function(*args, **kwargs)
 
@@ -71,9 +71,9 @@ def _safely_constrain_n_jobs(some_function, *args, **kwargs):
     except AttributeError:
         cpus = psutil.cpu_count(logical=False)
     if n_jobs > cpus:
-        raise ValueError('The value of n_jobs cannot exceed the'
-                         f' number of processors ({cpus}) available in'
-                         ' this system.')
+        raise ValueError("The value of n_jobs cannot exceed the"
+                         f" number of processors ({cpus}) available in"
+                         " this system.")
 
     # skbio and unifrac handle n_jobs args differently:
     if n_jobs == 0:

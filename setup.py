@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 import versioneer
 
 setup(
-    name='q2-diversity-lib',
+    name="q2-diversity-lib",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
@@ -22,7 +22,7 @@ setup(
         ["q2-diversity-lib=q2_diversity_lib.plugin_setup:plugin"]
     },
     url="https://qiime2.org",
-    license='BSD-3-Clause',
+    license="BSD-3-Clause",
     package_data={
         'q2_diversity_lib': ['citations.bib'],
         'q2_diversity_lib.tests': ['data/*']
