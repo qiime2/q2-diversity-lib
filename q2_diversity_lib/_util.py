@@ -56,8 +56,6 @@ def _disallow_empty_tables(some_function, *args, **kwargs):
 
 @decorator
 def _safely_constrain_n_jobs(some_function, *args, **kwargs):
-    # If `Process.cpu_affinity` unavailable on system, fall back
-    # https://psutil.readthedocs.io/en/latest/index.html#psutil.cpu_count
     bound_signature = signature(some_function).bind(*args, **kwargs)
     bound_signature.apply_defaults()
     try:
@@ -65,6 +63,9 @@ def _safely_constrain_n_jobs(some_function, *args, **kwargs):
     except KeyError:
         raise TypeError("The _safely_constrain_n_jobs decorator may not be"
                         " applied to callables without 'n_jobs' parameter")
+
+    # If `Process.cpu_affinity` unavailable on system, fall back
+    # https://psutil.readthedocs.io/en/latest/index.html#psutil.cpu_count
     try:
         cpus = len(psutil.Process().cpu_affinity())
     except AttributeError:
@@ -84,10 +85,10 @@ def _safely_constrain_n_jobs(some_function, *args, **kwargs):
 
     if some_function.__name__ in skbio_methods and (n_jobs < 0)\
             and (cpus + n_jobs + 1) < 1:
-        n_jobs_plus_one = n_jobs + 1
-        cpus_requested = (cpus + n_jobs_plus_one)
+        alloc_offset = n_jobs + 1
+        cpus_requested = (cpus + alloc_offset)
         raise ValueError(f"Invalid argument to n_jobs: {cpus} cpus "
-                         f"available, {cpus} - {-n_jobs_plus_one} = "
+                         f"available, {cpus} - {-alloc_offset} = "
                          f"{cpus_requested} requested")
 
     return some_function(*args, **kwargs)
