@@ -7,6 +7,7 @@
 # ----------------------------------------------------------------------------
 
 import unittest.mock as mock
+from unittest.mock import MagicMock
 
 import numpy as np
 import biom
@@ -105,11 +106,13 @@ class SafelyConstrainNJobsTests(TestPluginBase):
         mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(3), 3)
 
-    @mock.patch("q2_diversity_lib._util.psutil.Process.cpu_affinity",
-                side_effect=AttributeError)
+    @mock.patch("q2_diversity_lib._util.psutil.Process")
     @mock.patch('psutil.cpu_count', return_value=999)
-    def test_system_has_no_cpu_affinity(self, mock_cpu_count, mock_cpu_affin):
+    def test_system_has_no_cpu_affinity(self, mock_cpu_count, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = MagicMock(side_effect=AttributeError)
         self.assertEqual(self.function_w_n_jobs_param(999), 999)
+        assert mock_process.cpu_affinity.called
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
     def test_n_jobs_greater_than_system_cpus(self, mock_cpu_affinity):
