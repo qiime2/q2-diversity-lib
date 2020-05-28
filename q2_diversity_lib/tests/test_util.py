@@ -101,9 +101,9 @@ class SafelyConstrainNJobsTests(TestPluginBase):
             self.function_no_params()
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_function_with_an_n_jobs_param(self, mock_cpu_affinity):
-        mock_cpu_affinity = psutil.Process()
-        mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
+    def test_function_with_an_n_jobs_param(self, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(3), 3)
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
@@ -115,22 +115,22 @@ class SafelyConstrainNJobsTests(TestPluginBase):
         assert mock_process.cpu_affinity.called
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_n_jobs_greater_than_system_cpus(self, mock_cpu_affinity):
-        mock_cpu_affinity = psutil.Process()
-        mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
+    def test_n_jobs_greater_than_system_cpus(self, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         with self.assertRaisesRegex(ValueError, "n_jobs cannot exceed"):
             self.function_w_n_jobs_param(4)
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_n_jobs_passed_as_kwarg(self, mock_cpu_affinity):
-        mock_cpu_affinity = psutil.Process()
-        mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
+    def test_n_jobs_passed_as_kwarg(self, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(n_jobs=3), 3)
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_n_jobs_passed_as_default(self, mock_cpu_affinity):
-        mock_cpu_affinity = psutil.Process()
-        mock_cpu_affinity.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
+    def test_n_jobs_passed_as_default(self, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(), 3)
 
     # This test confirms appropriate handling of dependency-specific behaviors,
