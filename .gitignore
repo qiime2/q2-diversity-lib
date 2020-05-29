@@ -75,3 +75,5 @@ node_modules
 .vscode/*
 *.code-workspace
 
+# project notes
+notes/
