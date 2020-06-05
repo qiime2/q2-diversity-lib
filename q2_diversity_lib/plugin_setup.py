@@ -92,6 +92,7 @@ plugin.methods.register_function(
     citations=[citations['pielou1966measurement']]
 )
 
+# TODO: Augment citations as needed
 plugin.methods.register_function(
     function=q2_diversity_lib.shannon_entropy,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
@@ -140,7 +141,7 @@ plugin.methods.register_function(
                 "adjusted (normalized).",
     citations=[citations['sorensen1948method']])
 
-# TODO: Augment citations as needed/
+# TODO: Augment citations as needed
 plugin.methods.register_function(
     function=q2_diversity_lib.jaccard,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
