@@ -15,12 +15,12 @@ import unifrac
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from ._util import (_disallow_empty_tables,
-                    _safely_constrain_n_jobs)
+                    _validate_requested_cpus)
 
 
 # --------------------Non-Phylogenetic-----------------------
 @_disallow_empty_tables
-@_safely_constrain_n_jobs
+@_validate_requested_cpus
 def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     counts = table.matrix_data.toarray().T
     sample_ids = table.ids(axis='sample')
@@ -35,7 +35,7 @@ def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
 
 
 @_disallow_empty_tables
-@_safely_constrain_n_jobs
+@_validate_requested_cpus
 def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     counts = table.matrix_data.toarray().T
     sample_ids = table.ids(axis='sample')
@@ -51,22 +51,22 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
 
 # ------------------------Phylogenetic-----------------------
 @_disallow_empty_tables
-@_safely_constrain_n_jobs
+@_validate_requested_cpus
 def unweighted_unifrac(table: BIOMV210Format,
                        phylogeny: NewickFormat,
-                       n_jobs: int = 1,
+                       threads: int = 1,
                        bypass_tips: bool = False) -> skbio.DistanceMatrix:
-    return unifrac.unweighted(str(table), str(phylogeny), threads=n_jobs,
+    return unifrac.unweighted(str(table), str(phylogeny), threads=threads,
                               variance_adjusted=False, bypass_tips=bypass_tips)
 
 
 @_disallow_empty_tables
-@_safely_constrain_n_jobs
+@_validate_requested_cpus
 def weighted_unifrac(table: BIOMV210Format,
                      phylogeny: NewickFormat,
-                     n_jobs: int = 1,
+                     threads: int = 1,
                      bypass_tips: bool = False) -> skbio.DistanceMatrix:
     return unifrac.weighted_unnormalized(str(table), str(phylogeny),
-                                         threads=n_jobs,
+                                         threads=threads,
                                          variance_adjusted=False,
                                          bypass_tips=bypass_tips)

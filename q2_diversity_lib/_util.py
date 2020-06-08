@@ -54,14 +54,27 @@ def _disallow_empty_tables(wrapped_function, *args, **kwargs):
 
 
 @decorator
-def _safely_constrain_n_jobs(wrapped_function, *args, **kwargs):
+def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     bound_signature = signature(wrapped_function).bind(*args, **kwargs)
     bound_signature.apply_defaults()
-    try:
-        n_jobs = bound_signature.arguments['n_jobs']
-    except KeyError:
-        raise TypeError("The _safely_constrain_n_jobs decorator may not be"
-                        " applied to callables without 'n_jobs' parameter")
+
+    # Handle cpu requests coming from different parameter names
+    if all(params in bound_signature.arguments
+            for params in ['n_jobs', 'threads']):
+        raise TypeError("Duplicate parameters: The _validate_requested_cpus "
+                        "decorator may not be applied to callables with both "
+                        "'n_jobs' and 'threads' parameters. Do you really need"
+                        " both?")
+    if 'n_jobs' in bound_signature.arguments:
+        param_name = 'n_jobs'
+        cpus_requested = bound_signature.arguments[param_name]
+    elif 'threads' in bound_signature.arguments:
+        param_name = 'threads'
+        cpus_requested = bound_signature.arguments[param_name]
+    else:
+        raise TypeError("The _validate_requested_cpus decorator may not be"
+                        " applied to callables without an 'n_jobs' or "
+                        "'threads' parameter.")
 
     # If `Process.cpu_affinity` unavailable on system, fall back
     # https://psutil.readthedocs.io/en/latest/index.html#psutil.cpu_count
@@ -69,25 +82,10 @@ def _safely_constrain_n_jobs(wrapped_function, *args, **kwargs):
         cpus = len(psutil.Process().cpu_affinity())
     except AttributeError:
         cpus = psutil.cpu_count(logical=False)
-    if n_jobs > cpus:
-        raise ValueError("The value of n_jobs cannot exceed the"
-                         f" number of processors ({cpus}) available in"
-                         " this system.")
 
-    # skbio and unifrac handle n_jobs args differently:
-    if n_jobs == 0:
-        raise ValueError("0 is an invalid argument for n_jobs")
-
-    if wrapped_function.__name__ in unifrac_methods and n_jobs <= 0:
-        raise ValueError("Unifrac methods must be assigned a positive "
-                         "integer value for n_jobs")
-
-    if wrapped_function.__name__ in skbio_methods and (n_jobs < 0)\
-            and (cpus + n_jobs + 1) < 1:
-        alloc_offset = n_jobs + 1
-        cpus_requested = (cpus + alloc_offset)
-        raise ValueError(f"Invalid argument to n_jobs: {cpus} cpus "
-                         f"available, {cpus} - {-alloc_offset} = "
-                         f"{cpus_requested} requested")
+    if cpus_requested > cpus:
+        raise ValueError(f"The value passed to '{param_name}' cannot exceed "
+                         f"the number of processors ({cpus}) available to "
+                         "the system.")
 
     return wrapped_function(*args, **kwargs)

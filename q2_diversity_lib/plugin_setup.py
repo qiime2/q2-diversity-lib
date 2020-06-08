@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 import q2_diversity_lib
-from qiime2.plugin import (Plugin, Citations, Bool, Int)
+from qiime2.plugin import (Plugin, Citations, Bool, Int, Range, Choices, Str)
 
 from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
                                     PresenceAbsence)
@@ -118,18 +118,16 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2_diversity_lib.bray_curtis,
     inputs={'table': FeatureTable[Frequency]},
-    parameters={'n_jobs': Int},
+    parameters={'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
         'table': "The feature table containing the samples for which "
                  "Bray-Curtis dissimilarity should be computed."},
     parameter_descriptions={
-        'n_jobs': "The number of CPU threads to use in performing this "
-                  "calculation.  More threads = faster performance. May not "
-                  "exceed the number of available physical cores. If n-jobs = "
-                  "-1, all CPUs are used. For n-jobs < -1, (n_cpus + 1 + "
-                  "n-jobs) are used. E.g if n-jobs = -2, all CPUs but"
-                  " one are used."},
+        'n_jobs': "The number of concurrent CPU jobs to use in performing this"
+                  " calculation.  More jobs = faster performance. May not "
+                  "exceed the number of available physical cores. If n_jobs = "
+                  "'auto', all available CPUs are used."},
     output_descriptions={
         'distance_matrix': "Distance matrix for Bray-Curtis dissimilarity"},
     name="Bray-Curtis Dissimilarity",
@@ -146,18 +144,16 @@ plugin.methods.register_function(
     function=q2_diversity_lib.jaccard,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence]},
-    parameters={'n_jobs': Int},
+    parameters={'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
         'table': "The feature table containing the samples for which "
                  "Jaccard distance should be computed."},
     parameter_descriptions={
-        'n_jobs': "The number of CPU threads to use in performing this "
-                  "calculation.  More threads = faster performance. May not "
-                  "exceed the number of available physical cores. If n-jobs = "
-                  "-1, all CPUs are used. For n-jobs < -1, (n_cpus + 1 + "
-                  "n-jobs) are used. E.g. if n-jobs = -2, all CPUs but"
-                  " one are used."},
+        'n_jobs': "The number of concurrent CPU jobs to use in performing this"
+                  " calculation.  More jobs = faster performance. May not "
+                  "exceed the number of available physical cores. If n_jobs = "
+                  "'auto', all available CPUs are used."},
     output_descriptions={
         'distance_matrix': "Distance matrix for Jaccard index"},
     name="Jaccard Distance",
@@ -174,7 +170,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'n_jobs': Int,
+    parameters={'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'bypass_tips': Bool},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
@@ -186,9 +182,10 @@ plugin.methods.register_function(
                      "the table, but all feature ids in the table must be "
                      "present in this tree."},
     parameter_descriptions={
-        'n_jobs': "The number of CPU threads to use in performing this "
-                  "calculation.  More threads = faster performance. May not "
-                  "exceed the number of available physical cores.",
+        'threads': "The number of CPU threads to use in performing this "
+                   "calculation.  More threads = faster performance. May not "
+                   "exceed the number of available physical cores. If "
+                   "threads = 'auto', all available CPUs are used.",
         'bypass_tips':
             ("In a bifurcating tree, the tips make up about 50% of "
              "the nodes in a tree. By ignoring them, specificity "
@@ -212,7 +209,7 @@ plugin.methods.register_function(
     function=q2_diversity_lib.weighted_unifrac,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'n_jobs': Int,
+    parameters={'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'bypass_tips': Bool},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
@@ -224,9 +221,10 @@ plugin.methods.register_function(
                      "the table, but all feature ids in the table must be "
                      "present in this tree."},
     parameter_descriptions={
-        'n_jobs': "The number of CPU threads to use in performing this "
-                  "calculation.  More threads = faster performance. May not "
-                  "exceed the number of available physical cores.",
+        'threads': "The number of CPU threads to use in performing this "
+                   "calculation.  More threads = faster performance. May not "
+                   "exceed the number of available physical cores. If "
+                   "threads = 'auto', all available CPUs are used.",
         'bypass_tips':
             ("In a bifurcating tree, the tips make up about 50% of "
              "the nodes in a tree. By ignoring them, specificity "

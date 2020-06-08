@@ -17,7 +17,7 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from .._util import (_disallow_empty_tables,
-                     _safely_constrain_n_jobs)
+                     _validate_requested_cpus)
 from .test_beta import phylogenetic_measures, nonphylogenetic_measures
 
 
@@ -77,15 +77,25 @@ class SafelyConstrainNJobsTests(TestPluginBase):
     def setUp(self):
         super().setUp()
 
-        @_safely_constrain_n_jobs
+        @_validate_requested_cpus
         def function_no_params():
             pass
         self.function_no_params = function_no_params
 
-        @_safely_constrain_n_jobs
+        @_validate_requested_cpus
         def function_w_param(n_jobs=3):
             return n_jobs
         self.function_w_n_jobs_param = function_w_param
+
+        @_validate_requested_cpus
+        def function_w_threads(threads=2):
+            return threads
+        self.function_w_threads_param = function_w_threads
+
+        @_validate_requested_cpus
+        def function_w_duplicate_params(n_jobs=3, threads=2):
+            pass
+        self.function_w_both = function_w_duplicate_params
 
         self.valid_table_fp = self.get_data_path('two_feature_table.biom')
         self.valid_table_as_BIOMV210Format = \
@@ -97,14 +107,21 @@ class SafelyConstrainNJobsTests(TestPluginBase):
             NewickFormat(self.valid_tree_fp, mode='r')
 
     def test_function_without_n_jobs_param(self):
-        with self.assertRaisesRegex(TypeError, 'without \'n_jobs'):
+        with self.assertRaisesRegex(TypeError, 'without.*n_jobs.*threads'):
             self.function_no_params()
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_function_with_an_n_jobs_param(self, mock_process):
+    def test_function_with_appropriate_param(self, mock_process):
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(3), 3)
+
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[4, 19])
+        self.assertEqual(self.function_w_threads_param(2), 2)
+
+    def test_function_with_duplicate_cpu_allocation_params(self):
+        with self.assertRaisesRegex(TypeError, 'Duplicate parameters'):
+            self.function_w_both()
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
     @mock.patch('psutil.cpu_count', return_value=999)
@@ -118,8 +135,10 @@ class SafelyConstrainNJobsTests(TestPluginBase):
     def test_n_jobs_greater_than_system_cpus(self, mock_process):
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
-        with self.assertRaisesRegex(ValueError, "n_jobs cannot exceed"):
-            self.function_w_n_jobs_param(4)
+        with self.assertRaisesRegex(ValueError, "\'n_jobs\' cannot exceed"):
+            self.function_w_n_jobs_param(999)
+        with self.assertRaisesRegex(ValueError, "\'threads\' cannot exceed"):
+            self.function_w_threads_param(999)
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
     def test_n_jobs_passed_as_kwarg(self, mock_process):
@@ -132,27 +151,3 @@ class SafelyConstrainNJobsTests(TestPluginBase):
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(), 3)
-
-    # This test confirms appropriate handling of dependency-specific behaviors,
-    # so is coupled to methods from those dependencies
-    def test_pass_n_jobs_edge_cases_phylogenetic(self):
-        for measure in phylogenetic_measures:
-            with self.assertRaisesRegex(ValueError, "0.*invalid arg.*n_jobs"):
-                measure(table=self.valid_table_as_BIOMV210Format,
-                        phylogeny=self.valid_tree_as_NewickFormat, n_jobs=0)
-            with self.assertRaisesRegex(ValueError, "pos.*integer.*n_jobs"):
-                measure(table=self.valid_table_as_BIOMV210Format,
-                        phylogeny=self.valid_tree_as_NewickFormat, n_jobs=-1)
-            with self.assertRaisesRegex(ValueError, "pos.*integer.*n_jobs"):
-                measure(table=self.valid_table_as_BIOMV210Format,
-                        phylogeny=self.valid_tree_as_NewickFormat, n_jobs=-2)
-
-    # This test confirms appropriate handling of dependency-specific behaviors,
-    # so is coupled to methods from those dependencies
-    def test_pass_n_jobs_edge_cases_nonphylogenetic(self):
-        for measure in nonphylogenetic_measures:
-            with self.assertRaisesRegex(ValueError, "0.*invalid arg.*n_jobs"):
-                measure(table=self.valid_table, n_jobs=0)
-            with self.assertRaisesRegex(ValueError,
-                                        "Invalid.*n_jobs.*avail.*requested"):
-                measure(table=self.valid_table, n_jobs=-9999999)
