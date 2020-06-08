@@ -11,8 +11,7 @@ from inspect import signature
 import numpy as np
 from decorator import decorator
 import psutil
-from biom import Table as bTable
-from biom import load_table
+import biom
 
 from q2_types.feature_table import BIOMV210Format
 
@@ -33,16 +32,16 @@ def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
 
 
 @decorator
-def _disallow_empty_tables(some_function, *args, **kwargs):
-    bound_signature = signature(some_function).bind(*args, **kwargs)
+def _disallow_empty_tables(wrapped_function, *args, **kwargs):
+    bound_signature = signature(wrapped_function).bind(*args, **kwargs)
     table = bound_signature.arguments.get('table')
     if table is None:
         raise TypeError("The wrapped function has no parameter 'table'")
 
     if isinstance(table, BIOMV210Format):
         table = str(table)
-        table_obj = load_table(table)
-    elif isinstance(table, bTable):
+        table_obj = biom.load_table(table)
+    elif isinstance(table, biom.Table):
         table_obj = table
     else:
         raise ValueError("Invalid view type: table passed as "
@@ -51,12 +50,12 @@ def _disallow_empty_tables(some_function, *args, **kwargs):
     if table_obj.is_empty():
         raise ValueError("The provided table is empty")
 
-    return some_function(*args, **kwargs)
+    return wrapped_function(*args, **kwargs)
 
 
 @decorator
-def _safely_constrain_n_jobs(some_function, *args, **kwargs):
-    bound_signature = signature(some_function).bind(*args, **kwargs)
+def _safely_constrain_n_jobs(wrapped_function, *args, **kwargs):
+    bound_signature = signature(wrapped_function).bind(*args, **kwargs)
     bound_signature.apply_defaults()
     try:
         n_jobs = bound_signature.arguments['n_jobs']
@@ -79,11 +78,11 @@ def _safely_constrain_n_jobs(some_function, *args, **kwargs):
     if n_jobs == 0:
         raise ValueError("0 is an invalid argument for n_jobs")
 
-    if some_function.__name__ in unifrac_methods and n_jobs <= 0:
+    if wrapped_function.__name__ in unifrac_methods and n_jobs <= 0:
         raise ValueError("Unifrac methods must be assigned a positive "
                          "integer value for n_jobs")
 
-    if some_function.__name__ in skbio_methods and (n_jobs < 0)\
+    if wrapped_function.__name__ in skbio_methods and (n_jobs < 0)\
             and (cpus + n_jobs + 1) < 1:
         alloc_offset = n_jobs + 1
         cpus_requested = (cpus + alloc_offset)
@@ -91,4 +90,4 @@ def _safely_constrain_n_jobs(some_function, *args, **kwargs):
                          f"available, {cpus} - {-alloc_offset} = "
                          f"{cpus_requested} requested")
 
-    return some_function(*args, **kwargs)
+    return wrapped_function(*args, **kwargs)
