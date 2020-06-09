@@ -58,13 +58,15 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     bound_signature = signature(wrapped_function).bind(*args, **kwargs)
     bound_signature.apply_defaults()
 
-    # Handle cpu requests coming from different parameter names
+    # Handle duplicate param names
     if all(params in bound_signature.arguments
             for params in ['n_jobs', 'threads']):
         raise TypeError("Duplicate parameters: The _validate_requested_cpus "
                         "decorator may not be applied to callables with both "
                         "'n_jobs' and 'threads' parameters. Do you really need"
                         " both?")
+
+    # Handle cpu requests coming from different parameter names
     if 'n_jobs' in bound_signature.arguments:
         param_name = 'n_jobs'
         cpus_requested = bound_signature.arguments[param_name]
@@ -83,9 +85,17 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     except AttributeError:
         cpus = psutil.cpu_count(logical=False)
 
-    if cpus_requested > cpus:
+    if isinstance(cpus_requested, int) and cpus_requested > cpus:
         raise ValueError(f"The value passed to '{param_name}' cannot exceed "
                          f"the number of processors ({cpus}) available to "
                          "the system.")
+
+    if cpus_requested == 'auto':
+        # remove 'auto' from args to prevent 'multiple values' TypeError...
+        argslist = list(args)
+        argslist.remove('auto')
+        return_args = tuple(argslist)
+        # ...then inject number of available cpus
+        return wrapped_function(*return_args, **kwargs, **{param_name: cpus})
 
     return wrapped_function(*args, **kwargs)

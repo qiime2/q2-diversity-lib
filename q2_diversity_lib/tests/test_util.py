@@ -18,7 +18,6 @@ from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from .._util import (_disallow_empty_tables,
                      _validate_requested_cpus)
-from .test_beta import phylogenetic_measures, nonphylogenetic_measures
 
 
 class DisallowEmptyTablesTests(TestPluginBase):
@@ -106,7 +105,7 @@ class SafelyConstrainNJobsTests(TestPluginBase):
         self.valid_tree_as_NewickFormat = \
             NewickFormat(self.valid_tree_fp, mode='r')
 
-    def test_function_without_n_jobs_param(self):
+    def test_function_without_cpu_request_param(self):
         with self.assertRaisesRegex(TypeError, 'without.*n_jobs.*threads'):
             self.function_no_params()
 
@@ -132,7 +131,7 @@ class SafelyConstrainNJobsTests(TestPluginBase):
         assert mock_process.cpu_affinity.called
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_n_jobs_greater_than_system_cpus(self, mock_process):
+    def test_requested_more_than_system_cpus(self, mock_process):
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         with self.assertRaisesRegex(ValueError, "\'n_jobs\' cannot exceed"):
@@ -141,7 +140,7 @@ class SafelyConstrainNJobsTests(TestPluginBase):
             self.function_w_threads_param(999)
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_n_jobs_passed_as_kwarg(self, mock_process):
+    def test_requested_cpus_passed_as_kwarg(self, mock_process):
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(n_jobs=3), 3)
@@ -151,3 +150,12 @@ class SafelyConstrainNJobsTests(TestPluginBase):
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
         self.assertEqual(self.function_w_n_jobs_param(), 3)
+
+    @mock.patch("q2_diversity_lib._util.psutil.Process")
+    def test_auto_passed_to_cpu_request(self, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
+        self.assertEqual(self.function_w_n_jobs_param('auto'), 3)
+        self.assertEqual(self.function_w_n_jobs_param(n_jobs='auto'), 3)
+        self.assertEqual(self.function_w_threads_param('auto'), 3)
+        self.assertEqual(self.function_w_threads_param(threads='auto'), 3)

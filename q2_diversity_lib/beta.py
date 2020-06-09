@@ -11,7 +11,6 @@ import skbio.diversity
 import sklearn.metrics
 import unifrac
 
-
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from ._util import (_disallow_empty_tables,
