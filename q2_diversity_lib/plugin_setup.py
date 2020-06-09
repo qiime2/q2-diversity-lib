@@ -124,10 +124,10 @@ plugin.methods.register_function(
         'table': "The feature table containing the samples for which "
                  "Bray-Curtis dissimilarity should be computed."},
     parameter_descriptions={
-        'n_jobs': "The number of concurrent CPU jobs to use in performing this"
-                  " calculation.  More jobs = faster performance. May not "
-                  "exceed the number of available physical cores. If n_jobs = "
-                  "'auto', all available CPUs are used."},
+        'n_jobs': "The number of concurrent jobs to use in performing this "
+                  "calculation. May not exceed the number of available "
+                  "physical cores. If n_jobs = 'auto', one job will be "
+                  "launched for each identified CPU core on the host."},
     output_descriptions={
         'distance_matrix': "Distance matrix for Bray-Curtis dissimilarity"},
     name="Bray-Curtis Dissimilarity",
@@ -150,10 +150,10 @@ plugin.methods.register_function(
         'table': "The feature table containing the samples for which "
                  "Jaccard distance should be computed."},
     parameter_descriptions={
-        'n_jobs': "The number of concurrent CPU jobs to use in performing this"
-                  " calculation.  More jobs = faster performance. May not "
-                  "exceed the number of available physical cores. If n_jobs = "
-                  "'auto', all available CPUs are used."},
+        'n_jobs': "The number of concurrent jobs to use in performing this "
+                  "calculation. May not exceed the number of available "
+                  "physical cores. If n_jobs = 'auto', one job will be "
+                  "launched for each identified CPU core on the host."},
     output_descriptions={
         'distance_matrix': "Distance matrix for Jaccard index"},
     name="Jaccard Distance",
@@ -183,9 +183,9 @@ plugin.methods.register_function(
                      "present in this tree."},
     parameter_descriptions={
         'threads': "The number of CPU threads to use in performing this "
-                   "calculation.  More threads = faster performance. May not "
-                   "exceed the number of available physical cores. If "
-                   "threads = 'auto', all available CPUs are used.",
+                   "calculation. May not exceed the number of available "
+                   "physical cores. If threads = 'auto', one thread will be "
+                   "created for each identified CPU core on the host.",
         'bypass_tips':
             ("In a bifurcating tree, the tips make up about 50% of "
              "the nodes in a tree. By ignoring them, specificity "
@@ -222,9 +222,9 @@ plugin.methods.register_function(
                      "present in this tree."},
     parameter_descriptions={
         'threads': "The number of CPU threads to use in performing this "
-                   "calculation.  More threads = faster performance. May not "
-                   "exceed the number of available physical cores. If "
-                   "threads = 'auto', all available CPUs are used.",
+                   "calculation. May not exceed the number of available "
+                   "physical cores. If threads = 'auto', one thread will be "
+                   "created for each identified CPU core on the host.",
         'bypass_tips':
             ("In a bifurcating tree, the tips make up about 50% of "
              "the nodes in a tree. By ignoring them, specificity "
