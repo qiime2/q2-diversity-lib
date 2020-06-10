@@ -15,6 +15,7 @@ import skbio
 
 from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
+from q2_types.tree import NewickFormat
 from q2_diversity_lib import (
         bray_curtis, jaccard, unweighted_unifrac, weighted_unifrac)
 
@@ -29,24 +30,31 @@ class SmokeTests(TestPluginBase):
 
     def setUp(self):
         super().setUp()
-        self.valid_table_fp = self.get_data_path('two_feature_table.biom')
-        self.valid_table = biom.load_table(self.valid_table_fp)
+        valid_table_fp = self.get_data_path('two_feature_table.biom')
         self.valid_table_as_BIOMV210Format = \
-            BIOMV210Format(self.valid_table_fp, mode='r')
+            BIOMV210Format(valid_table_fp, mode='r')
         # empty table fp generated from self.empty_table with biom v2.1.7
         self.empty_table = biom.Table(np.array([]), [], [])
-        self.empty_table_fp = self.get_data_path('empty_table.biom')
+        empty_table_fp = self.get_data_path('empty_table.biom')
         self.empty_table_as_BIOMV210Format = \
-            BIOMV210Format(self.empty_table_fp, mode='r')
+            BIOMV210Format(empty_table_fp, mode='r')
 
-        self.empty_tree_fp = self.get_data_path('empty.tree')
-        self.root_only_tree_fp = self.get_data_path('root_only.tree')
-        self.missing_tip_tree_fp = self.get_data_path('missing_tip.tree')
-        self.two_feature_tree_fp = self.get_data_path('two_feature.tree')
-        self.extra_tip_tree_fp = self.get_data_path('extra_tip.tree')
-        self.input_tree = skbio.TreeNode.read(io.StringIO(
-                '((A:0.3, B:0.50):0.2, C:100)root;'))
-        self.valid_tree_fp = self.get_data_path('three_feature.tree')
+        empty_tree_fp = self.get_data_path('empty.tree')
+        self.empty_tree_as_NewickFormat = NewickFormat(empty_tree_fp, mode='r')
+        root_only_tree_fp = self.get_data_path('root_only.tree')
+        self.root_only_tree_as_NewickFormat = NewickFormat(root_only_tree_fp,
+                                                           mode='r')
+        missing_tip_tree_fp = self.get_data_path('missing_tip.tree')
+        self.missing_tip_tree_as_NewickFormat = \
+            NewickFormat(missing_tip_tree_fp, mode='r')
+        two_feature_tree_fp = self.get_data_path('two_feature.tree')
+        self.two_feature_tree_as_NewickFormat = \
+            NewickFormat(two_feature_tree_fp, mode='r')
+        extra_tip_tree_fp = self.get_data_path('extra_tip.tree')
+        self.extra_tip_tree_as_NewickFormat = NewickFormat(extra_tip_tree_fp,
+                                                           mode='r')
+        valid_tree_fp = self.get_data_path('three_feature.tree')
+        self.valid_tree_as_NewickFormat = NewickFormat(valid_tree_fp, mode='r')
 
     def test_nonphylogenetic_measures_passed_empty_table(self):
         for measure in nonphylogenetic_measures:
@@ -57,9 +65,9 @@ class SmokeTests(TestPluginBase):
         for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError, "empty"):
                 measure(table=self.empty_table_as_BIOMV210Format,
-                        phylogeny=self.valid_tree_fp)
+                        phylogeny=self.valid_tree_as_NewickFormat)
 
-    def test_phylogenetic_measures_passed_emptytree_fp(self):
+    def test_phylogenetic_measures_passed_empty_tree(self):
         # HACK: different regular expressions are used here for unweighted and
         # all other unifracs, because tree/table validation is not being
         # applied to the other unifracs. Once unifrac PR #106 is merged, this
@@ -68,33 +76,34 @@ class SmokeTests(TestPluginBase):
             if (measure.__name__ == 'unweighted_unifrac'):
                 with self.assertRaisesRegex(ValueError, "newick"):
                     measure(table=self.valid_table_as_BIOMV210Format,
-                            phylogeny=self.empty_tree_fp)
+                            phylogeny=self.empty_tree_as_NewickFormat)
             else:
                 with self.assertRaisesRegex(
                         ValueError, 'table.*not.*completely represented'):
                     measure(table=self.valid_table_as_BIOMV210Format,
-                            phylogeny=self.empty_tree_fp)
+                            phylogeny=self.empty_tree_as_NewickFormat)
 
-    def test_phylogenetic_measures_passed_rootonlytree_fp(self):
+    def test_phylogenetic_measures_passed_root_only_tree(self):
         for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError,
                                         "table.*not.*completely represented"):
                 measure(table=self.valid_table_as_BIOMV210Format,
-                        phylogeny=self.root_only_tree_fp)
+                        phylogeny=self.root_only_tree_as_NewickFormat)
 
-    def test_phylogenetic_measures_passed_tree_missing_tip_fp(self):
+    def test_phylogenetic_measures_passed_tree_missing_tip(self):
         for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError,
                                         "table.*not.*completely represented"):
                 measure(table=self.valid_table_as_BIOMV210Format,
-                        phylogeny=self.missing_tip_tree_fp)
+                        phylogeny=self.missing_tip_tree_as_NewickFormat)
 
-    def test_phylogenetic_measure_passed_tree_w_extra_tip_fp(self):
+    def test_phylogenetic_measure_passed_tree_w_extra_tip(self):
         for measure in phylogenetic_measures:
-            matched_tree_output = measure(self.valid_table_as_BIOMV210Format,
-                                          self.two_feature_tree_fp)
+            matched_tree_output = measure(
+                self.valid_table_as_BIOMV210Format,
+                self.two_feature_tree_as_NewickFormat)
             extra_tip_tree_output = measure(self.valid_table_as_BIOMV210Format,
-                                            self.valid_tree_fp)
+                                            self.valid_tree_as_NewickFormat)
             self.assertEqual(matched_tree_output, extra_tip_tree_output)
 
 
@@ -224,19 +233,20 @@ class UnweightedUnifrac(TestPluginBase):
                                              [0.25, 0.00, 0.00]],
                                              ids=['S1', 'S2', 'S3'])
 
-        self.table_fp = self.get_data_path('two_feature_table.biom')
-        self.table_as_BIOMV210Format = BIOMV210Format(self.table_fp, mode='r')
-        self.rf_table_fp = self.get_data_path('two_feature_rf_table.biom')
-        self.rf_table_as_BIOMV210Format = BIOMV210Format(self.rf_table_fp,
-                                                         mode='r')
-        self.p_a_table_fp = self.get_data_path('two_feature_p_a_table.biom')
-        self.p_a_table_as_BIOMV210Format = BIOMV210Format(self.p_a_table_fp,
+        table_fp = self.get_data_path('two_feature_table.biom')
+        self.table_as_BIOMV210Format = BIOMV210Format(table_fp, mode='r')
+        rf_table_fp = self.get_data_path('two_feature_rf_table.biom')
+        self.rf_table_as_BIOMV210Format = BIOMV210Format(rf_table_fp, mode='r')
+        p_a_table_fp = self.get_data_path('two_feature_p_a_table.biom')
+        self.p_a_table_as_BIOMV210Format = BIOMV210Format(p_a_table_fp,
                                                           mode='r')
 
-        self.tree_fp = self.get_data_path('three_feature.tree')
+        tree_fp = self.get_data_path('three_feature.tree')
+        self.tree_as_NewickFormat = NewickFormat(tree_fp, mode='r')
 
     def test_method(self):
-        actual = unweighted_unifrac(self.table_as_BIOMV210Format, self.tree_fp)
+        actual = unweighted_unifrac(self.table_as_BIOMV210Format,
+                                    self.tree_as_NewickFormat)
         self.assertEqual(actual.ids, self.expected.ids)
         for id1 in actual.ids:
             for id2 in actual.ids:
@@ -249,7 +259,8 @@ class UnweightedUnifrac(TestPluginBase):
         p_a_table = self.p_a_table_as_BIOMV210Format
         accepted_tables = [freq_table, rel_freq_table, p_a_table]
         for table in accepted_tables:
-            actual = unweighted_unifrac(table=table, phylogeny=self.tree_fp)
+            actual = unweighted_unifrac(table=table,
+                                        phylogeny=self.tree_as_NewickFormat)
             self.assertEqual(actual.ids, self.expected.ids)
             for id1 in actual.ids:
                 for id2 in actual.ids:
@@ -260,9 +271,9 @@ class UnweightedUnifrac(TestPluginBase):
         unweighted_unifrac_thru_framework = self.plugin.actions[
                     'unweighted_unifrac']
         table_as_artifact = Artifact.import_data(
-                    'FeatureTable[Frequency]', self.table_fp)
+                    'FeatureTable[Frequency]', self.table_as_BIOMV210Format)
         tree_as_artifact = Artifact.import_data(
-                    'Phylogeny[Rooted]', self.tree_fp)
+                    'Phylogeny[Rooted]', self.tree_as_NewickFormat)
         unweighted_unifrac_thru_framework(table_as_artifact,
                                           tree_as_artifact)
         # If we get here, then it ran without error
@@ -289,16 +300,18 @@ class WeightedUnifrac(TestPluginBase):
                  '10084.PC.355', '10084.PC.354', '10084.PC.636',
                  '10084.PC.635', '10084.PC.607', '10084.PC.634'))
 
-        self.table_fp = self.get_data_path('crawford.biom')
-        self.table_as_BIOMV210Format = BIOMV210Format(self.table_fp, mode='r')
-        self.rel_freq_table_fp = self.get_data_path('crawford_rf.biom')
-        self.rf_table_as_BIOMV210Format = \
-            BIOMV210Format(self.rel_freq_table_fp, mode='r')
+        table_fp = self.get_data_path('crawford.biom')
+        self.table_as_BIOMV210Format = BIOMV210Format(table_fp, mode='r')
+        rel_freq_table_fp = self.get_data_path('crawford_rf.biom')
+        self.rf_table_as_BIOMV210Format = BIOMV210Format(rel_freq_table_fp,
+                                                         mode='r')
 
-        self.tree_fp = self.get_data_path('crawford.nwk')
+        tree_fp = self.get_data_path('crawford.nwk')
+        self.tree_as_NewickFormat = NewickFormat(tree_fp, mode='r')
 
     def test_method(self):
-        actual = weighted_unifrac(self.table_as_BIOMV210Format, self.tree_fp)
+        actual = weighted_unifrac(self.table_as_BIOMV210Format,
+                                  self.tree_as_NewickFormat)
         self.assertEqual(actual.ids, self.expected.ids)
         for id1 in actual.ids:
             for id2 in actual.ids:
@@ -310,7 +323,8 @@ class WeightedUnifrac(TestPluginBase):
         rel_freq_table = self.rf_table_as_BIOMV210Format
         accepted_tables = [freq_table, rel_freq_table]
         for table in accepted_tables:
-            actual = weighted_unifrac(table=table, phylogeny=self.tree_fp)
+            actual = weighted_unifrac(table=table,
+                                      phylogeny=self.tree_as_NewickFormat)
             self.assertEqual(actual.ids, self.expected.ids)
             for id1 in actual.ids:
                 for id2 in actual.ids:

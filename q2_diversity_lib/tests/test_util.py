@@ -27,14 +27,14 @@ class DisallowEmptyTablesTests(TestPluginBase):
         super().setUp()
         self.empty_table = biom.Table(np.array([]), [], [])
         # empty table generated from self.empty_table with biom v2.1.7
-        self.empty_table_fp = self.get_data_path('empty_table.biom')
-        self.empty_table_as_BIOMV210Format = \
-            BIOMV210Format(self.empty_table_fp, mode='r')
-        self.valid_table_fp = self.get_data_path('crawford.biom')
-        self.valid_table_as_BIOMV210Format = \
-            BIOMV210Format(self.valid_table_fp, mode='r')
-        self.not_a_table_fp = self.get_data_path('crawford.nwk')
-        self.invalid_view_type = NewickFormat(self.not_a_table_fp, mode='r')
+        empty_table_fp = self.get_data_path('empty_table.biom')
+        self.empty_table_as_BIOMV210Format = BIOMV210Format(empty_table_fp,
+                                                            mode='r')
+        valid_table_fp = self.get_data_path('crawford.biom')
+        self.valid_table_as_BIOMV210Format = BIOMV210Format(valid_table_fp,
+                                                            mode='r')
+        not_a_table_fp = self.get_data_path('crawford.nwk')
+        self.invalid_view_type = NewickFormat(not_a_table_fp, mode='r')
 
         @_disallow_empty_tables
         def f1(table: biom.Table):
@@ -96,14 +96,13 @@ class SafelyConstrainNJobsTests(TestPluginBase):
             pass
         self.function_w_both = function_w_duplicate_params
 
-        self.valid_table_fp = self.get_data_path('two_feature_table.biom')
-        self.valid_table_as_BIOMV210Format = \
-            BIOMV210Format(self.valid_table_fp, mode='r')
-        self.valid_table = biom.load_table(self.valid_table_fp)
+        valid_table_fp = self.get_data_path('two_feature_table.biom')
+        self.valid_table_as_BIOMV210Format = BIOMV210Format(valid_table_fp,
+                                                            mode='r')
+        self.valid_table = biom.load_table(valid_table_fp)
 
-        self.valid_tree_fp = self.get_data_path('three_feature.tree')
-        self.valid_tree_as_NewickFormat = \
-            NewickFormat(self.valid_tree_fp, mode='r')
+        valid_tree_fp = self.get_data_path('three_feature.tree')
+        self.valid_tree_as_NewickFormat = NewickFormat(valid_tree_fp, mode='r')
 
     def test_function_without_cpu_request_param(self):
         with self.assertRaisesRegex(TypeError, 'without.*n_jobs.*threads'):
