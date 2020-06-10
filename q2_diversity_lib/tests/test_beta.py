@@ -6,8 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import io
-
 import numpy as np
 import numpy.testing as npt
 import biom
