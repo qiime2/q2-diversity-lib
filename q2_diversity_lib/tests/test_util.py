@@ -70,7 +70,7 @@ class DisallowEmptyTablesTests(TestPluginBase):
             self.function_with_table_param(table=self.invalid_view_type)
 
 
-class SafelyConstrainNJobsTests(TestPluginBase):
+class ValidateRequestedCPUsTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
