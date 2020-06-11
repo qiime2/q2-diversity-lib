@@ -5,13 +5,10 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-import unittest.mock as mock
-
 import numpy as np
 import numpy.testing as npt
 import biom
 import skbio
-import psutil
 
 from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
