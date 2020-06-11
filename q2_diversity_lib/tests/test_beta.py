@@ -280,19 +280,6 @@ class UnweightedUnifrac(TestPluginBase):
         # If we get here, then it ran without error
         self.assertTrue(True)
 
-    @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_cpu_request_through_framework(self, mock_process):
-        mock_process = psutil.Process()
-        mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
-        self.unweighted_unifrac_thru_framework(self.table_as_artifact,
-                                               self.tree_as_artifact,
-                                               threads=2)
-        self.unweighted_unifrac_thru_framework(self.table_as_artifact,
-                                               self.tree_as_artifact,
-                                               threads='auto')
-        # If we get here, then it ran without error
-        self.assertTrue(True)
-
 
 class WeightedUnifrac(TestPluginBase):
     package = 'q2_diversity_lib.tests'

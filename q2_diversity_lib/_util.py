@@ -83,14 +83,21 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     cpus_requested = b_a_arguments[param_name]
 
     if cpus_requested == 'auto':
-        # mutate bound_arguments.arguments 'auto' to the requested # of cpus
+        # mutate bound_arguments.arguments 'auto' to the requested # of cpus...
         b_a_arguments[param_name] = cpus_available
-        return wrapped_function(*bound_arguments.args,
-                                **bound_arguments.kwargs)
+        # ...and update cpus requested to prevent TypeError
+        cpus_requested = cpus_available
 
     if cpus_requested > cpus_available:
         raise ValueError(f"The value passed to '{param_name}' cannot exceed "
                          f"the number of processors ({cpus_available}) "
                          "available to the system.")
 
+    # TODO: remove print statements
+    print("param_name: ", param_name)
+    print("n_jobs_or_threads in bound_arguments.args: ",
+          b_a_arguments[param_name])
+    print("b_a_arguments: ", b_a_arguments)
+    print("args passed to call: ", *bound_arguments.args)
+    print("kwargs passed to call: ", **bound_arguments.kwargs)
     return wrapped_function(*bound_arguments.args, **bound_arguments.kwargs)

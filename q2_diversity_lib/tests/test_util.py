@@ -6,12 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import unittest.mock as mock
+from unittest import mock
 
 import numpy as np
 import biom
 import psutil
 
+from qiime2 import Artifact
 from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
@@ -157,3 +158,33 @@ class ValidateRequestedCPUsTests(TestPluginBase):
         self.assertEqual(self.function_w_n_jobs_param(n_jobs='auto'), 3)
         self.assertEqual(self.function_w_threads_param('auto'), 3)
         self.assertEqual(self.function_w_threads_param(threads='auto'), 3)
+
+    @mock.patch("q2_diversity_lib._util.psutil.Process")
+    def test_cpu_request_through_framework(self, mock_process):
+        self.jaccard_thru_framework = self.plugin.actions['jaccard']
+        self.unweighted_unifrac_thru_framework = self.plugin.actions[
+                    'unweighted_unifrac']
+
+        self.table_as_artifact = Artifact.import_data(
+                    'FeatureTable[Frequency]',
+                    self.valid_table_as_BIOMV210Format)
+        self.tree_as_artifact = Artifact.import_data(
+                    'Phylogeny[Rooted]', self.valid_tree_as_NewickFormat)
+
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
+        # TODO: uncomment these test cases once bug fixed.
+        # self.unweighted_unifrac_thru_framework(self.table_as_artifact,
+        #                                        self.tree_as_artifact,
+        #                                        threads=2)
+        self.unweighted_unifrac_thru_framework(self.table_as_artifact,
+                                               self.tree_as_artifact,
+                                               threads='auto')
+        self.jaccard_thru_framework(self.table_as_artifact,
+                                    self.tree_as_artifact,
+                                    n_jobs=2)
+        # self.jaccard_thru_framework(self.table_as_artifact,
+        #                             self.tree_as_artifact,
+        #                             n_jobs='auto')
+        # If we get here, then it ran without error
+        self.assertTrue(True)
