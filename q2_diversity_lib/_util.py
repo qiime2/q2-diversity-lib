@@ -59,20 +59,15 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     bound_arguments.apply_defaults()
     b_a_arguments = bound_arguments.arguments
 
-    # Handle duplicate param names
     if 'n_jobs' in b_a_arguments and 'threads' in b_a_arguments:
         raise TypeError("Duplicate parameters: The _validate_requested_cpus "
                         "decorator may not be applied to callables with both "
                         "'n_jobs' and 'threads' parameters. Do you really need"
                         " both?")
-
-    # Handle cpu requests coming from different parameter names
-    if 'n_jobs' in b_a_arguments:
+    elif 'n_jobs' in b_a_arguments:
         param_name = 'n_jobs'
-        cpus_requested = b_a_arguments[param_name]
     elif 'threads' in b_a_arguments:
         param_name = 'threads'
-        cpus_requested = b_a_arguments[param_name]
     else:
         raise TypeError("The _validate_requested_cpus decorator may not be"
                         " applied to callables without an 'n_jobs' or "
@@ -85,15 +80,17 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     except AttributeError:
         cpus_available = psutil.cpu_count(logical=False)
 
-    if isinstance(cpus_requested, int) and cpus_requested > cpus_available:
-        raise ValueError(f"The value passed to '{param_name}' cannot exceed "
-                         f"the number of processors ({cpus_available}) "
-                         "available to the system.")
+    cpus_requested = b_a_arguments[param_name]
 
     if cpus_requested == 'auto':
-        # replace 'auto' with the requested number of cpus and return
+        # mutate bound_arguments.arguments 'auto' to the requested # of cpus
         b_a_arguments[param_name] = cpus_available
         return wrapped_function(*bound_arguments.args,
                                 **bound_arguments.kwargs)
 
-    return wrapped_function(*args, **kwargs)
+    if cpus_requested > cpus_available:
+        raise ValueError(f"The value passed to '{param_name}' cannot exceed "
+                         f"the number of processors ({cpus_available}) "
+                         "available to the system.")
+
+    return wrapped_function(*bound_arguments.args, **bound_arguments.kwargs)
