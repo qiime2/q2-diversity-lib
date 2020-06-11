@@ -57,22 +57,22 @@ def _disallow_empty_tables(wrapped_function, *args, **kwargs):
 def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
     bound_arguments.apply_defaults()
+    b_a_arguments = bound_arguments.arguments
 
     # Handle duplicate param names
-    if all(params in bound_arguments.arguments
-            for params in ['n_jobs', 'threads']):
+    if 'n_jobs' in b_a_arguments and 'threads' in b_a_arguments:
         raise TypeError("Duplicate parameters: The _validate_requested_cpus "
                         "decorator may not be applied to callables with both "
                         "'n_jobs' and 'threads' parameters. Do you really need"
                         " both?")
 
     # Handle cpu requests coming from different parameter names
-    if 'n_jobs' in bound_arguments.arguments:
+    if 'n_jobs' in b_a_arguments:
         param_name = 'n_jobs'
-        cpus_requested = bound_arguments.arguments[param_name]
-    elif 'threads' in bound_arguments.arguments:
+        cpus_requested = b_a_arguments[param_name]
+    elif 'threads' in b_a_arguments:
         param_name = 'threads'
-        cpus_requested = bound_arguments.arguments[param_name]
+        cpus_requested = b_a_arguments[param_name]
     else:
         raise TypeError("The _validate_requested_cpus decorator may not be"
                         " applied to callables without an 'n_jobs' or "
