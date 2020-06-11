@@ -33,8 +33,8 @@ def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
 
 @decorator
 def _disallow_empty_tables(wrapped_function, *args, **kwargs):
-    bound_signature = signature(wrapped_function).bind(*args, **kwargs)
-    table = bound_signature.arguments.get('table')
+    bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
+    table = bound_arguments.arguments.get('table')
     if table is None:
         raise TypeError("The wrapped function has no parameter 'table'")
 
@@ -55,11 +55,11 @@ def _disallow_empty_tables(wrapped_function, *args, **kwargs):
 
 @decorator
 def _validate_requested_cpus(wrapped_function, *args, **kwargs):
-    bound_signature = signature(wrapped_function).bind(*args, **kwargs)
-    bound_signature.apply_defaults()
+    bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
+    bound_arguments.apply_defaults()
 
     # Handle duplicate param names
-    if all(params in bound_signature.arguments
+    if all(params in bound_arguments.arguments
             for params in ['n_jobs', 'threads']):
         raise TypeError("Duplicate parameters: The _validate_requested_cpus "
                         "decorator may not be applied to callables with both "
@@ -67,12 +67,12 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
                         " both?")
 
     # Handle cpu requests coming from different parameter names
-    if 'n_jobs' in bound_signature.arguments:
+    if 'n_jobs' in bound_arguments.arguments:
         param_name = 'n_jobs'
-        cpus_requested = bound_signature.arguments[param_name]
-    elif 'threads' in bound_signature.arguments:
+        cpus_requested = bound_arguments.arguments[param_name]
+    elif 'threads' in bound_arguments.arguments:
         param_name = 'threads'
-        cpus_requested = bound_signature.arguments[param_name]
+        cpus_requested = bound_arguments.arguments[param_name]
     else:
         raise TypeError("The _validate_requested_cpus decorator may not be"
                         " applied to callables without an 'n_jobs' or "
@@ -81,14 +81,14 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     # If `Process.cpu_affinity` unavailable on system, fall back
     # https://psutil.readthedocs.io/en/latest/index.html#psutil.cpu_count
     try:
-        cpus = len(psutil.Process().cpu_affinity())
+        cpus_available = len(psutil.Process().cpu_affinity())
     except AttributeError:
-        cpus = psutil.cpu_count(logical=False)
+        cpus_available = psutil.cpu_count(logical=False)
 
-    if isinstance(cpus_requested, int) and cpus_requested > cpus:
+    if isinstance(cpus_requested, int) and cpus_requested > cpus_available:
         raise ValueError(f"The value passed to '{param_name}' cannot exceed "
-                         f"the number of processors ({cpus}) available to "
-                         "the system.")
+                         f"the number of processors ({cpus_available}) "
+                         "available to the system.")
 
     if cpus_requested == 'auto':
         # remove 'auto' from args to prevent 'multiple values' TypeError...
@@ -96,6 +96,7 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
         argslist.remove('auto')
         return_args = tuple(argslist)
         # ...then inject number of available cpus
-        return wrapped_function(*return_args, **kwargs, **{param_name: cpus})
+        return wrapped_function(*return_args, **{param_name: cpus_available},
+                                **kwargs)
 
     return wrapped_function(*args, **kwargs)
