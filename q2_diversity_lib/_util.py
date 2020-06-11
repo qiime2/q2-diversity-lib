@@ -91,12 +91,9 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
                          "available to the system.")
 
     if cpus_requested == 'auto':
-        # remove 'auto' from args to prevent 'multiple values' TypeError...
-        argslist = list(args)
-        argslist.remove('auto')
-        return_args = tuple(argslist)
-        # ...then inject number of available cpus
-        return wrapped_function(*return_args, **{param_name: cpus_available},
-                                **kwargs)
+        # replace 'auto' with the requested number of cpus and return
+        b_a_arguments[param_name] = cpus_available
+        return wrapped_function(*bound_arguments.args,
+                                **bound_arguments.kwargs)
 
     return wrapped_function(*args, **kwargs)
