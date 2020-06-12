@@ -175,19 +175,19 @@ class ValidateRequestedCPUsTests(TestPluginBase):
         self.assertEqual(self.function_w_threads_param('auto'), 3)
         self.assertEqual(self.function_w_threads_param(threads='auto'), 3)
 
-    def test_cpu_request_through_framework(self):
-        self.jaccard_thru_framework(self.larger_table_as_artifact, n_jobs=1)
-        self.jaccard_thru_framework(self.larger_table_as_artifact,
-                                    n_jobs='auto')
-        self.unweighted_unifrac_thru_framework(self.larger_table_as_artifact,
-                                               self.larger_tree_as_artifact,
-                                               threads=1)
-        self.unweighted_unifrac_thru_framework(self.larger_table_as_artifact,
-                                               self.larger_tree_as_artifact,
-                                               threads='auto')
-        # If we get here, then it ran without error
-        self.assertTrue(True)
-
+#     def test_cpu_request_through_framework(self):
+#         self.jaccard_thru_framework(self.larger_table_as_artifact, n_jobs=1)
+#         self.jaccard_thru_framework(self.larger_table_as_artifact,
+#                                     n_jobs='auto')
+#         self.unweighted_unifrac_thru_framework(self.larger_table_as_artifact,
+#                                                self.larger_tree_as_artifact,
+#                                                threads=1)
+#         self.unweighted_unifrac_thru_framework(self.larger_table_as_artifact,
+#                                                self.larger_tree_as_artifact,
+#                                                threads='auto')
+#         # If we get here, then it ran without error
+#         self.assertTrue(True)
+#
 #     def test_more_threads_than_max_stripes(self):
 #         # The two_feature_table used here has only three samples, meaning
 #         # that it has a max of (3+1)/2 = 2 stripes. Unifrac may report
