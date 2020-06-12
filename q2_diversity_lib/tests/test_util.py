@@ -175,7 +175,11 @@ class ValidateRequestedCPUsTests(TestPluginBase):
         self.assertEqual(self.function_w_threads_param('auto'), 3)
         self.assertEqual(self.function_w_threads_param(threads='auto'), 3)
 
-    def test_cpu_request_through_framework(self):
+    @mock.patch("q2_diversity_lib._util.psutil.Process")
+    def test_cpu_request_through_framework(self, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0])
+
         self.jaccard_thru_framework(self.larger_table_as_artifact, n_jobs=1)
         self.jaccard_thru_framework(self.larger_table_as_artifact,
                                     n_jobs='auto')
@@ -188,7 +192,11 @@ class ValidateRequestedCPUsTests(TestPluginBase):
         # If we get here, then it ran without error
         self.assertTrue(True)
 
-    def test_more_threads_than_max_stripes(self):
+    @mock.patch("q2_diversity_lib._util.psutil.Process")
+    def test_more_threads_than_max_stripes(self, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0])
+
         # The two_feature_table used here has only three samples, meaning
         # that it has a max of (3+1)/2 = 2 stripes. Unifrac may report
         # requests of more-threads-than-stripes to stderror, but should handle
