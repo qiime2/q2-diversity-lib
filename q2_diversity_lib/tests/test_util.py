@@ -96,13 +96,29 @@ class ValidateRequestedCPUsTests(TestPluginBase):
             pass
         self.function_w_both = function_w_duplicate_params
 
-        valid_table_fp = self.get_data_path('two_feature_table.biom')
-        self.valid_table_as_BIOMV210Format = BIOMV210Format(valid_table_fp,
-                                                            mode='r')
-        self.valid_table = biom.load_table(valid_table_fp)
+        self.jaccard_thru_framework = self.plugin.actions['jaccard']
+        self.unweighted_unifrac_thru_framework = self.plugin.actions[
+                    'unweighted_unifrac']
+
+        two_feature_table_fp = self.get_data_path('two_feature_table.biom')
+        self.two_feature_table = biom.load_table(two_feature_table_fp)
+        self.two_feature_table_as_BIOMV210Format = BIOMV210Format(
+                two_feature_table_fp, mode='r')
+        self.two_feature_table_as_artifact = Artifact.import_data(
+                    'FeatureTable[Frequency]', two_feature_table_fp)
+
+        larger_table_fp = self.get_data_path('crawford.biom')
+        self.larger_table_as_artifact = Artifact.import_data(
+                'FeatureTable[Frequency]', larger_table_fp)
 
         valid_tree_fp = self.get_data_path('three_feature.tree')
         self.valid_tree_as_NewickFormat = NewickFormat(valid_tree_fp, mode='r')
+        self.valid_tree_as_artifact = Artifact.import_data(
+                'Phylogeny[Rooted]', valid_tree_fp)
+
+        larger_tree_fp = self.get_data_path('crawford.nwk')
+        self.larger_tree_as_artifact = Artifact.import_data(
+                'Phylogeny[Rooted]', larger_tree_fp)
 
     def test_function_without_cpu_request_param(self):
         with self.assertRaisesRegex(TypeError, 'without.*n_jobs.*threads'):
@@ -161,27 +177,34 @@ class ValidateRequestedCPUsTests(TestPluginBase):
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
     def test_cpu_request_through_framework(self, mock_process):
-        self.jaccard_thru_framework = self.plugin.actions['jaccard']
-        self.unweighted_unifrac_thru_framework = self.plugin.actions[
-                    'unweighted_unifrac']
-
-        self.table_as_artifact = Artifact.import_data(
-                    'FeatureTable[Frequency]',
-                    self.valid_table_as_BIOMV210Format)
-        self.tree_as_artifact = Artifact.import_data(
-                    'Phylogeny[Rooted]', self.valid_tree_as_NewickFormat)
-
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
-        self.unweighted_unifrac_thru_framework(self.table_as_artifact,
-                                               self.tree_as_artifact,
-                                               threads=2)
-        self.unweighted_unifrac_thru_framework(self.table_as_artifact,
-                                               self.tree_as_artifact,
-                                               threads='auto')
-        self.jaccard_thru_framework(self.table_as_artifact,
-                                    n_jobs=2)
-        self.jaccard_thru_framework(self.table_as_artifact,
+
+        self.jaccard_thru_framework(self.larger_table_as_artifact, n_jobs=2)
+        self.jaccard_thru_framework(self.larger_table_as_artifact,
                                     n_jobs='auto')
+        self.unweighted_unifrac_thru_framework(self.larger_table_as_artifact,
+                                               self.larger_tree_as_artifact,
+                                               threads=2)
+        self.unweighted_unifrac_thru_framework(self.larger_table_as_artifact,
+                                               self.larger_tree_as_artifact,
+                                               threads='auto')
         # If we get here, then it ran without error
         self.assertTrue(True)
+
+    @mock.patch("q2_diversity_lib._util.psutil.Process")
+    def test_more_threads_than_features_in_table(self, mock_process):
+        mock_process = psutil.Process()
+        mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2, 4])
+        self.unweighted_unifrac_thru_framework(
+                self.two_feature_table_as_artifact,
+                self.valid_tree_as_artifact, threads=1)
+        self.unweighted_unifrac_thru_framework(
+                self.two_feature_table_as_artifact,
+                self.valid_tree_as_artifact, threads=3)
+        self.unweighted_unifrac_thru_framework(
+                self.two_feature_table_as_artifact,
+                self.valid_tree_as_artifact, threads='auto')
+        # If we get here, then it ran without error
+        # TODO: revert to assertTrue(True)
+        self.assertTrue(False)
