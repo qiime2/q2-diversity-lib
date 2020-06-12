@@ -55,8 +55,6 @@ def unweighted_unifrac(table: BIOMV210Format,
                        phylogeny: NewickFormat,
                        threads: int = 1,
                        bypass_tips: bool = False) -> skbio.DistanceMatrix:
-    # TODO: remove print statement
-    print("threads passed to unifrac: ", threads)
     return unifrac.unweighted(str(table), str(phylogeny), threads=threads,
                               variance_adjusted=False, bypass_tips=bypass_tips)
 
