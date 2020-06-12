@@ -193,7 +193,10 @@ class ValidateRequestedCPUsTests(TestPluginBase):
         self.assertTrue(True)
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_more_threads_than_features_in_table(self, mock_process):
+    def test_more_threads_than_max_stripes(self, mock_process):
+        # The two_feature_table used here has only three samples, meaning
+        # that it has a max of (3+1)/2 = 2 stripes. Calls for more than two
+        # stripes should produce an error from unifrac
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2, 4])
         self.unweighted_unifrac_thru_framework(
