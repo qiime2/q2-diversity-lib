@@ -173,18 +173,15 @@ class ValidateRequestedCPUsTests(TestPluginBase):
 
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
-        # TODO: uncomment these test cases once bug fixed.
-        # self.unweighted_unifrac_thru_framework(self.table_as_artifact,
-        #                                        self.tree_as_artifact,
-        #                                        threads=2)
+        self.unweighted_unifrac_thru_framework(self.table_as_artifact,
+                                               self.tree_as_artifact,
+                                               threads=2)
         self.unweighted_unifrac_thru_framework(self.table_as_artifact,
                                                self.tree_as_artifact,
                                                threads='auto')
         self.jaccard_thru_framework(self.table_as_artifact,
-                                    self.tree_as_artifact,
                                     n_jobs=2)
-        # self.jaccard_thru_framework(self.table_as_artifact,
-        #                             self.tree_as_artifact,
-        #                             n_jobs='auto')
+        self.jaccard_thru_framework(self.table_as_artifact,
+                                    n_jobs='auto')
         # If we get here, then it ran without error
         self.assertTrue(True)
