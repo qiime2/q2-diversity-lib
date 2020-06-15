@@ -14,15 +14,16 @@ import psutil
 import biom
 
 from q2_types.feature_table import BIOMV210Format
+from qiime2 import Artifact
 
 
 def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
                             minimum_nonzero_elements: int) -> (np.ndarray,
                                                                np.ndarray):
-    nonzero_elements_per_sample = (counts != 0).sum(1)
+    nonzero_elements_per_sample = (counts != 0).sum(axis=1)
     fancy_index = np.where(
             nonzero_elements_per_sample < minimum_nonzero_elements)
-    filtered_counts = np.delete(counts, fancy_index, 0)
+    filtered_counts = np.delete(counts, fancy_index, axis=0)
     filtered_sample_ids = np.delete(sample_ids, fancy_index)
     return (filtered_counts, filtered_sample_ids)
 
@@ -39,6 +40,8 @@ def _disallow_empty_tables(wrapped_function, *args, **kwargs):
         table_obj = biom.load_table(table)
     elif isinstance(table, biom.Table):
         table_obj = table
+    elif isinstance(table, Artifact):
+        table_obj = table.view(biom.Table)
     else:
         raise ValueError("Invalid view type: table passed as "
                          f"{type(table)}")

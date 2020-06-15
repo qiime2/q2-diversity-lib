@@ -20,11 +20,13 @@ requirements:
   run:
     - biom-format >=2.1.5,<2.2.0
     - decorator
+    - numpy
     - pandas
     - psutil
     - qiime2 {{ release }}.*
     - q2-types {{ release }}.*
     - scikit-bio
+    - scipy
     - unifrac
 
 test:

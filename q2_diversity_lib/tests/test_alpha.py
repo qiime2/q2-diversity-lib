@@ -234,3 +234,8 @@ class ShannonEntropyTests(TestPluginBase):
         actual = shannon_entropy(table=self.input_table,
                                  drop_undefined_samples=False)
         pdt.assert_series_equal(actual, self.expected)
+
+# TODO: Can we test a single table run through multiple methods to ensure the
+# table doesn't get mutated?
+# TODO: test dispatch
+# TODO: confirm dispatch captures citation details in provenance

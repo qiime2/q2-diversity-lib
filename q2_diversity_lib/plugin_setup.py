@@ -7,13 +7,15 @@
 # ----------------------------------------------------------------------------
 
 import q2_diversity_lib
-from qiime2.plugin import (Plugin, Citations, Bool, Int, Range, Choices, Str)
+from qiime2.plugin import (Plugin, Citations, Bool, Int, Range, Choices, Str,
+                           Float)
 
 from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
                                     PresenceAbsence)
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.sample_data import AlphaDiversity, SampleData
 from q2_types.distance_matrix import DistanceMatrix
+from q2_diversity_lib import alpha, beta
 
 citations = Citations.load('citations.bib', package='q2_diversity_lib')
 plugin = Plugin(
@@ -24,6 +26,28 @@ plugin = Plugin(
     package="q2_diversity_lib",
     description="This QIIME 2 plugin computes individual metrics for "
     " community alpha and beta diversity.",
+)
+
+n_jobs_description = (
+    "The number of concurrent jobs to use in performing this calculation. "
+    "May not exceed the number of available physical cores. If n_jobs = "
+    "'auto', one job will be launched for each identified CPU core on the "
+    "host."
+)
+
+threads_description = (
+    "The number of CPU threads to use in performing this calculation. "
+    "May not exceed the number of available physical cores. If threads = "
+    "'auto', one thread will be created for each identified CPU core on the "
+    "host."
+)
+
+drop_undef_samples_description = (
+    "When calculating some metrics, samples with fewer than a predetermined "
+    "number of features produce undefined (NaN) values. If true, affected "
+    "samples are are dropped from metrics with 'drop_undefined_samples' "
+    "implemented. For metrics without a 'drop_undefined_samples' parameter, "
+    "this value will be ignored and no samples will be dropped."
 )
 
 # ------------------------ alpha-diversity -----------------------
@@ -123,11 +147,7 @@ plugin.methods.register_function(
     input_descriptions={
         'table': "The feature table containing the samples for which "
                  "Bray-Curtis dissimilarity should be computed."},
-    parameter_descriptions={
-        'n_jobs': "The number of concurrent jobs to use in performing this "
-                  "calculation. May not exceed the number of available "
-                  "physical cores. If n_jobs = 'auto', one job will be "
-                  "launched for each identified CPU core on the host."},
+    parameter_descriptions={'n_jobs': n_jobs_description},
     output_descriptions={
         'distance_matrix': "Distance matrix for Bray-Curtis dissimilarity"},
     name="Bray-Curtis Dissimilarity",
@@ -149,11 +169,7 @@ plugin.methods.register_function(
     input_descriptions={
         'table': "The feature table containing the samples for which "
                  "Jaccard distance should be computed."},
-    parameter_descriptions={
-        'n_jobs': "The number of concurrent jobs to use in performing this "
-                  "calculation. May not exceed the number of available "
-                  "physical cores. If n_jobs = 'auto', one job will be "
-                  "launched for each identified CPU core on the host."},
+    parameter_descriptions={'n_jobs': n_jobs_description},
     output_descriptions={
         'distance_matrix': "Distance matrix for Jaccard index"},
     name="Jaccard Distance",
@@ -182,10 +198,7 @@ plugin.methods.register_function(
                      "the table, but all feature ids in the table must be "
                      "present in this tree."},
     parameter_descriptions={
-        'threads': "The number of CPU threads to use in performing this "
-                   "calculation. May not exceed the number of available "
-                   "physical cores. If threads = 'auto', one thread will be "
-                   "created for each identified CPU core on the host.",
+        'threads': threads_description,
         'bypass_tips':
             ("In a bifurcating tree, the tips make up about 50% of "
              "the nodes in a tree. By ignoring them, specificity "
@@ -206,7 +219,7 @@ plugin.methods.register_function(
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.weighted_unnormalized_unifrac,
+    function=q2_diversity_lib.weighted_unifrac,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'threads': Int % Range(1, None) | Str % Choices(['auto']),
@@ -221,10 +234,7 @@ plugin.methods.register_function(
                      "the table, but all feature ids in the table must be "
                      "present in this tree."},
     parameter_descriptions={
-        'threads': "The number of CPU threads to use in performing this "
-                   "calculation. May not exceed the number of available "
-                   "physical cores. If threads = 'auto', one thread will be "
-                   "created for each identified CPU core on the host.",
+        'threads': threads_description,
         'bypass_tips':
             ("In a bifurcating tree, the tips make up about 50% of "
              "the nodes in a tree. By ignoring them, specificity "
@@ -242,4 +252,216 @@ plugin.methods.register_function(
         citations['hamady2010unifrac'],
         citations['lozupone2011unifrac'],
         citations['mcdonald2018unifrac']]
+)
+
+# ------------------------ Dispatch ------------------------
+plugin.pipelines.register_function(
+    function=q2_diversity_lib.alpha_dispatch,
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
+    parameters={'metric':
+                Str % Choices(alpha.all_nonphylogenetic_measures_alpha()),
+                'drop_undefined_samples': Bool},
+    outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
+    input_descriptions={
+        'table': ('The feature table containing the samples for which alpha '
+                  'diversity should be computed.')
+    },
+    parameter_descriptions={
+        'metric': 'The alpha diversity metric to be computed.',
+        'drop_undefined_samples': drop_undef_samples_description
+    },
+    output_descriptions={
+        'alpha_diversity': 'Vector containing per-sample alpha diversities.'
+    },
+    name='Alpha diversity dispatch',
+    description=("Selects the most complete implementation of a "
+                 "user-specified non-phylogenetic alpha diversity measure, and"
+                 " computes a vector for all samples in a feature table. ")
+)
+
+
+plugin.pipelines.register_function(
+    function=q2_diversity_lib.alpha_phylogenetic_dispatch,
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
+            'phylogeny': Phylogeny[Rooted]},
+    parameters={'metric':
+                Str % Choices(alpha.all_phylogenetic_measures_alpha())},
+    outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
+    input_descriptions={
+        'table': ("The feature table containing the samples for which alpha "
+                  "diversity should be computed."),
+        'phylogeny': ("Phylogenetic tree containing tip identifiers that "
+                      "correspond to the feature identifiers in the table. "
+                      "This tree can contain tip ids that are not present in "
+                      "the table, but all feature ids in the table must be "
+                      "present in this tree.")
+    },
+    parameter_descriptions={
+        'metric': 'The alpha diversity metric to be computed.'},
+    output_descriptions={
+        'alpha_diversity': 'Vector containing per-sample alpha diversities.'
+    },
+    name='Alpha diversity (phylogenetic) dispatch',
+    description=("Selects the most complete implementation of a "
+                 "user-specified phylogenetic alpha diversity measure, and "
+                 "computes a vector for all samples in a feature table.")
+)
+
+
+plugin.pipelines.register_function(
+    function=q2_diversity_lib.beta_dispatch,
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
+    parameters={'metric':
+                Str % Choices(beta.all_nonphylogenetic_measures_beta()),
+                'pseudocount': Int % Range(1, None),
+                'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
+    outputs=[('distance_matrix', DistanceMatrix)],
+    input_descriptions={
+        'table': ('The feature table containing the samples over which beta '
+                  'diversity should be computed.')
+    },
+    parameter_descriptions={
+        'metric': 'The beta diversity metric to be computed.',
+        'pseudocount': ('A pseudocount to handle zeros for compositional '
+                        'metrics.  This is ignored for other metrics.'),
+        'n_jobs': n_jobs_description
+    },
+    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
+    name='Beta diversity dispatcher',
+    description=("Selects the most complete implementation of a "
+                 "user-specified non-phylogenetic beta diversity metric, and "
+                 "computes a distance matrix for all pairs of samples in a "
+                 "feature table. "),
+)
+
+plugin.pipelines.register_function(
+    function=q2_diversity_lib.beta_phylogenetic_dispatch,
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
+            'phylogeny': Phylogeny[Rooted]},
+    parameters={'metric':
+                Str % Choices(beta.all_phylogenetic_measures_beta()),
+                'threads': Int % Range(1, None) | Str % Choices(['auto']),
+                'variance_adjusted': Bool,
+                'alpha': Float % Range(0, 1, inclusive_end=True),
+                'bypass_tips': Bool},
+    outputs=[('distance_matrix', DistanceMatrix)],
+    input_descriptions={
+        'table': ('The feature table containing the samples over which beta '
+                  'diversity should be computed.'),
+        'phylogeny': ('Phylogenetic tree containing tip identifiers that '
+                      'correspond to the feature identifiers in the table. '
+                      'This tree can contain tip ids that are not present in '
+                      'the table, but all feature ids in the table must be '
+                      'present in this tree.')
+    },
+    parameter_descriptions={
+        'metric': 'The beta diversity metric to be computed.',
+        'threads': threads_description,
+        'variance_adjusted': ('Perform variance adjustment based on Chang et '
+                              'al. BMC Bioinformatics 2011. Weights distances '
+                              'based on the proportion of the relative '
+                              'abundance represented between the samples at a'
+                              ' given node under evaluation.'),
+        'alpha': ('This parameter is only used when the choice of metric is '
+                  'generalized_unifrac. The value of alpha controls importance'
+                  ' of sample proportions. 1.0 is weighted normalized UniFrac.'
+                  ' 0.0 is close to unweighted UniFrac, but only if the sample'
+                  ' proportions are dichotomized.'),
+        'bypass_tips': ('In a bifurcating tree, the tips make up about 50% of '
+                        'the nodes in a tree. By ignoring them, specificity '
+                        'can be traded for reduced compute time. This has the'
+                        ' effect of collapsing the phylogeny, and is analogous'
+                        ' (in concept) to moving from 99% to 97% OTUs')
+    },
+    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
+    name='Beta diversity (phylogenetic) dispatcher',
+    description=("Selects the most complete implementation of a "
+                 "user-specified phylogenetic beta diversity metric, and "
+                 "computes a distance matrix for all pairs of samples in a "
+                 "feature table. ")
+)
+
+plugin.methods.register_function(
+    function=q2_diversity_lib.skbio_dispatch,
+    inputs={'table': FeatureTable[Frequency]},
+    parameters={'metric':
+                Str % Choices(beta.all_nonphylogenetic_measures_beta()),
+                'pseudocount': Int % Range(1, None),
+                'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
+    outputs=[('distance_matrix', DistanceMatrix)],
+    input_descriptions={
+        'table': ('The feature table containing the samples over which beta '
+                  'diversity should be computed.')
+    },
+    parameter_descriptions={
+        'metric': 'The beta diversity metric to be computed.',
+        'pseudocount': ('A pseudocount to handle zeros for compositional '
+                        'metrics.  This is ignored for other metrics.'),
+        'n_jobs': n_jobs_description
+    },
+    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
+    name='Scikit-bio direct beta diversity dispatcher',
+    description=("Computes a distance matrix for all pairs of samples in a "
+                 "feature table using the scikit-bio implementation of a "
+                 "chosen beta diversity metric."),
+)
+
+plugin.methods.register_function(
+    function=q2_diversity_lib.unifrac_beta_dispatch,
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
+            'phylogeny': Phylogeny[Rooted]},
+    parameters={'metric':
+                Str % Choices(beta.all_phylogenetic_measures_beta()),
+                'threads': Int % Range(1, None) | Str % Choices(['auto']),
+                'variance_adjusted': Bool,
+                'alpha': Float % Range(0, 1, inclusive_end=True),
+                'bypass_tips': Bool},
+    outputs=[('distance_matrix', DistanceMatrix)],
+    input_descriptions={
+        'table': ('The feature table containing the samples over which beta '
+                  'diversity should be computed.'),
+        'phylogeny': ('Phylogenetic tree containing tip identifiers that '
+                      'correspond to the feature identifiers in the table. '
+                      'This tree can contain tip ids that are not present in '
+                      'the table, but all feature ids in the table must be '
+                      'present in this tree.')
+    },
+    parameter_descriptions={
+        'metric': 'The beta diversity metric to be computed.',
+        'threads': threads_description,
+        'variance_adjusted': ('Perform variance adjustment based on Chang et '
+                              'al. BMC Bioinformatics 2011. Weights distances '
+                              'based on the proportion of the relative '
+                              'abundance represented between the samples at a'
+                              ' given node under evaluation.'),
+        'alpha': ('This parameter is only used when the choice of metric is '
+                  'generalized_unifrac. The value of alpha controls importance'
+                  ' of sample proportions. 1.0 is weighted normalized UniFrac.'
+                  ' 0.0 is close to unweighted UniFrac, but only if the sample'
+                  ' proportions are dichotomized.'),
+        'bypass_tips': ('In a bifurcating tree, the tips make up about 50% of '
+                        'the nodes in a tree. By ignoring them, specificity '
+                        'can be traded for reduced compute time. This has the'
+                        ' effect of collapsing the phylogeny, and is analogous'
+                        ' (in concept) to moving from 99% to 97% OTUs')
+    },
+    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
+    name='Unifrac library direct beta diversity dispatcher',
+    description=("Computes a distance matrix for all pairs of samples in a "
+                 "feature table using the unifrac implementation of a "
+                 "chosen beta diversity metric."),
+    citations=[
+        citations['lozupone2005unifrac'],
+        citations['lozupone2007unifrac'],
+        citations['hamady2010unifrac'],
+        citations['lozupone2011unifrac'],
+        citations['mcdonald2018unifrac'],
+        citations['chang2011variance'],
+        citations['chen2012genUnifrac']
+    ]
 )
