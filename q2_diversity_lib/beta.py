@@ -61,10 +61,11 @@ def unweighted_unifrac(table: BIOMV210Format,
 
 @_disallow_empty_tables
 @_validate_requested_cpus
-def weighted_unifrac(table: BIOMV210Format,
-                     phylogeny: NewickFormat,
-                     threads: int = 1,
-                     bypass_tips: bool = False) -> skbio.DistanceMatrix:
+def weighted_unnormalized_unifrac(table: BIOMV210Format,
+                                  phylogeny: NewickFormat,
+                                  threads: int = 1,
+                                  bypass_tips: bool = False
+                                  ) -> skbio.DistanceMatrix:
     return unifrac.weighted_unnormalized(str(table), str(phylogeny),
                                          threads=threads,
                                          variance_adjusted=False,
