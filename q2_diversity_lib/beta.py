@@ -81,14 +81,14 @@ def implemented_phylogenetic_metrics_dict():
 
 def unimplemented_phylogenetic_metrics_dict():
     return {'unweighted_unifrac': unifrac.unweighted,
-            'weighted_unifrac': unifrac.weighted_unnormalized,
+            'weighted_unnormalized_unifrac': unifrac.weighted_unnormalized,
             'weighted_normalized_unifrac': unifrac.weighted_normalized,
             'generalized_unifrac': unifrac.generalized}
 
 
 def all_phylogenetic_metrics():
-    return implemented_phylogenetic_metrics_dict().keys() \
-            | unimplemented_phylogenetic_metrics_dict().keys()
+    return {**implemented_phylogenetic_metrics_dict(),
+            **unimplemented_phylogenetic_metrics_dict()}
 
 
 @_disallow_empty_tables
@@ -110,20 +110,21 @@ def beta_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
         raise ValueError('The alpha parameter is only allowed when the choice'
                          ' of metric is generalized_unifrac')
 
-    if metric == generalized_unifrac:
-        alpha = 1.0 if alpha is None else alpha
-        func = partial(metrics[metric], alpha=alpha)
-    else:
-        func = metrics[metric]
-
+    # HACK: this logic will be simpler once the remaining unifracs are done
     if metric in ('unweighted_unifrac', 'weighted_normalized_unifrac') \
             and not variance_adjusted:
-        appropriate_metrics = implemented_phylogenetic_metrics_dict()
+        func = implemented_phylogenetic_metrics_dict()[metric]
     else:
-        appropriate_metrics = unimplemented_phylogenetic_metrics_dict()
+        if metric == generalized_unifrac:
+            alpha = 1.0 if alpha is None else alpha
+            func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
+                           alpha=alpha,
+                           variance_adjusted=variance_adjusted)
+        else:
+            func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
+                           variance_adjusted=variance_adjusted)
 
-    func = appropriate_metrics[metric]
-
-    # unifrac processes tables and trees should be filenames
-    return func(str(table), str(phylogeny), threads=threads,
-                variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
+    result = func(table, phylogeny, threads=threads,
+                  bypass_tips=bypass_tips)
+    print("Result type: ", type(result))
+    return result
