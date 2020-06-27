@@ -126,5 +126,4 @@ def beta_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
 
     result = func(table, phylogeny, threads=threads,
                   bypass_tips=bypass_tips)
-    print("Result type: ", type(result))
     return result
