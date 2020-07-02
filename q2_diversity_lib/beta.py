@@ -50,6 +50,38 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     )
 
 
+# TODO: can a pipeline function without any imported Actions? i.e. can it just
+# implement its own behavior, as would happen if this pipeline ran skbio calcs?
+# TODO: import these decorators
+@_disallow_empty_tables
+@_validate_requested_cpus
+def beta_dispatch(table: BIOMV210Format, metric: str, pseudocount: int = 1,
+                  n_jobs: int = 1) -> skbio.DistanceMatrix:
+
+    all_metrics = all_nonphylogenetic_metrics()
+    implemented_metrics = implemented_nonphylogenetic_metrics_dict()
+
+    if metric not in all_metrics:
+        raise ValueError("Unknown metric: %s" % metric)
+
+    counts = table.matrix_data.toarray().T
+    sample_ids = table.ids(axis='sample')
+
+    if metric in implemented_metrics:
+        func = implemented_nonphylogenetic_metrics_dict()[metric]
+    else:
+        func = skbio.diversity.beta_diversity
+
+    # TODO: define and deal with locally-implemented metrics
+
+    result = func(metric=metric, counts=counts, ids=sample_ids,
+                  validate=True,
+                  pairwise_func=sklearn.metrics.pairwise_distances,
+                  n_jobs=n_jobs)
+    # TODO: tuple-ize result, and adapt this as a pipeline
+    return result
+
+
 # ------------------------Phylogenetic-----------------------
 @_disallow_empty_tables
 @_validate_requested_cpus
