@@ -19,6 +19,50 @@ from ._util import (_disallow_empty_tables,
                     _validate_requested_cpus)
 
 
+# ----------Collections to simplify dispatch process------------------------
+def implemented_nonphylogenetic_metrics_dict():
+    return {'braycurtis': bray_curtis,
+            'jaccard': jaccard}
+
+
+def implemented_nonphylogenetic_metrics():
+    return set(implemented_nonphylogenetic_metrics_dict())
+
+
+def unimplemented_nonphylogenetic_metrics():
+    return {'cityblock', 'euclidean', 'seuclidean', 'sqeuclidean', 'cosine',
+            'correlation', 'hamming', 'chebyshev', 'canberra', 'mahalanobis',
+            'yule', 'matching', 'dice', 'kulsinski', 'rogerstanimoto',
+            'russellrao', 'sokalmichener', 'sokalsneath', 'wminkowski',
+            'aitchison', 'canberra_adkins', 'jensenshannon'}
+
+
+def all_nonphylogenetic_metrics():
+    return implemented_nonphylogenetic_metrics() | \
+           unimplemented_nonphylogenetic_metrics()
+
+
+def implemented_phylogenetic_metrics_dict():
+    return {'unweighted_unifrac': unweighted_unifrac,
+            'weighted_unnormalized_unifrac': weighted_unnormalized_unifrac}
+
+
+def unimplemented_phylogenetic_metrics_dict():
+    return {'unweighted_unifrac': unifrac.unweighted,
+            'weighted_unnormalized_unifrac': unifrac.weighted_unnormalized,
+            'weighted_normalized_unifrac': unifrac.weighted_normalized,
+            'generalized_unifrac': unifrac.generalized}
+
+
+def all_phylogenetic_metrics_dict():
+    return {**implemented_phylogenetic_metrics_dict(),
+            **unimplemented_phylogenetic_metrics_dict()}
+
+
+def all_phylogenetic_metrics():
+    return set(all_phylogenetic_metrics_dict())
+
+
 # --------------------Non-Phylogenetic-----------------------
 @_disallow_empty_tables
 @_validate_requested_cpus
@@ -106,23 +150,6 @@ def weighted_unnormalized_unifrac(table: BIOMV210Format,
                                          bypass_tips=bypass_tips)
 
 
-def implemented_phylogenetic_metrics_dict():
-    return {'unweighted_unifrac': unweighted_unifrac,
-            'weighted_unnormalized_unifrac': weighted_unnormalized_unifrac}
-
-
-def unimplemented_phylogenetic_metrics_dict():
-    return {'unweighted_unifrac': unifrac.unweighted,
-            'weighted_unnormalized_unifrac': unifrac.weighted_unnormalized,
-            'weighted_normalized_unifrac': unifrac.weighted_normalized,
-            'generalized_unifrac': unifrac.generalized}
-
-
-def all_phylogenetic_metrics():
-    return {**implemented_phylogenetic_metrics_dict(),
-            **unimplemented_phylogenetic_metrics_dict()}
-
-
 @_disallow_empty_tables
 @_validate_requested_cpus
 def beta_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
@@ -132,7 +159,7 @@ def beta_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
                                bypass_tips: bool = False
                                ) -> skbio.DistanceMatrix:
 
-    metrics = all_phylogenetic_metrics()
+    metrics = all_phylogenetic_metrics_dict()
     generalized_unifrac = 'generalized_unifrac'
 
     if metric not in metrics:
