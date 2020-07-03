@@ -12,6 +12,10 @@ import biom
 import skbio.diversity
 import sklearn.metrics
 import unifrac
+from skbio.stats.composition import clr
+from scipy.spatial.distance import euclidean
+from scipy.spatial.distance import jensenshannon
+import numpy as np
 
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
@@ -94,12 +98,9 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     )
 
 
-# TODO: can a pipeline function without any imported Actions? i.e. can it just
-# implement its own behavior, as would happen if this pipeline ran skbio calcs?
-# TODO: import these decorators
 @_disallow_empty_tables
 @_validate_requested_cpus
-def beta_dispatch(table: BIOMV210Format, metric: str, pseudocount: int = 1,
+def beta_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
                   n_jobs: int = 1) -> skbio.DistanceMatrix:
 
     all_metrics = all_nonphylogenetic_metrics()
@@ -108,21 +109,44 @@ def beta_dispatch(table: BIOMV210Format, metric: str, pseudocount: int = 1,
     if metric not in all_metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
-    counts = table.matrix_data.toarray().T
-    sample_ids = table.ids(axis='sample')
+    def aitchison(x, y, **kwds):
+        return euclidean(clr(x), clr(y))
+
+    def canberra_adkins(x, y, **kwds):
+        if (x < 0).any() or (y < 0).any():
+            raise ValueError("Canberra-Adkins is only defined over positive "
+                             "values.")
+
+        nz = ((x > 0) | (y > 0))
+        x_ = x[nz]
+        y_ = y[nz]
+        nnz = nz.sum()
+
+        return (1. / nnz) * np.sum(np.abs(x_ - y_) / (x_ + y_))
+
+    def jensen_shannon(x, y, **kwds):
+        return jensenshannon(x, y)
 
     if metric in implemented_metrics:
-        func = implemented_nonphylogenetic_metrics_dict()[metric]
+        func = partial(implemented_nonphylogenetic_metrics_dict()[metric],
+                       table=table)
     else:
-        func = skbio.diversity.beta_diversity
+        counts = table.matrix_data.toarray().T
+        sample_ids = table.ids(axis='sample')
+        if metric == 'aitchison':
+            counts += pseudocount
+            metric = aitchison
+        elif metric == 'canberra_adkins':
+            metric = canberra_adkins
+        elif metric == 'jensenshannon':
+            metric = jensen_shannon
+        func = partial(skbio.diversity.beta_diversity, metric=metric,
+                       counts=counts, ids=sample_ids, validate=True,
+                       pairwise_func=sklearn.metrics.pairwise_distances)
 
-    # TODO: define and deal with locally-implemented metrics
-
-    result = func(metric=metric, counts=counts, ids=sample_ids,
-                  validate=True,
-                  pairwise_func=sklearn.metrics.pairwise_distances,
-                  n_jobs=n_jobs)
-    # TODO: tuple-ize result, and adapt this as a pipeline
+    # TODO: test dispatch to skbio and local measures to ensure partial works
+    result = func(n_jobs=n_jobs)
+    # TODO: tuple-ize result, and adapt this as a pipeline for citations?
     return result
 
 

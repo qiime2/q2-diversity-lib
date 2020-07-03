@@ -9,7 +9,9 @@
 from .alpha import (faith_pd, observed_features, pielou_evenness,
                     shannon_entropy)
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
-                   weighted_unnormalized_unifrac, beta_phylogenetic_dispatch)
+                   weighted_unnormalized_unifrac,
+                   beta_dispatch, beta_phylogenetic_dispatch,
+                   all_nonphylogenetic_metrics)
 from ._version import get_versions
 
 __version__ = get_versions()['version']
@@ -18,4 +20,5 @@ del get_versions
 
 __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'shannon_entropy', 'bray_curtis', 'jaccard', 'unweighted_unifrac',
-           'weighted_unnormalized_unifrac', 'beta_phylogenetic_dispatch']
+           'weighted_unnormalized_unifrac', 'beta_dispatch',
+           'beta_phylogenetic_dispatch', 'all_nonphylogenetic_metrics']
