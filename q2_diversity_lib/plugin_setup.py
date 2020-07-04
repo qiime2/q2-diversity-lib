@@ -15,7 +15,7 @@ from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.sample_data import AlphaDiversity, SampleData
 from q2_types.distance_matrix import DistanceMatrix
-from q2_diversity_lib import beta
+from q2_diversity_lib import alpha, beta
 
 citations = Citations.load('citations.bib', package='q2_diversity_lib')
 plugin = Plugin(
@@ -248,6 +248,28 @@ plugin.methods.register_function(
 
 # ------------------------ Dispatch ------------------------
 plugin.methods.register_function(
+    function=q2_diversity_lib.alpha_dispatch,
+    inputs={'table': FeatureTable[Frequency]},
+    parameters={'metric': Str % Choices(alpha.all_nonphylogenetic_measures())},
+    outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
+    input_descriptions={
+        'table': ('The feature table containing the samples for which alpha '
+                  'diversity should be computed.')
+    },
+    parameter_descriptions={
+        'metric': 'The alpha diversity metric to be computed.'
+    },
+    output_descriptions={
+        'alpha_diversity': 'Vector containing per-sample alpha diversities.'
+    },
+    name='Alpha diversity dispatch',
+    description=("Selects the most complete implementation of a "
+                 "user-specified non-phylogenetic alpha diversity measure, and"
+                 " computes a vector for all samples in a feature table. ")
+)
+
+
+plugin.methods.register_function(
     function=q2_diversity_lib.beta_dispatch,
     inputs={'table': FeatureTable[Frequency]},
     parameters={'metric': Str % Choices(beta.all_nonphylogenetic_metrics()),
@@ -265,7 +287,7 @@ plugin.methods.register_function(
         'n_jobs': n_jobs_description
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Beta diversity',
+    name='Beta diversity dispatch',
     description=("Selects the most complete implementation of a "
                  "user-specified non-phylogenetic beta diversity metric, and "
                  "computes a distance matrix for all pairs of samples in a "
@@ -313,7 +335,7 @@ plugin.methods.register_function(
                         ' (in concept) to moving from 99% to 97% OTUs')
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Beta diversity (phylogenetic)',
+    name='Beta diversity (phylogenetic) dispatch',
     description=("Selects the most complete implementation of a "
                  "user-specified phylogenetic beta diversity metric, and "
                  "computes a distance matrix for all pairs of samples in a "
