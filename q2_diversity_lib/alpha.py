@@ -57,6 +57,7 @@ def all_nonphylogenetic_measures():
 # --------------------- Method Dispatch --------------------------------------
 @_disallow_empty_tables
 def alpha_dispatch(table: biom.Table, metric: str) -> pd.Series:
+    # TODO: complete this
     pass
 
 
