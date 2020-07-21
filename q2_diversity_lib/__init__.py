@@ -8,7 +8,7 @@
 
 from .alpha import (faith_pd, observed_features, pielou_evenness,
                     shannon_entropy, alpha_dispatch,
-                    alpha_phylogenetic_dispatch,
+                    alpha_phylogenetic_dispatch, all_phylogenetic_measures,
                     all_nonphylogenetic_measures)
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
                    weighted_unnormalized_unifrac,
@@ -23,7 +23,7 @@ del get_versions
 # alpha. and beta.all_nonphylogenetic...
 __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'shannon_entropy', 'bray_curtis', 'jaccard', 'unweighted_unifrac',
-           'weighted_unnormalized_unifrac', 'alpha_dispatch', 
-           'alpha_phylogenetic_dispatch''beta_dispatch',
-           'beta_phylogenetic_dispatch', 'all_nonphylogenetic_measures',
-           'all_nonphylogenetic_metrics']
+           'weighted_unnormalized_unifrac', 'alpha_dispatch',
+           'alpha_phylogenetic_dispatch', 'beta_dispatch',
+           'beta_phylogenetic_dispatch', 'all_phylogenetic_measures',
+           'all_nonphylogenetic_measures']

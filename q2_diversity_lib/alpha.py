@@ -6,6 +6,10 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from inspect import signature
+from functools import partial
+import warnings
+
 import pandas as pd
 import skbio.diversity
 import biom
@@ -26,6 +30,9 @@ def implemented_phylogenetic_measures_dict():
 
 def implemented_phylogenetic_measures():
     return set(implemented_phylogenetic_measures_dict())
+
+
+all_phylogenetic_measures = implemented_phylogenetic_measures
 
 
 # TODO: should any of these be _private?
@@ -55,10 +62,34 @@ def all_nonphylogenetic_measures():
 
 
 # --------------------- Method Dispatch --------------------------------------
+# TODO: test drop_undefined_samples logic (including test for warning)
 @_disallow_empty_tables
-def alpha_dispatch(table: biom.Table, metric: str) -> pd.Series:
-    # TODO: complete this
-    pass
+def alpha_dispatch(table: biom.Table, metric: str,
+                   drop_undefined_samples: bool = False) -> pd.Series:
+    metrics = all_nonphylogenetic_measures()
+    implemented_metrics = implemented_non_phylogenetic_measures_dict()
+    if metric not in metrics:
+        raise ValueError("Unknown metric: %s" % metric)
+
+    if metric in implemented_metrics:
+        func = implemented_non_phylogenetic_measures_dict()[metric]
+        if 'drop_undefined_samples' in signature(func).parameters:
+            func = partial(func, table=table,
+                           drop_undefined_samples=drop_undefined_samples)
+        else:
+            if drop_undefined_samples:
+                warnings.warn(f"The {metric} metric does not support dropping "
+                              "undefined samples.")
+            func = partial(func, table=table)
+    else:
+        counts = table.matrix_data.toarray().astype(int).T
+        sample_ids = table.ids(axis='sample')
+        func = partial(skbio.diversity.alpha_diversity, metric=metric,
+                       counts=counts, ids=sample_ids)
+
+    result = func()
+    result.name = metric
+    return result
 
 
 @_disallow_empty_tables

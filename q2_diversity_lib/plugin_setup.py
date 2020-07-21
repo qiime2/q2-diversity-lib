@@ -42,6 +42,14 @@ threads_description = (
     "host."
 )
 
+drop_undef_samples_description = (
+    "When calculating some metrics, samples with fewer than a predetermined "
+    "number of features produce undefined (NaN) values. If true, affected "
+    "samples are are dropped from metrics with 'drop_undefined_samples' "
+    "implemented. For metrics without a 'drop_undefined_samples' parameter, "
+    "this value will be ignored and no samples will be dropped."
+)
+
 # ------------------------ alpha-diversity -----------------------
 plugin.methods.register_function(
     function=q2_diversity_lib.faith_pd,
@@ -250,14 +258,16 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2_diversity_lib.alpha_dispatch,
     inputs={'table': FeatureTable[Frequency]},
-    parameters={'metric': Str % Choices(alpha.all_nonphylogenetic_measures())},
+    parameters={'metric': Str % Choices(alpha.all_nonphylogenetic_measures()),
+                'drop_undefined_samples': Bool},
     outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': ('The feature table containing the samples for which alpha '
                   'diversity should be computed.')
     },
     parameter_descriptions={
-        'metric': 'The alpha diversity metric to be computed.'
+        'metric': 'The alpha diversity metric to be computed.',
+        'drop_undefined_samples': drop_undef_samples_description
     },
     output_descriptions={
         'alpha_diversity': 'Vector containing per-sample alpha diversities.'
@@ -266,6 +276,34 @@ plugin.methods.register_function(
     description=("Selects the most complete implementation of a "
                  "user-specified non-phylogenetic alpha diversity measure, and"
                  " computes a vector for all samples in a feature table. ")
+)
+
+
+plugin.methods.register_function(
+    function=q2_diversity_lib.alpha_phylogenetic_dispatch,
+    inputs={'table': FeatureTable[Frequency],
+            'phylogeny': Phylogeny[Rooted]},
+    parameters={'metric': Str % Choices(alpha.all_phylogenetic_measures())},
+    outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
+    input_descriptions={
+        'table': ("The feature table containing the samples for which alpha "
+                  "diversity should be computed."),
+        'phylogeny': ("Phylogenetic tree containing tip identifiers that "
+                      "correspond to the feature identifiers in the table. "
+                      "This tree can contain tip ids that are not present in "
+                      "the table, but all feature ids in the table must be "
+                      "present in this tree.")
+    },
+    parameter_descriptions={
+        # TODO: would 'measure' be more accurate here?
+        'metric': 'The alpha diversity metric to be computed.'},
+    output_descriptions={
+        'alpha_diversity': 'Vector containing per-sample alpha diversities.'
+    },
+    name='Alpha diversity (phylogenetic) dispatch',
+    description=("Selects the most complete implementation of a "
+                 "user-specified phylogenetic alpha diversity measure, and "
+                 "computes a vector for all samples in a feature table.")
 )
 
 
