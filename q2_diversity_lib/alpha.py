@@ -163,7 +163,7 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
 # --------------------- Non-Phylogenetic -------------------------------------
 @_disallow_empty_tables
 def observed_features(table: biom.Table) -> pd.Series:
-    presence_absence_table = table.pa()
+    presence_absence_table = table.pa(inplace=False)
     counts = presence_absence_table.matrix_data.toarray().astype(int).T
     sample_ids = presence_absence_table.ids(axis='sample')
     metric = measure_name_translator()['observed_features']
