@@ -63,7 +63,6 @@ def all_nonphylogenetic_measures():
 
 # --------------------- Method Dispatch --------------------------------------
 # TODO: test drop_undefined_samples logic (including test for warning)
-@_disallow_empty_tables
 def alpha_dispatch(table: biom.Table, metric: str,
                    drop_undefined_samples: bool = False) -> pd.Series:
     metrics = all_nonphylogenetic_measures()
@@ -92,7 +91,6 @@ def alpha_dispatch(table: biom.Table, metric: str,
     return result
 
 
-@_disallow_empty_tables
 def alpha_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
                                 metric: str) -> pd.Series:
     metrics = implemented_phylogenetic_measures()
