@@ -41,7 +41,7 @@ def unimplemented_nonphylogenetic_metrics():
             'aitchison', 'canberra_adkins', 'jensenshannon'}
 
 
-def all_nonphylogenetic_metrics():
+def all_nonphylogenetic_measures_beta():
     return implemented_nonphylogenetic_metrics() | \
            unimplemented_nonphylogenetic_metrics()
 
@@ -58,13 +58,13 @@ def unimplemented_phylogenetic_metrics_dict():
             'generalized_unifrac': unifrac.generalized}
 
 
-def all_phylogenetic_metrics_dict():
+def all_phylogenetic_measures_dict():
     return {**implemented_phylogenetic_metrics_dict(),
             **unimplemented_phylogenetic_metrics_dict()}
 
 
-def all_phylogenetic_metrics():
-    return set(all_phylogenetic_metrics_dict())
+def all_phylogenetic_measures_beta():
+    return set(all_phylogenetic_measures_dict())
 
 
 # -------------------- Method Dispatch -----------------------
@@ -73,7 +73,7 @@ def all_phylogenetic_metrics():
 def beta_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
                   n_jobs: int = 1) -> skbio.DistanceMatrix:
 
-    all_metrics = all_nonphylogenetic_metrics()
+    all_metrics = all_nonphylogenetic_measures_beta()
     implemented_metrics = implemented_nonphylogenetic_metrics_dict()
 
     if metric not in all_metrics:
@@ -129,7 +129,7 @@ def beta_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
                                bypass_tips: bool = False
                                ) -> skbio.DistanceMatrix:
 
-    metrics = all_phylogenetic_metrics_dict()
+    metrics = all_phylogenetic_measures_dict()
     generalized_unifrac = 'generalized_unifrac'
 
     if metric not in metrics:

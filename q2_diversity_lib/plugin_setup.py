@@ -258,7 +258,8 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2_diversity_lib.alpha_dispatch,
     inputs={'table': FeatureTable[Frequency]},
-    parameters={'metric': Str % Choices(alpha.all_nonphylogenetic_measures()),
+    parameters={'metric':
+                Str % Choices(alpha.all_nonphylogenetic_measures_alpha()),
                 'drop_undefined_samples': Bool},
     outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
     input_descriptions={
@@ -283,7 +284,8 @@ plugin.methods.register_function(
     function=q2_diversity_lib.alpha_phylogenetic_dispatch,
     inputs={'table': FeatureTable[Frequency],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric': Str % Choices(alpha.all_phylogenetic_measures())},
+    parameters={'metric':
+                Str % Choices(alpha.all_phylogenetic_measures_alpha())},
     outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': ("The feature table containing the samples for which alpha "
@@ -310,7 +312,8 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2_diversity_lib.beta_dispatch,
     inputs={'table': FeatureTable[Frequency]},
-    parameters={'metric': Str % Choices(beta.all_nonphylogenetic_metrics()),
+    parameters={'metric':
+                Str % Choices(beta.all_nonphylogenetic_measures_beta()),
                 'pseudocount': Int % Range(1, None),
                 'n_jobs': Int},
     outputs=[('distance_matrix', DistanceMatrix)],
@@ -330,15 +333,14 @@ plugin.methods.register_function(
                  "user-specified non-phylogenetic beta diversity metric, and "
                  "computes a distance matrix for all pairs of samples in a "
                  "feature table. "),
-    # TODO: handle citations: q2-diversity was using Faith1987 here, which
-    # seems faulty (if that article deals in phylogentic alpha diversity)
 )
 
 plugin.methods.register_function(
     function=q2_diversity_lib.beta_phylogenetic_dispatch,
     inputs={'table': FeatureTable[Frequency],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric': Str % Choices(beta.all_phylogenetic_metrics()),
+    parameters={'metric':
+                Str % Choices(beta.all_phylogenetic_measures_beta()),
                 'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'variance_adjusted': Bool,
                 'alpha': Float % Range(0, 1, inclusive_end=True),

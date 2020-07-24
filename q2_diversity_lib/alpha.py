@@ -32,7 +32,7 @@ def implemented_phylogenetic_measures():
     return set(implemented_phylogenetic_measures_dict())
 
 
-all_phylogenetic_measures = implemented_phylogenetic_measures
+all_phylogenetic_measures_alpha = implemented_phylogenetic_measures
 
 
 # TODO: should any of these be _private?
@@ -56,7 +56,7 @@ def unimplemented_nonphylogenetic_measures():
             'gini_index', 'lladser_pe', 'lladser_ci'}
 
 
-def all_nonphylogenetic_measures():
+def all_nonphylogenetic_measures_alpha():
     return implemented_nonphylogenetic_measures() | \
            unimplemented_nonphylogenetic_measures()
 
@@ -65,7 +65,7 @@ def all_nonphylogenetic_measures():
 # TODO: test drop_undefined_samples logic (including test for warning)
 def alpha_dispatch(table: biom.Table, metric: str,
                    drop_undefined_samples: bool = False) -> pd.Series:
-    metrics = all_nonphylogenetic_measures()
+    metrics = all_nonphylogenetic_measures_alpha()
     implemented_metrics = implemented_non_phylogenetic_measures_dict()
     if metric not in metrics:
         raise ValueError("Unknown metric: %s" % metric)
