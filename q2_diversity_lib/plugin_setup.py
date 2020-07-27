@@ -257,7 +257,8 @@ plugin.methods.register_function(
 # ------------------------ Dispatch ------------------------
 plugin.pipelines.register_function(
     function=q2_diversity_lib.alpha_dispatch,
-    inputs={'table': FeatureTable[Frequency]},
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
     parameters={'metric':
                 Str % Choices(alpha.all_nonphylogenetic_measures_alpha()),
                 'drop_undefined_samples': Bool},
@@ -282,7 +283,8 @@ plugin.pipelines.register_function(
 
 plugin.pipelines.register_function(
     function=q2_diversity_lib.alpha_phylogenetic_dispatch,
-    inputs={'table': FeatureTable[Frequency],
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'metric':
                 Str % Choices(alpha.all_phylogenetic_measures_alpha())},
@@ -311,7 +313,8 @@ plugin.pipelines.register_function(
 
 plugin.pipelines.register_function(
     function=q2_diversity_lib.beta_dispatch,
-    inputs={'table': FeatureTable[Frequency]},
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
     parameters={'metric':
                 Str % Choices(beta.all_nonphylogenetic_measures_beta()),
                 'pseudocount': Int % Range(1, None),
@@ -337,7 +340,8 @@ plugin.pipelines.register_function(
 
 plugin.pipelines.register_function(
     function=q2_diversity_lib.beta_phylogenetic_dispatch,
-    inputs={'table': FeatureTable[Frequency],
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'metric':
                 Str % Choices(beta.all_phylogenetic_measures_beta()),
