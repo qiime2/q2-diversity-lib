@@ -119,8 +119,7 @@ def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
     else:
         # handle unimplemented unifracs
         table = table.view(BIOMV210Format)
-        table = str(table)
-        print(type(table))
+        phylogeny = phylogeny.view(NewickFormat)
         if metric == generalized_unifrac:
             alpha = 1.0 if alpha is None else alpha
             func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
