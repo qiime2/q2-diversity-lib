@@ -411,3 +411,51 @@ plugin.methods.register_function(
                  "computes a distance matrix for all pairs of samples in a "
                  "feature table. "),
 )
+
+plugin.methods.register_function(
+    function=q2_diversity_lib.unifrac_dispatch,
+    inputs={'table':
+            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
+            'phylogeny': Phylogeny[Rooted]},
+    parameters={'metric':
+                Str % Choices(beta.all_phylogenetic_measures_beta()),
+                'threads': Int % Range(1, None) | Str % Choices(['auto']),
+                'variance_adjusted': Bool,
+                'alpha': Float % Range(0, 1, inclusive_end=True),
+                'bypass_tips': Bool},
+    outputs=[('distance_matrix', DistanceMatrix)],
+    input_descriptions={
+        'table': ('The feature table containing the samples over which beta '
+                  'diversity should be computed.'),
+        'phylogeny': ('Phylogenetic tree containing tip identifiers that '
+                      'correspond to the feature identifiers in the table. '
+                      'This tree can contain tip ids that are not present in '
+                      'the table, but all feature ids in the table must be '
+                      'present in this tree.')
+    },
+    parameter_descriptions={
+        'metric': 'The beta diversity metric to be computed.',
+        'threads': threads_description,
+        'variance_adjusted': ('Perform variance adjustment based on Chang et '
+                              'al. BMC Bioinformatics 2011. Weights distances '
+                              'based on the proportion of the relative '
+                              'abundance represented between the samples at a'
+                              ' given node under evaluation.'),
+        'alpha': ('This parameter is only used when the choice of metric is '
+                  'generalized_unifrac. The value of alpha controls importance'
+                  ' of sample proportions. 1.0 is weighted normalized UniFrac.'
+                  ' 0.0 is close to unweighted UniFrac, but only if the sample'
+                  ' proportions are dichotomized.'),
+        'bypass_tips': ('In a bifurcating tree, the tips make up about 50% of '
+                        'the nodes in a tree. By ignoring them, specificity '
+                        'can be traded for reduced compute time. This has the'
+                        ' effect of collapsing the phylogeny, and is analogous'
+                        ' (in concept) to moving from 99% to 97% OTUs')
+    },
+    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
+    name='Beta diversity (phylogenetic) dispatch',
+    description=("Selects the most complete implementation of a "
+                 "user-specified phylogenetic beta diversity metric, and "
+                 "computes a distance matrix for all pairs of samples in a "
+                 "feature table. ")
+)

@@ -97,8 +97,6 @@ def beta_dispatch(ctx, table, metric, pseudocount=1, n_jobs=1):
     return tuple(result)
 
 
-@_disallow_empty_tables
-@_validate_requested_cpus
 def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
                                variance_adjusted=False, alpha=None,
                                bypass_tips=False):
@@ -118,16 +116,9 @@ def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
         func = ctx.get_action('diversity_lib', metric)
     else:
         # handle unimplemented unifracs
-        table = table.view(BIOMV210Format)
-        phylogeny = phylogeny.view(NewickFormat)
-        if metric == generalized_unifrac:
-            alpha = 1.0 if alpha is None else alpha
-            func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
-                           alpha=alpha,
-                           variance_adjusted=variance_adjusted)
-        else:
-            func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
-                           variance_adjusted=variance_adjusted)
+        func = ctx.get_action('diversity_lib', 'unifrac_dispatch')
+        func = partial(func, metric=metric, alpha=alpha,
+                       variance_adjusted=variance_adjusted)
 
     result = func(table, phylogeny, threads=threads,
                   bypass_tips=bypass_tips)
@@ -157,9 +148,7 @@ def skbio_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
         return jensenshannon(x, y)
 
     counts = table.matrix_data.toarray().T
-    print(type(counts))
     sample_ids = table.ids(axis='sample')
-    print(type(sample_ids))
     if metric == 'aitchison':
         counts += pseudocount
         metric = aitchison
@@ -170,6 +159,35 @@ def skbio_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
     return skbio.diversity.beta_diversity(
             metric=metric, counts=counts, ids=sample_ids, validate=True,
             pairwise_func=sklearn.metrics.pairwise_distances, n_jobs=n_jobs)
+
+
+@_disallow_empty_tables
+@_validate_requested_cpus
+def unifrac_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
+                     metric: str, threads: int = 1,
+                     variance_adjusted: bool = False,
+                     alpha: float = None, bypass_tips: bool = False
+                     ) -> skbio.DistanceMatrix:
+    # TODO: Should these checks be duplicated in this method and the "parent"
+    # pipeline, in case users use unifrac_dispatch directly?
+    if metric not in all_phylogenetic_measures_dict():
+        raise ValueError("Unknown metric: %s" % metric)
+
+    if alpha is not None and metric != 'generalized_unifrac':
+        raise ValueError('The alpha parameter is only allowed when the choice'
+                         ' of metric is generalized_unifrac')
+
+    # handle unimplemented unifracs
+    if metric == 'generalized_unifrac':
+        alpha = 1.0 if alpha is None else alpha
+        func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
+                       alpha=alpha,
+                       variance_adjusted=variance_adjusted)
+    else:
+        func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
+                       variance_adjusted=variance_adjusted)
+
+    return func(table, phylogeny, threads=threads, bypass_tips=bypass_tips)
 
 
 # --------------------Non-Phylogenetic-----------------------
@@ -223,3 +241,11 @@ def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
                                          threads=threads,
                                          variance_adjusted=False,
                                          bypass_tips=bypass_tips)
+
+# TODO: How do we feel about registered methods named with underscores:
+#  e.g. _unifrac_dispatch?
+# By factoring this and skbio_dispatch into methods, we are exposing additional
+# user-facing methods (kinda gross) in order to clean up and make consistent
+# the behavior of the dispatch pipelines. Among other things, this saves us
+# from having to manually make skbio and unifrac results into Result objects.
+# Pro: better modularity, consistency       Con: UI and Provenance clutter
