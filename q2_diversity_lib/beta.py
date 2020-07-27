@@ -82,47 +82,15 @@ def beta_dispatch(ctx, table, metric, pseudocount=1, n_jobs=1):
     if metric not in all_metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
-    def aitchison(x, y, **kwds):
-        return euclidean(clr(x), clr(y))
-
-    def canberra_adkins(x, y, **kwds):
-        if (x < 0).any() or (y < 0).any():
-            raise ValueError("Canberra-Adkins is only defined over positive "
-                             "values.")
-
-        nz = ((x > 0) | (y > 0))
-        x_ = x[nz]
-        y_ = y[nz]
-        nnz = nz.sum()
-
-        return (1. / nnz) * np.sum(np.abs(x_ - y_) / (x_ + y_))
-
-    def jensen_shannon(x, y, **kwds):
-        return jensenshannon(x, y)
-
     if metric in implemented_metrics:
         func = ctx.get_action(
                 'diversity_lib', local_method_names_dict()[metric])
-        func = partial(func, table=table)
     else:
-        table = table.view(biom.Table)
-        counts = table.matrix_data.toarray().T
-        sample_ids = table.ids(axis='sample')
-        if metric == 'aitchison':
-            counts += pseudocount
-            metric = aitchison
-        elif metric == 'canberra_adkins':
-            metric = canberra_adkins
-        elif metric == 'jensenshannon':
-            metric = jensen_shannon
-        # TODO: Does calling skbio as a discrete method fix our Results object
-        # problem?
-        func = partial(skbio.diversity.beta_diversity, metric=metric,
-                       counts=counts, ids=sample_ids, validate=True,
-                       pairwise_func=sklearn.metrics.pairwise_distances)
+        func = ctx.get_action('diversity_lib', 'skbio_dispatch')
+        func = partial(func, metric=metric, pseudocount=pseudocount)
 
     # TODO: test dispatch to skbio and local measures to ensure partial works
-    result = func(n_jobs=n_jobs)
+    result = func(table=table, n_jobs=n_jobs)
     return tuple(result)
 
 
@@ -161,6 +129,44 @@ def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
     result = func(table, phylogeny, threads=threads,
                   bypass_tips=bypass_tips)
     return tuple(result)
+
+
+@_disallow_empty_tables
+@_validate_requested_cpus
+def skbio_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
+                   n_jobs: int = 1) -> skbio.DistanceMatrix:
+    def aitchison(x, y, **kwds):
+        return euclidean(clr(x), clr(y))
+
+    def canberra_adkins(x, y, **kwds):
+        if (x < 0).any() or (y < 0).any():
+            raise ValueError("Canberra-Adkins is only defined over positive "
+                             "values.")
+
+        nz = ((x > 0) | (y > 0))
+        x_ = x[nz]
+        y_ = y[nz]
+        nnz = nz.sum()
+
+        return (1. / nnz) * np.sum(np.abs(x_ - y_) / (x_ + y_))
+
+    def jensen_shannon(x, y, **kwds):
+        return jensenshannon(x, y)
+
+    counts = table.matrix_data.toarray().T
+    print(type(counts))
+    sample_ids = table.ids(axis='sample')
+    print(type(sample_ids))
+    if metric == 'aitchison':
+        counts += pseudocount
+        metric = aitchison
+    elif metric == 'canberra_adkins':
+        metric = canberra_adkins
+    elif metric == 'jensenshannon':
+        metric = jensen_shannon
+    return skbio.diversity.beta_diversity(
+            metric=metric, counts=counts, ids=sample_ids, validate=True,
+            pairwise_func=sklearn.metrics.pairwise_distances, n_jobs=n_jobs)
 
 
 # --------------------Non-Phylogenetic-----------------------

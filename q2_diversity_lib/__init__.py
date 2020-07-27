@@ -16,7 +16,7 @@ from .alpha import (faith_pd, observed_features, pielou_evenness,
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
                    weighted_unifrac,
                    beta_dispatch, beta_phylogenetic_dispatch,
-                   all_phylogenetic_measures_beta,
+                   skbio_dispatch, all_phylogenetic_measures_beta,
                    all_nonphylogenetic_measures_beta)
 from ._version import get_versions
 
@@ -29,7 +29,8 @@ __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'weighted_unifrac', 'alpha_dispatch',
            'alpha_phylogenetic_dispatch', 'alpha_rarefaction_dispatch',
            'alpha_rarefaction_phylogenetic_dispatch', 'beta_dispatch',
-           'beta_phylogenetic_dispatch', 'all_phylogenetic_measures_alpha',
+           'beta_phylogenetic_dispatch', 'skbio_dispatch',
+           'all_phylogenetic_measures_alpha',
            'all_nonphylogenetic_measures_alpha',
            'all_phylogenetic_measures_beta',
            'all_nonphylogenetic_measures_beta']

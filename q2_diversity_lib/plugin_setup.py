@@ -381,3 +381,29 @@ plugin.pipelines.register_function(
                  "computes a distance matrix for all pairs of samples in a "
                  "feature table. ")
 )
+
+plugin.methods.register_function(
+    function=q2_diversity_lib.skbio_dispatch,
+    inputs={'table': FeatureTable[Frequency]},
+    parameters={'metric':
+                Str % Choices(beta.all_nonphylogenetic_measures_beta()),
+                'pseudocount': Int % Range(1, None),
+                'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
+    outputs=[('distance_matrix', DistanceMatrix)],
+    input_descriptions={
+        'table': ('The feature table containing the samples over which beta '
+                  'diversity should be computed.')
+    },
+    parameter_descriptions={
+        'metric': 'The beta diversity metric to be computed.',
+        'pseudocount': ('A pseudocount to handle zeros for compositional '
+                        'metrics.  This is ignored for other metrics.'),
+        'n_jobs': n_jobs_description
+    },
+    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
+    name='Beta diversity dispatch',
+    description=("Selects the most complete implementation of a "
+                 "user-specified non-phylogenetic beta diversity metric, and "
+                 "computes a distance matrix for all pairs of samples in a "
+                 "feature table. "),
+)
