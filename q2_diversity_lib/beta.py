@@ -67,12 +67,15 @@ def all_phylogenetic_measures_beta():
     return set(all_phylogenetic_measures_dict())
 
 
-# -------------------- Method Dispatch -----------------------
-@_disallow_empty_tables
-@_validate_requested_cpus
-def beta_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
-                  n_jobs: int = 1) -> skbio.DistanceMatrix:
+def local_method_names_dict():
+    return {'braycurtis': 'bray_curtis',
+            'jaccard': 'jaccard',
+            'unweighted_unifrac': 'unweighted_unifrac',
+            'weighted_unifrac': 'weighted_unifrac'}
 
+
+# -------------------- Method Dispatch -----------------------
+def beta_dispatch(ctx, table, metric, pseudocount=1, n_jobs=1):
     all_metrics = all_nonphylogenetic_measures_beta()
     implemented_metrics = implemented_nonphylogenetic_metrics_dict()
 
@@ -98,9 +101,11 @@ def beta_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
         return jensenshannon(x, y)
 
     if metric in implemented_metrics:
-        func = partial(implemented_nonphylogenetic_metrics_dict()[metric],
-                       table=table)
+        func = ctx.get_action(
+                'diversity_lib', local_method_names_dict()[metric])
+        func = partial(func, table=table)
     else:
+        table = table.view(biom.Table)
         counts = table.matrix_data.toarray().T
         sample_ids = table.ids(axis='sample')
         if metric == 'aitchison':
@@ -110,25 +115,22 @@ def beta_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
             metric = canberra_adkins
         elif metric == 'jensenshannon':
             metric = jensen_shannon
+        # TODO: Does calling skbio as a discrete method fix our Results object
+        # problem?
         func = partial(skbio.diversity.beta_diversity, metric=metric,
                        counts=counts, ids=sample_ids, validate=True,
                        pairwise_func=sklearn.metrics.pairwise_distances)
 
     # TODO: test dispatch to skbio and local measures to ensure partial works
     result = func(n_jobs=n_jobs)
-    # TODO: tuple-ize result, and adapt this as a pipeline for citations?
-    return result
+    return tuple(result)
 
 
 @_disallow_empty_tables
 @_validate_requested_cpus
-def beta_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
-                               metric: str, threads: int = 1,
-                               variance_adjusted: bool = False,
-                               alpha: float = None,
-                               bypass_tips: bool = False
-                               ) -> skbio.DistanceMatrix:
-
+def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
+                               variance_adjusted=False, alpha=None,
+                               bypass_tips=False):
     metrics = all_phylogenetic_measures_dict()
     generalized_unifrac = 'generalized_unifrac'
 
@@ -142,8 +144,11 @@ def beta_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
     # HACK: this logic will be simpler once the remaining unifracs are done
     if metric in ('unweighted_unifrac', 'weighted_normalized_unifrac') \
             and not variance_adjusted:
-        func = implemented_phylogenetic_metrics_dict()[metric]
+        print(local_method_names_dict()[metric])
+        func = ctx.get_action(
+                'diversity_lib', local_method_names_dict()[metric])
     else:
+        # handle unimplemented unifracs
         if metric == generalized_unifrac:
             alpha = 1.0 if alpha is None else alpha
             func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
@@ -155,7 +160,7 @@ def beta_phylogenetic_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
 
     result = func(table, phylogeny, threads=threads,
                   bypass_tips=bypass_tips)
-    return result
+    return tuple(result)
 
 
 # --------------------Non-Phylogenetic-----------------------

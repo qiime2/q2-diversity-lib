@@ -255,7 +255,7 @@ plugin.methods.register_function(
 )
 
 # ------------------------ Dispatch ------------------------
-plugin.methods.register_function(
+plugin.pipelines.register_function(
     function=q2_diversity_lib.alpha_dispatch,
     inputs={'table': FeatureTable[Frequency]},
     parameters={'metric':
@@ -280,7 +280,7 @@ plugin.methods.register_function(
 )
 
 
-plugin.methods.register_function(
+plugin.pipelines.register_function(
     function=q2_diversity_lib.alpha_phylogenetic_dispatch,
     inputs={'table': FeatureTable[Frequency],
             'phylogeny': Phylogeny[Rooted]},
@@ -309,13 +309,13 @@ plugin.methods.register_function(
 )
 
 
-plugin.methods.register_function(
+plugin.pipelines.register_function(
     function=q2_diversity_lib.beta_dispatch,
     inputs={'table': FeatureTable[Frequency]},
     parameters={'metric':
                 Str % Choices(beta.all_nonphylogenetic_measures_beta()),
                 'pseudocount': Int % Range(1, None),
-                'n_jobs': Int},
+                'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
         'table': ('The feature table containing the samples over which beta '
@@ -335,7 +335,7 @@ plugin.methods.register_function(
                  "feature table. "),
 )
 
-plugin.methods.register_function(
+plugin.pipelines.register_function(
     function=q2_diversity_lib.beta_phylogenetic_dispatch,
     inputs={'table': FeatureTable[Frequency],
             'phylogeny': Phylogeny[Rooted]},
@@ -379,13 +379,5 @@ plugin.methods.register_function(
     description=("Selects the most complete implementation of a "
                  "user-specified phylogenetic beta diversity metric, and "
                  "computes a distance matrix for all pairs of samples in a "
-                 "feature table. "),
-    citations=[
-        citations['lozupone2005unifrac'],
-        citations['lozupone2007unifrac'],
-        citations['hamady2010unifrac'],
-        citations['lozupone2011unifrac'],
-        citations['chang2011variance'],
-        citations['chen2012genUnifrac'],
-        citations['mcdonald2018unifrac']]
+                 "feature table. ")
 )
