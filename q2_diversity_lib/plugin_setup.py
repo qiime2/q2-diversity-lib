@@ -219,7 +219,7 @@ plugin.methods.register_function(
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.weighted_unnormalized_unifrac,
+    function=q2_diversity_lib.weighted_unifrac,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'threads': Int % Range(1, None) | Str % Choices(['auto']),

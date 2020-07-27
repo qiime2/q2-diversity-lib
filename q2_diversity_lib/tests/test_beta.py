@@ -16,12 +16,12 @@ from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from q2_diversity_lib import (
         bray_curtis, jaccard, unweighted_unifrac,
-        weighted_unnormalized_unifrac)
+        weighted_unifrac)
 
 from qiime2 import Artifact
 
 nonphylogenetic_measures = [bray_curtis, jaccard]
-phylogenetic_measures = [unweighted_unifrac, weighted_unnormalized_unifrac]
+phylogenetic_measures = [unweighted_unifrac, weighted_unifrac]
 
 
 class SmokeTests(TestPluginBase):
@@ -309,7 +309,7 @@ class WeightedUnifrac(TestPluginBase):
         self.tree_as_NewickFormat = NewickFormat(tree_fp, mode='r')
 
     def test_method(self):
-        actual = weighted_unnormalized_unifrac(
+        actual = weighted_unifrac(
             self.table_as_BIOMV210Format, self.tree_as_NewickFormat)
         self.assertEqual(actual.ids, self.expected.ids)
         for id1 in actual.ids:
@@ -322,7 +322,7 @@ class WeightedUnifrac(TestPluginBase):
         rel_freq_table = self.rf_table_as_BIOMV210Format
         accepted_tables = [freq_table, rel_freq_table]
         for table in accepted_tables:
-            actual = weighted_unnormalized_unifrac(
+            actual = weighted_unifrac(
                 table=table, phylogeny=self.tree_as_NewickFormat)
             self.assertEqual(actual.ids, self.expected.ids)
             for id1 in actual.ids:

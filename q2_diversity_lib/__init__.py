@@ -14,7 +14,7 @@ from .alpha import (faith_pd, observed_features, pielou_evenness,
                     all_phylogenetic_measures_alpha,
                     all_nonphylogenetic_measures_alpha)
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
-                   weighted_unnormalized_unifrac,
+                   weighted_unifrac,
                    beta_dispatch, beta_phylogenetic_dispatch,
                    all_phylogenetic_measures_beta,
                    all_nonphylogenetic_measures_beta)
@@ -26,7 +26,7 @@ del get_versions
 # TODO: sort out measures/metrics
 __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'shannon_entropy', 'bray_curtis', 'jaccard', 'unweighted_unifrac',
-           'weighted_unnormalized_unifrac', 'alpha_dispatch',
+           'weighted_unifrac', 'alpha_dispatch',
            'alpha_phylogenetic_dispatch', 'alpha_rarefaction_dispatch',
            'alpha_rarefaction_phylogenetic_dispatch', 'beta_dispatch',
            'beta_phylogenetic_dispatch', 'all_phylogenetic_measures_alpha',

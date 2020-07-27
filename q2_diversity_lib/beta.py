@@ -48,12 +48,12 @@ def all_nonphylogenetic_measures_beta():
 
 def implemented_phylogenetic_metrics_dict():
     return {'unweighted_unifrac': unweighted_unifrac,
-            'weighted_unnormalized_unifrac': weighted_unnormalized_unifrac}
+            'weighted_unifrac': weighted_unifrac}
 
 
 def unimplemented_phylogenetic_metrics_dict():
     return {'unweighted_unifrac': unifrac.unweighted,
-            'weighted_unnormalized_unifrac': unifrac.weighted_unnormalized,
+            'weighted_unifrac': unifrac.weighted_unnormalized,
             'weighted_normalized_unifrac': unifrac.weighted_normalized,
             'generalized_unifrac': unifrac.generalized}
 
@@ -202,11 +202,9 @@ def unweighted_unifrac(table: BIOMV210Format,
 
 @_disallow_empty_tables
 @_validate_requested_cpus
-def weighted_unnormalized_unifrac(table: BIOMV210Format,
-                                  phylogeny: NewickFormat,
-                                  threads: int = 1,
-                                  bypass_tips: bool = False
-                                  ) -> skbio.DistanceMatrix:
+def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
+                     threads: int = 1, bypass_tips: bool = False
+                     ) -> skbio.DistanceMatrix:
     return unifrac.weighted_unnormalized(str(table), str(phylogeny),
                                          threads=threads,
                                          variance_adjusted=False,
