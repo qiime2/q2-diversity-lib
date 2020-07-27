@@ -51,6 +51,9 @@ def implemented_phylogenetic_metrics_dict():
             'weighted_unifrac': weighted_unifrac}
 
 
+# NOTE: a metric may be in both implemented and unimplemented collections,
+# if it is only implemented with certain params (e.g. VA Weighted Unifrac is
+# unimplemented, but uses the unifrac.weighted_unnormalized function)
 def unimplemented_phylogenetic_metrics_dict():
     return {'unweighted_unifrac': unifrac.unweighted,
             'weighted_unifrac': unifrac.weighted_unnormalized,
@@ -110,11 +113,9 @@ def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
                          ' of metric is generalized_unifrac')
 
     # HACK: this logic will be simpler once the remaining unifracs are done
-    if metric in ('unweighted_unifrac', 'weighted_normalized_unifrac') \
+    if metric in ('unweighted_unifrac', 'weighted_unifrac') \
             and not variance_adjusted:
-        print(local_method_names_dict()[metric])
-        func = ctx.get_action(
-                'diversity_lib', local_method_names_dict()[metric])
+        func = ctx.get_action('diversity_lib', metric)
     else:
         # handle unimplemented unifracs
         table = table.view(BIOMV210Format)
