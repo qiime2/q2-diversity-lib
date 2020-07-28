@@ -22,8 +22,6 @@ from ._util import (_drop_undefined_samples,
 
 
 # ---------- Collections to simplify dispatch process ------------------------
-# TODO: should this comment be dropped? Should I match it in beta.py?
-# must contain an entry for every metric in phylogenetic_metrics
 def implemented_phylogenetic_measures_dict():
     return {'faith_pd': unifrac.faith_pd}
 

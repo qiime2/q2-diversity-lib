@@ -116,7 +116,7 @@ def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
         func = ctx.get_action('diversity_lib', metric)
     else:
         # handle unimplemented unifracs
-        func = ctx.get_action('diversity_lib', 'unifrac_dispatch')
+        func = ctx.get_action('diversity_lib', 'unifrac_beta_dispatch')
         func = partial(func, metric=metric, alpha=alpha,
                        variance_adjusted=variance_adjusted)
 
@@ -163,13 +163,13 @@ def skbio_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
 
 @_disallow_empty_tables
 @_validate_requested_cpus
-def unifrac_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
-                     metric: str, threads: int = 1,
-                     variance_adjusted: bool = False,
-                     alpha: float = None, bypass_tips: bool = False
-                     ) -> skbio.DistanceMatrix:
+def unifrac_beta_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
+                          metric: str, threads: int = 1,
+                          variance_adjusted: bool = False,
+                          alpha: float = None, bypass_tips: bool = False
+                          ) -> skbio.DistanceMatrix:
     # TODO: Should these checks be duplicated in this method and the "parent"
-    # pipeline, in case users use unifrac_dispatch directly?
+    # pipeline, in case users use unifrac_beta_dispatch directly?
     if metric not in all_phylogenetic_measures_dict():
         raise ValueError("Unknown metric: %s" % metric)
 
@@ -243,7 +243,7 @@ def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
                                          bypass_tips=bypass_tips)
 
 # TODO: How do we feel about registered methods named with underscores:
-#  e.g. _unifrac_dispatch?
+#  e.g. _unifrac_beta_dispatch?
 # By factoring this and skbio_dispatch into methods, we are exposing additional
 # user-facing methods (kinda gross) in order to clean up and make consistent
 # the behavior of the dispatch pipelines. Among other things, this saves us

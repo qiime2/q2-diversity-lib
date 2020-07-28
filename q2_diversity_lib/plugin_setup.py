@@ -299,7 +299,6 @@ plugin.pipelines.register_function(
                       "present in this tree.")
     },
     parameter_descriptions={
-        # TODO: would 'measure' be more accurate here?
         'metric': 'The alpha diversity metric to be computed.'},
     output_descriptions={
         'alpha_diversity': 'Vector containing per-sample alpha diversities.'
@@ -331,7 +330,7 @@ plugin.pipelines.register_function(
         'n_jobs': n_jobs_description
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Beta diversity dispatch',
+    name='Beta diversity dispatcher',
     description=("Selects the most complete implementation of a "
                  "user-specified non-phylogenetic beta diversity metric, and "
                  "computes a distance matrix for all pairs of samples in a "
@@ -379,7 +378,7 @@ plugin.pipelines.register_function(
                         ' (in concept) to moving from 99% to 97% OTUs')
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Beta diversity (phylogenetic) dispatch',
+    name='Beta diversity (phylogenetic) dispatcher',
     description=("Selects the most complete implementation of a "
                  "user-specified phylogenetic beta diversity metric, and "
                  "computes a distance matrix for all pairs of samples in a "
@@ -405,15 +404,14 @@ plugin.methods.register_function(
         'n_jobs': n_jobs_description
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Beta diversity dispatch',
-    description=("Selects the most complete implementation of a "
-                 "user-specified non-phylogenetic beta diversity metric, and "
-                 "computes a distance matrix for all pairs of samples in a "
-                 "feature table. "),
+    name='Scikit-bio direct beta diversity dispatcher',
+    description=("Computes a distance matrix for all pairs of samples in a "
+                 "feature table using the scikit-bio implementation of a "
+                 "chosen beta diversity metric."),
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.unifrac_dispatch,
+    function=q2_diversity_lib.unifrac_beta_dispatch,
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
@@ -453,9 +451,17 @@ plugin.methods.register_function(
                         ' (in concept) to moving from 99% to 97% OTUs')
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Beta diversity (phylogenetic) dispatch',
-    description=("Selects the most complete implementation of a "
-                 "user-specified phylogenetic beta diversity metric, and "
-                 "computes a distance matrix for all pairs of samples in a "
-                 "feature table. ")
+    name='Unifrac library direct beta diversity dispatcher',
+    description=("Computes a distance matrix for all pairs of samples in a "
+                 "feature table using the unifrac implementation of a "
+                 "chosen beta diversity metric."),
+    citations=[
+        citations['lozupone2005unifrac'],
+        citations['lozupone2007unifrac'],
+        citations['hamady2010unifrac'],
+        citations['lozupone2011unifrac'],
+        citations['mcdonald2018unifrac'],
+        citations['chang2011variance'],
+        citations['chen2012genUnifrac']
+    ]
 )
