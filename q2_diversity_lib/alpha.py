@@ -33,23 +33,21 @@ def implemented_phylogenetic_measures():
 all_phylogenetic_measures_alpha = implemented_phylogenetic_measures
 
 
-# TODO: should any of these be _private?
-# TODO: handle observed_features->observed_otus transition cleanly
-# TODO: This should probably include a breaking change to the name in q2-div
-def implemented_non_phylogenetic_measures_dict():
-    return {'observed_otus': observed_features, 'pielou_e': pielou_evenness,
+# TODO: should any of these collections be _private?
+# TODO: can this collection go, now that we're accessing measures by strings in
+# pipelines instead of by directly grabbing functions?
+def implemented_nonphylogenetic_measures_dict():
+    return {'observed_features': observed_features,
+            'pielou_e': pielou_evenness,
             'shannon': shannon_entropy}
 
 
-# TODO: remove this once we name-change observed_otus to observed_features
-def temp_implemented_non_phylo_measures_translator():
-    return {'observed_otus': 'observed_features',
-            'pielou_e': 'pielou_evenness',
-            'shannon': 'shannon_entropy'}
+def measure_name_translator():
+    return {'observed_features': 'observed_otus'}
 
 
 def implemented_nonphylogenetic_measures():
-    return set(implemented_non_phylogenetic_measures_dict())
+    return set(implemented_nonphylogenetic_measures_dict())
 
 
 def unimplemented_nonphylogenetic_measures():
@@ -69,14 +67,12 @@ def all_nonphylogenetic_measures_alpha():
 # --------------------- Method Dispatch --------------------------------------
 def alpha_dispatch(ctx, table, metric, drop_undefined_samples):
     metrics = all_nonphylogenetic_measures_alpha()
-    implemented_metrics = temp_implemented_non_phylo_measures_translator()
+    implemented_metrics = implemented_nonphylogenetic_measures()
     if metric not in metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
     if metric in implemented_metrics:
-        # TODO: when names are aligned with q2_diversity, this line can be
-        # simplified to: func = ctx.get_action('diversity_lib', metric])
-        func = ctx.get_action('diversity_lib', implemented_metrics[metric])
+        func = ctx.get_action('diversity_lib', metric)
         if 'drop_undefined_samples' in signature(func).parameters:
             func = partial(func, table=table,
                            drop_undefined_samples=drop_undefined_samples)
@@ -86,6 +82,9 @@ def alpha_dispatch(ctx, table, metric, drop_undefined_samples):
                               "undefined samples.")
             func = partial(func, table=table)
     else:
+        if metric in measure_name_translator():
+            metric = measure_name_translator()[metric]
+        table = table.view(biom.Table)
         counts = table.matrix_data.toarray().astype(int).T
         sample_ids = table.ids(axis='sample')
         func = partial(skbio.diversity.alpha_diversity, metric=metric,
@@ -112,12 +111,12 @@ def alpha_rarefaction_dispatch(table: biom.Table, metric: str,
                                drop_undefined_samples: bool = False
                                ) -> pd.Series:
     metrics = all_nonphylogenetic_measures_alpha()
-    implemented_metrics = implemented_non_phylogenetic_measures_dict()
+    implemented_metrics = implemented_nonphylogenetic_measures_dict()
     if metric not in metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
     if metric in implemented_metrics:
-        func = implemented_non_phylogenetic_measures_dict()[metric]
+        func = implemented_nonphylogenetic_measures_dict()[metric]
         if 'drop_undefined_samples' in signature(func).parameters:
             func = partial(func, table=table,
                            drop_undefined_samples=drop_undefined_samples)
@@ -167,7 +166,8 @@ def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa(inplace=False)
     counts = presence_absence_table.matrix_data.toarray().astype(int).T
     sample_ids = presence_absence_table.ids(axis='sample')
-    result = skbio.diversity.alpha_diversity(metric='observed_otus',
+    metric = measure_name_translator()['observed_features']
+    result = skbio.diversity.alpha_diversity(metric=metric,
                                              counts=counts, ids=sample_ids)
     result.name = 'observed_features'
     return result
