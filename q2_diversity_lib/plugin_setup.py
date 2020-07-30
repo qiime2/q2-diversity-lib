@@ -396,9 +396,9 @@ plugin.pipelines.register_function(
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.skbio_dispatch,
+    function=q2_diversity_lib.beta_passthrough,
     inputs={'table': FeatureTable[Frequency]},
-    parameters={'metric': Str % Choices(beta._all_nonphylo_metrics),
+    parameters={'metric': Str % Choices(beta.METRICS['NONPHYLO']['UNIMPL']),
                 'pseudocount': Int % Range(1, None),
                 'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],

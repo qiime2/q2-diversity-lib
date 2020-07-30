@@ -76,7 +76,7 @@ def beta_dispatch(ctx, table, metric, pseudocount=1, n_jobs=1):
         func = ctx.get_action(
                 'diversity_lib', local_method_names_dict()[metric])
     else:
-        func = ctx.get_action('diversity_lib', 'skbio_dispatch')
+        func = ctx.get_action('diversity_lib', 'beta_passthrough')
         func = partial(func, metric=metric, pseudocount=pseudocount)
 
     # TODO: test dispatch to skbio and local measures to ensure partial works
@@ -114,8 +114,8 @@ def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
 
 @_disallow_empty_tables
 @_validate_requested_cpus
-def skbio_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
-                   n_jobs: int = 1) -> skbio.DistanceMatrix:
+def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
+                     n_jobs: int = 1) -> skbio.DistanceMatrix:
     def aitchison(x, y, **kwds):
         return euclidean(clr(x), clr(y))
 
@@ -231,7 +231,7 @@ def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
 
 # TODO: How do we feel about registered methods named with underscores:
 #  e.g. _unifrac_beta_dispatch?
-# By factoring this and skbio_dispatch into methods, we are exposing additional
+# By factoring this and beta_passthrough into methods, we expose additional
 # user-facing methods (kinda gross) in order to clean up and make consistent
 # the behavior of the dispatch pipelines. Among other things, this saves us
 # from having to manually make skbio and unifrac results into Result objects.

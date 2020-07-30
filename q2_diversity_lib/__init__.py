@@ -14,7 +14,7 @@ from .alpha import (faith_pd, observed_features, pielou_evenness,
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
                    weighted_unifrac,
                    beta_dispatch, beta_phylogenetic_dispatch,
-                   skbio_dispatch, unifrac_beta_dispatch)
+                   beta_passthrough, unifrac_beta_dispatch)
 from ._version import get_versions
 
 __version__ = get_versions()['version']
@@ -25,6 +25,6 @@ __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'unweighted_unifrac', 'weighted_unifrac', 'alpha_dispatch',
            'alpha_phylogenetic_dispatch', 'alpha_rarefaction_dispatch',
            'alpha_rarefaction_phylogenetic_dispatch', 'beta_dispatch',
-           'beta_phylogenetic_dispatch', 'skbio_dispatch',
+           'beta_phylogenetic_dispatch', 'beta_passthrough',
            'unifrac_beta_dispatch',
            ]
