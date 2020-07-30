@@ -420,11 +420,11 @@ plugin.methods.register_function(
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.unifrac_beta_dispatch,
+    function=q2_diversity_lib.beta_phylogenetic_passthrough,
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric': Str % Choices(beta._all_phylo_metrics),
+    parameters={'metric': Str % Choices(beta.METRICS['PHYLO']['UNIMPL']),
                 'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'variance_adjusted': Bool,
                 'alpha': Float % Range(0, 1, inclusive_end=True),

@@ -45,17 +45,19 @@ _all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
                        | METRICS['NONPHYLO']['UNIMPL']
 
 
+# TODO: remove once this functionality is exported to q2_diversity
 def implemented_phylogenetic_measures_dict():
     return {'faith_pd': unifrac.faith_pd}
 
 
-# TODO: should any of these collections be _private?
+# TODO: remove once this functionality is exported to q2_diversity
 def implemented_nonphylogenetic_measures_dict():
     return {'observed_features': observed_features,
             'pielou_e': pielou_evenness,
             'shannon': shannon_entropy}
 
 
+# TODO: remove once this functionality is exported to q2_diversity
 def measure_name_translator():
     return {'observed_features': 'observed_otus'}
 
