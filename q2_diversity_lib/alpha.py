@@ -21,10 +21,28 @@ from ._util import (_drop_undefined_samples,
                     _disallow_empty_tables)
 
 
-# ---------- Collections to simplify dispatch process ------------------------
-def implemented_phylogenetic_measures_dict():
-    return {'faith_pd': unifrac.faith_pd}
+METRICS = {
+    'PHYLO': {
+        'IMPL': {'faith_pd'},
+        'UNIMPL': set()
+    },
+    'NONPHYLO': {
+        'IMPL': {'observed_features', 'pielou_e', 'shannon'},
+        'UNIMPL': {'ace', 'chao1', 'chao1_ci', 'berger_parker_d',
+                   'brillouin_d', 'dominance', 'doubles', 'enspie', 'esty_ci',
+                   'fisher_alpha', 'goods_coverage', 'heip_e',
+                   'kempton_taylor_q', 'margalef', 'mcintosh_d', 'mcintosh_e',
+                   'menhinick', 'michaelis_menten_fit', 'osd', 'robbins',
+                   'simpson', 'simpson_e', 'singles', 'strong', 'gini_index',
+                   'lladser_pe', 'lladser_ci'
+                   }
+    }
+}
 
+
+_all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['IMPL']
+_all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
+                       | METRICS['NONPHYLO']['UNIMPL']
 
 def implemented_phylogenetic_measures():
     return set(implemented_phylogenetic_measures_dict())
@@ -199,4 +217,15 @@ def shannon_entropy(table: biom.Table,
     result = skbio.diversity.alpha_diversity(metric='shannon', counts=counts,
                                              ids=sample_ids)
     result.name = 'shannon_entropy'
+    return result
+
+
+@_disallow_empty_tables
+def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
+    counts = table.matrix_data.toarray().T
+    sample_ids = table.ids(axis='sample')
+
+    result = skbio.diversity.alpha_diversity(metric=metric, counts=counts,
+                                             ids=sample_ids)
+    result.name = metric
     return result
