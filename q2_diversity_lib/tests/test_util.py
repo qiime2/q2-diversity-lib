@@ -17,7 +17,13 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from .._util import (_disallow_empty_tables,
-                     _validate_requested_cpus)
+                     _validate_requested_cpus,
+                     translate_metric_name,
+                     MockPipelineContext)
+import q2_diversity_lib
+
+a_METRICS = q2_diversity_lib.alpha.METRICS
+b_METRICS = q2_diversity_lib.beta.METRICS
 
 
 class DisallowEmptyTablesTests(TestPluginBase):
@@ -209,3 +215,85 @@ class ValidateRequestedCPUsTests(TestPluginBase):
                 self.valid_tree_as_artifact, threads='auto')
         # If we get here, then it ran without error
         self.assertTrue(True)
+
+class TranslateMetricNameTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+
+        self.a_translations = a_METRICS['METRIC_NAME_TRANSLATIONS']
+        self.b_translations = b_METRICS['METRIC_NAME_TRANSLATIONS']
+
+    def test_alpha_translations(self):
+        to_translate = (q2_diversity_lib.alpha._all_phylo_metrics |
+                        q2_diversity_lib.alpha._all_nonphylo_metrics)
+        expected = to_translate
+        for name in self.a_translations:
+            expected.remove(name)
+            expected.add(self.a_translations[name])
+
+        for name, exp_translation in zip(to_translate, expected):
+            actual_translation = translate_metric_name(name,
+                                                       self.a_translations)
+            self.assertEqual(exp_translation, actual_translation)
+
+    def test_beta_translations(self):
+        to_translate = (q2_diversity_lib.beta._all_phylo_metrics |
+                        q2_diversity_lib.beta._all_nonphylo_metrics)
+        expected = to_translate
+        for name in self.b_translations:
+            expected.remove(name)
+            expected.add(self.b_translations[name])
+
+        for name, exp_translation in zip(to_translate, expected):
+            actual_translation = translate_metric_name(name,
+                                                       self.a_translations)
+            self.assertEqual(exp_translation, actual_translation)
+
+
+class MockPipelineContextTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        a_translations = a_METRICS['METRIC_NAME_TRANSLATIONS']
+        b_translations = b_METRICS['METRIC_NAME_TRANSLATIONS']
+        self.translations = {**a_translations, **b_translations}
+
+    def test_metric_names_correct_in_mappings(self):
+        ctx = MockPipelineContext()
+        mappings = getattr(ctx, 'mappings')['diversity_lib']
+        for metric_name in mappings:
+            self.assertIn(metric_name, q2_diversity_lib.__all__)
+
+    def test_mapped_functions_exist(self):
+        ctx = MockPipelineContext()
+        functions = getattr(ctx, 'mappings')['diversity_lib'].values()
+        for function in functions:
+            self.assertTrue(callable(getattr(q2_diversity_lib,
+                                             function.__name__)))
+
+    def test_get_action_which_exists(self):
+        ctx = MockPipelineContext()
+        mappings = getattr(ctx, 'mappings')['diversity_lib']
+        all_implemented_metrics = (a_METRICS['PHYLO']['IMPL'] |
+                                   a_METRICS['NONPHYLO']['IMPL'] |
+                                   b_METRICS['PHYLO']['IMPL'] |
+                                   b_METRICS['NONPHYLO']['IMPL'])
+
+        # TODO: is this logic too circular? Should I hard-code some test cases?
+        for metric in all_implemented_metrics:
+            metric_tr = translate_metric_name(metric, self.translations)
+            actual = ctx.get_action('diversity_lib', metric_tr)
+            expected = mappings[metric_tr]
+            print(actual, expected)
+            self.assertEqual(actual, expected)
+
+    def test_get_nonexistent_action(self):
+        ctx = MockPipelineContext()
+        with self.assertRaisesRegex(KeyError, 'fake_plugin'):
+            ctx.get_action('fake_plugin', 'fake_metric')
+
+        with self.assertRaisesRegex(KeyError, 'unwigged_unifunc'):
+            ctx.get_action('diversity_lib', 'unwigged_unifunc')

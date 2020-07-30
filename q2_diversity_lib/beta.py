@@ -23,120 +23,42 @@ from ._util import (_disallow_empty_tables,
                     _validate_requested_cpus)
 
 
-# ----------Collections to simplify dispatch process------------------------
-def implemented_nonphylogenetic_metrics_dict():
-    return {'braycurtis': bray_curtis,
-            'jaccard': jaccard}
+# NOTE: some phylo metrics are currently in both implemented and unimplemented
+# collections, when implemented with certain params only (e.g. both 'vanilla'
+# and Variance Adjusted weighted unifracs use unifrac.weighted_unnormalized,
+# but only 'vanilla' is currently implemented)
+METRICS = {
+    'PHYLO': {
+        'IMPL': {'unweighted_unifrac', 'weighted_unifrac'},
+        'UNIMPL': {'unweighted_unifrac', 'weighted_unifrac',
+                   'weighted_normalized_unifrac', 'generalized_unifrac'},
+    },
+    'NONPHYLO': {
+        'IMPL': {'braycurtis', 'jaccard'},
+        'UNIMPL': {'cityblock', 'euclidean', 'seuclidean', 'sqeuclidean',
+                   'cosine', 'correlation', 'hamming', 'chebyshev', 'canberra',
+                   'mahalanobis', 'yule', 'matching', 'dice', 'kulsinski',
+                   'rogerstanimoto', 'russellrao', 'sokalmichener',
+                   'sokalsneath', 'wminkowski', 'aitchison', 'canberra_adkins',
+                   'jensenshannon'}
+    },
+    'METRIC_NAME_TRANSLATIONS': {'braycurtis': 'bray_curtis'}
+}
 
-
-def implemented_nonphylogenetic_metrics():
-    return set(implemented_nonphylogenetic_metrics_dict())
-
-
-def unimplemented_nonphylogenetic_metrics():
-    return {'cityblock', 'euclidean', 'seuclidean', 'sqeuclidean', 'cosine',
-            'correlation', 'hamming', 'chebyshev', 'canberra', 'mahalanobis',
-            'yule', 'matching', 'dice', 'kulsinski', 'rogerstanimoto',
-            'russellrao', 'sokalmichener', 'sokalsneath', 'wminkowski',
-            'aitchison', 'canberra_adkins', 'jensenshannon'}
-
-
-def all_nonphylogenetic_measures_beta():
-    return implemented_nonphylogenetic_metrics() | \
-           unimplemented_nonphylogenetic_metrics()
-
-
-def implemented_phylogenetic_metrics_dict():
-    return {'unweighted_unifrac': unweighted_unifrac,
-            'weighted_unifrac': weighted_unifrac}
-
-
-# NOTE: a metric may be in both implemented and unimplemented collections,
-# if it is only implemented with certain params (e.g. VA Weighted Unifrac is
-# unimplemented, but uses the unifrac.weighted_unnormalized function)
-def unimplemented_phylogenetic_metrics_dict():
-    return {'unweighted_unifrac': unifrac.unweighted,
-            'weighted_unifrac': unifrac.weighted_unnormalized,
-            'weighted_normalized_unifrac': unifrac.weighted_normalized,
-            'generalized_unifrac': unifrac.generalized}
-
-
-def all_phylogenetic_measures_dict():
-    return {**implemented_phylogenetic_metrics_dict(),
-            **unimplemented_phylogenetic_metrics_dict()}
-
-
-def all_phylogenetic_measures_beta():
-    return set(all_phylogenetic_measures_dict())
-
-
-def local_method_names_dict():
-    return {'braycurtis': 'bray_curtis',
-            'jaccard': 'jaccard',
-            'unweighted_unifrac': 'unweighted_unifrac',
-            'weighted_unifrac': 'weighted_unifrac'}
+_all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['UNIMPL']
+_all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
+                        | METRICS['NONPHYLO']['UNIMPL']
 
 
 # -------------------- Method Dispatch -----------------------
-def beta_dispatch(ctx, table, metric, pseudocount=1, n_jobs=1):
-    all_metrics = all_nonphylogenetic_measures_beta()
-    implemented_metrics = implemented_nonphylogenetic_metrics_dict()
-
-    if metric not in all_metrics:
-        raise ValueError("Unknown metric: %s" % metric)
-
-    if metric in implemented_metrics:
-        func = ctx.get_action(
-                'diversity_lib', local_method_names_dict()[metric])
-    else:
-        func = ctx.get_action('diversity_lib', 'skbio_dispatch')
-        func = partial(func, metric=metric, pseudocount=pseudocount)
-
-    # TODO: test dispatch to skbio and local measures to ensure partial works
-    result = func(table=table, n_jobs=n_jobs)
-    return tuple(result)
-
-
-def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
-                               variance_adjusted=False, alpha=None,
-                               bypass_tips=False):
-    metrics = all_phylogenetic_measures_dict()
-    generalized_unifrac = 'generalized_unifrac'
-
-    if metric not in metrics:
-        raise ValueError("Unknown metric: %s" % metric)
-
-    if alpha is not None and metric != generalized_unifrac:
-        raise ValueError('The alpha parameter is only allowed when the choice'
-                         ' of metric is generalized_unifrac')
-
-    # HACK: this logic will be simpler once the remaining unifracs are done
-    if metric in ('unweighted_unifrac', 'weighted_unifrac') \
-            and not variance_adjusted:
-        func = ctx.get_action('diversity_lib', metric)
-    else:
-        # handle unimplemented unifracs
-        func = ctx.get_action('diversity_lib', 'unifrac_beta_dispatch')
-        func = partial(func, metric=metric, alpha=alpha,
-                       variance_adjusted=variance_adjusted)
-
-    result = func(table, phylogeny, threads=threads,
-                  bypass_tips=bypass_tips)
-    return tuple(result)
-
-
 @_disallow_empty_tables
 @_validate_requested_cpus
-def skbio_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
-                   n_jobs: int = 1) -> skbio.DistanceMatrix:
+def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
+                     n_jobs: int = 1) -> skbio.DistanceMatrix:
     def aitchison(x, y, **kwds):
         return euclidean(clr(x), clr(y))
 
     def canberra_adkins(x, y, **kwds):
-        if (x < 0).any() or (y < 0).any():
-            raise ValueError("Canberra-Adkins is only defined over positive "
-                             "values.")
-
         nz = ((x > 0) | (y > 0))
         x_ = x[nz]
         y_ = y[nz]
@@ -163,15 +85,19 @@ def skbio_dispatch(table: biom.Table, metric: str, pseudocount: int = 1,
 
 @_disallow_empty_tables
 @_validate_requested_cpus
-def unifrac_beta_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
-                          metric: str, threads: int = 1,
-                          variance_adjusted: bool = False,
-                          alpha: float = None, bypass_tips: bool = False
-                          ) -> skbio.DistanceMatrix:
-    # TODO: Should these checks be duplicated in this method and the "parent"
-    # pipeline, in case users use unifrac_beta_dispatch directly?
-    if metric not in all_phylogenetic_measures_dict():
-        raise ValueError("Unknown metric: %s" % metric)
+def beta_phylogenetic_passthrough(table: BIOMV210Format,
+                                  phylogeny: NewickFormat,
+                                  metric: str, threads: int = 1,
+                                  variance_adjusted: bool = False,
+                                  alpha: float = None,
+                                  bypass_tips: bool = False
+                                  ) -> skbio.DistanceMatrix:
+    unifrac_functions = {
+            'unweighted_unifrac': unifrac.unweighted,
+            'weighted_unifrac': unifrac.weighted_unnormalized,
+            'weighted_normalized_unifrac': unifrac.weighted_normalized,
+            'generalized_unifrac': unifrac.generalized}
+    func = unifrac_functions[metric]
 
     if alpha is not None and metric != 'generalized_unifrac':
         raise ValueError('The alpha parameter is only allowed when the choice'
@@ -180,14 +106,12 @@ def unifrac_beta_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
     # handle unimplemented unifracs
     if metric == 'generalized_unifrac':
         alpha = 1.0 if alpha is None else alpha
-        func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
-                       alpha=alpha,
-                       variance_adjusted=variance_adjusted)
+        func = partial(func, alpha=alpha, variance_adjusted=variance_adjusted)
     else:
-        func = partial(unimplemented_phylogenetic_metrics_dict()[metric],
-                       variance_adjusted=variance_adjusted)
+        func = partial(func, variance_adjusted=variance_adjusted)
 
-    return func(table, phylogeny, threads=threads, bypass_tips=bypass_tips)
+    return func(str(table), str(phylogeny), threads=threads,
+                bypass_tips=bypass_tips)
 
 
 # --------------------Non-Phylogenetic-----------------------
@@ -241,11 +165,3 @@ def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
                                          threads=threads,
                                          variance_adjusted=False,
                                          bypass_tips=bypass_tips)
-
-# TODO: How do we feel about registered methods named with underscores:
-#  e.g. _unifrac_beta_dispatch?
-# By factoring this and skbio_dispatch into methods, we are exposing additional
-# user-facing methods (kinda gross) in order to clean up and make consistent
-# the behavior of the dispatch pipelines. Among other things, this saves us
-# from having to manually make skbio and unifrac results into Result objects.
-# Pro: better modularity, consistency       Con: UI and Provenance clutter

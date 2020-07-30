@@ -15,10 +15,11 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
-                              shannon_entropy)
+                              shannon_entropy, alpha, translate_metric_name)
+from qiime2 import Artifact
 
-nonphylogenetic_measures = [observed_features, pielou_evenness,
-                            shannon_entropy]
+nonphylogenetic_metrics = alpha.METRICS['NONPHYLO']['IMPL']
+metric_name_translations = alpha.METRICS['METRIC_NAME_TRANSLATIONS']
 
 
 class SmokeTests(TestPluginBase):
@@ -26,12 +27,16 @@ class SmokeTests(TestPluginBase):
 
     def setUp(self):
         super().setUp()
-        self.empty_table = biom.Table(np.array([]), [], [])
+        empty_table = biom.Table(np.array([]), [], [])
+        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
+                                                empty_table)
 
     def test_non_phylogenetic_passed_empty_table(self):
-        for measure in nonphylogenetic_measures:
+        for metric in nonphylogenetic_metrics:
+            metric_tr = translate_metric_name(metric, metric_name_translations)
+            method = self.plugin.actions[metric_tr]
             with self.assertRaisesRegex(ValueError, 'empty'):
-                measure(table=self.empty_table)
+                method(table=self.empty_table)
 
 
 class FaithPDTests(TestPluginBase):
@@ -237,5 +242,43 @@ class ShannonEntropyTests(TestPluginBase):
 
 # TODO: Can we test a single table run through multiple methods to ensure the
 # table doesn't get mutated?
-# TODO: test dispatch
-# TODO: confirm dispatch captures citation details in provenance
+# TODO: confirm passthrough captures citation details in provenance
+
+
+class AlphaPassthroughTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.method = self.plugin.actions['alpha_passthrough']
+        self.available_metrics = alpha.METRICS['NONPHYLO']['UNIMPL']
+        empty_table = biom.Table(np.array([]), [], [])
+        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
+                                                empty_table)
+        crawford_tbl = self.get_data_path('crawford.biom')
+        self.crawford_tbl = Artifact.import_data('FeatureTable[Frequency]',
+                                                 crawford_tbl)
+
+    def testMethod(self):
+        for metric in self.available_metrics:
+            # NOTE: crawford table used b/c input_table too minimal for `ace`
+            self.method(table=self.crawford_tbl, metric=metric)
+        # If we get here, then our methods ran without error
+        self.assertTrue(True)
+
+    def test_passed_empty_table(self):
+        for metric in self.available_metrics:
+            with self.assertRaisesRegex(ValueError, 'empty'):
+                self.method(table=self.empty_table, metric=metric)
+
+    def test_passed_bad_metric(self):
+        with self.assertRaisesRegex(TypeError,
+                                    'imaginary_metric.*incompatible'):
+            self.method(table=self.crawford_tbl, metric='imaginary_metric')
+
+    def test_passed_implemented_metric(self):
+        # alpha_passthrough does not provide access to measures that have been
+        # implemented locally
+        for metric in alpha.METRICS['NONPHYLO']['IMPL']:
+            with self.assertRaisesRegex(TypeError, f"{metric}.*incompatible"):
+                self.method(table=self.crawford_tbl, metric=metric)

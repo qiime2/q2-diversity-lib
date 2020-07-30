@@ -7,30 +7,21 @@
 # ----------------------------------------------------------------------------
 
 from .alpha import (faith_pd, observed_features, pielou_evenness,
-                    shannon_entropy, alpha_dispatch,
-                    alpha_phylogenetic_dispatch,
-                    alpha_rarefaction_dispatch,
-                    alpha_rarefaction_phylogenetic_dispatch,
-                    all_phylogenetic_measures_alpha,
-                    all_nonphylogenetic_measures_alpha)
+                    shannon_entropy, alpha_passthrough)
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
                    weighted_unifrac,
-                   beta_dispatch, beta_phylogenetic_dispatch,
-                   skbio_dispatch, unifrac_beta_dispatch,
-                   all_phylogenetic_measures_beta,
-                   all_nonphylogenetic_measures_beta)
+                   beta_passthrough, beta_phylogenetic_passthrough)
+from ._util import translate_metric_name, MockPipelineContext
 from ._version import get_versions
 
 __version__ = get_versions()['version']
 del get_versions
 
 __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
-           'shannon_entropy', 'bray_curtis', 'jaccard', 'unweighted_unifrac',
-           'weighted_unifrac', 'alpha_dispatch',
-           'alpha_phylogenetic_dispatch', 'alpha_rarefaction_dispatch',
-           'alpha_rarefaction_phylogenetic_dispatch', 'beta_dispatch',
-           'beta_phylogenetic_dispatch', 'skbio_dispatch',
-           'unifrac_beta_dispatch', 'all_phylogenetic_measures_alpha',
-           'all_nonphylogenetic_measures_alpha',
-           'all_phylogenetic_measures_beta',
-           'all_nonphylogenetic_measures_beta']
+           'shannon_entropy', 'alpha_passthrough', 'bray_curtis', 'jaccard',
+           'unweighted_unifrac', 'weighted_unifrac',
+           'beta_passthrough',
+           'beta_phylogenetic_passthrough',
+           'translate_metric_name',
+           'MockPipelineContext'
+           ]

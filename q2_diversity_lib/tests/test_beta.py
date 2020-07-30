@@ -15,7 +15,7 @@ from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from q2_diversity_lib import (
         bray_curtis, jaccard, unweighted_unifrac,
-        weighted_unifrac)
+        weighted_unifrac, beta)
 
 from qiime2 import Artifact
 
@@ -329,3 +329,137 @@ class WeightedUnifrac(TestPluginBase):
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
+
+
+class BetaPassthroughTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.method = self.plugin.actions['beta_passthrough']
+        self.available_metrics = beta.METRICS['NONPHYLO']['UNIMPL']
+        empty_table = biom.Table(np.array([]), [], [])
+        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
+                                                empty_table)
+        crawford_tbl = self.get_data_path('crawford.biom')
+        self.crawford_tbl = Artifact.import_data('FeatureTable[Frequency]',
+                                                 crawford_tbl)
+        table = biom.Table(np.array([[0, 1, 3], [1, 1, 2]]),
+                           ['O1', 'O2'],
+                           ['S1', 'S2', 'S3'])
+        self.table = Artifact.import_data('FeatureTable[Frequency]', table)
+
+    def testMethod(self):
+        for metric in self.available_metrics:
+            print(metric)
+            self.method(table=self.crawford_tbl, metric=metric)
+        # If we get here, then our methods ran without error
+        self.assertTrue(True)
+
+    def test_passed_empty_table(self):
+        for metric in self.available_metrics:
+            with self.assertRaisesRegex(ValueError, 'empty'):
+                self.method(table=self.empty_table, metric=metric)
+
+    def test_passed_bad_metric(self):
+        with self.assertRaisesRegex(TypeError,
+                                    'imaginary_metric.*incompatible'):
+            self.method(table=self.crawford_tbl, metric='imaginary_metric')
+
+    def test_passed_implemented_metric(self):
+        # beta_passthrough does not provide access to measures that have been
+        # implemented locally
+        for metric in beta.METRICS['NONPHYLO']['IMPL']:
+            with self.assertRaisesRegex(TypeError, f"{metric}.*incompatible"):
+                self.method(table=self.crawford_tbl, metric=metric)
+
+    def test_aitchison(self):
+        actual = self.method(table=self.table, metric='aitchison')
+        actual = actual[0].view(skbio.DistanceMatrix)
+        expected = skbio.DistanceMatrix([[0.0000000, 0.4901290, 0.6935510],
+                                         [0.4901290, 0.0000000, 0.2034219],
+                                         [0.6935510, 0.2034219, 0.0000000]],
+                                        ids=['S1', 'S2', 'S3'])
+
+        self.assertEqual(actual.ids, expected.ids)
+        for id1 in actual.ids:
+            for id2 in actual.ids:
+                npt.assert_almost_equal(actual[id1, id2], expected[id1, id2])
+
+    def test_canberra_adkins(self):
+        t = biom.Table(np.array([[0, 0], [0, 1], [1, 2]]),
+                       ['O1', 'O2', 'O3'],
+                       ['S1', 'S2'])
+        t = Artifact.import_data('FeatureTable[Frequency]', t)
+        d = (1. / 2.) * sum([abs(0. - 1.) / (0. + 1.),
+                             abs(1. - 2.) / (1. + 2.)])
+        expected = skbio.DistanceMatrix(np.array([[0.0, d], [d, 0.0]]),
+                                        ids=['S1', 'S2'])
+        actual = self.method(table=t, metric='canberra_adkins')
+        actual = actual[0].view(skbio.DistanceMatrix)
+
+        self.assertEqual(actual.ids, expected.ids)
+        for id1 in actual.ids:
+            for id2 in actual.ids:
+                npt.assert_almost_equal(actual[id1, id2], expected[id1, id2])
+
+    def test_beta_canberra_adkins_negative_values(self):
+        t = biom.Table(np.array([[0, 0], [0, 1], [-1, -2]]),
+                       ['O1', 'O2', 'O3'],
+                       ['S1', 'S2'])
+        t = Artifact.import_data('FeatureTable[Frequency]', t)
+
+        with self.assertRaisesRegex(ValueError, 'cannot.*negative values'):
+            self.method(table=t, metric='canberra_adkins')
+
+    def test_jensenshannon(self):
+        actual = self.method(table=self.table, metric='jensenshannon')
+        # expected computed with scipy.spatial.distance.jensenshannon
+        expected = skbio.DistanceMatrix([[0.0000000, 0.4645014, 0.52379239],
+                                         [0.4645014, 0.0000000, 0.07112939],
+                                         [0.52379239, 0.07112939, 0.0000000]],
+                                        ids=['S1', 'S2', 'S3'])
+
+        actual = actual[0].view(skbio.DistanceMatrix)
+        self.assertEqual(actual.ids, expected.ids)
+        for id1 in actual.ids:
+            for id2 in actual.ids:
+                npt.assert_almost_equal(actual[id1, id2], expected[id1, id2])
+
+
+class BetaPhylogeneticPassthroughTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.method = self.plugin.actions['beta_phylogenetic_passthrough']
+        self.available_metrics = beta.METRICS['PHYLO']['UNIMPL']
+        empty_table = biom.Table(np.array([]), [], [])
+        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
+                                                empty_table)
+        crawford_tbl = self.get_data_path('crawford.biom')
+        self.crawford_tbl = Artifact.import_data('FeatureTable[Frequency]',
+                                                 crawford_tbl)
+        crawford_tree = self.get_data_path('crawford.nwk')
+        self.crawford_tree = Artifact.import_data('Phylogeny[Rooted]',
+                                                  crawford_tree)
+
+    def testMethod(self):
+        for metric in self.available_metrics:
+            self.method(table=self.crawford_tbl,
+                        phylogeny=self.crawford_tree, metric=metric)
+        # If we get here, then our methods ran without error
+        self.assertTrue(True)
+
+    def test_passed_empty_table(self):
+        for metric in self.available_metrics:
+            with self.assertRaisesRegex(ValueError, 'empty'):
+                self.method(table=self.empty_table,
+                            phylogeny=self.crawford_tree, metric=metric)
+
+    def test_passed_bad_metric(self):
+        with self.assertRaisesRegex(TypeError,
+                                    'imaginary_metric.*incompatible'):
+            self.method(table=self.crawford_tbl,
+                        phylogeny=self.crawford_tree,
+                        metric='imaginary_metric')

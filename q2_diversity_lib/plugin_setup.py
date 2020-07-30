@@ -57,8 +57,7 @@ plugin.methods.register_function(
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
     parameters=None,
-    outputs=[('vector',
-              SampleData[AlphaDiversity])],
+    outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': "The feature table containing the samples for which Faith's "
                  "phylogenetic diversity should be computed. Table values "
@@ -82,8 +81,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence]},
     parameters=None,
-    outputs=[('vector',
-             SampleData[AlphaDiversity])],
+    outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={'table': "The feature table containing the samples "
                         "for which the number of observed features should be "
                         "calculated. Table values will be converted to "
@@ -100,8 +98,7 @@ plugin.methods.register_function(
     function=q2_diversity_lib.pielou_evenness,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'drop_undefined_samples': Bool},
-    outputs=[('vector',
-             SampleData[AlphaDiversity])],
+    outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={'table': "The feature table containing the samples "
                         "for which Pielou's evenness should be computed."},
     parameter_descriptions={'drop_undefined_samples': "Samples with fewer than"
@@ -121,8 +118,7 @@ plugin.methods.register_function(
     function=q2_diversity_lib.shannon_entropy,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'drop_undefined_samples': Bool},
-    outputs=[('vector',
-             SampleData[AlphaDiversity])],
+    outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={'table': "The feature table containing the samples "
                         "for which Shannon's Entropy should be computed."},
     parameter_descriptions={'drop_undefined_samples': "Samples with no "
@@ -136,6 +132,7 @@ plugin.methods.register_function(
                 "feature table",
     citations=[citations['shannon1948communication']]
 )
+
 
 # ------------------------ beta-diversity -----------------------
 # TODO: Augment citations as needed
@@ -255,141 +252,28 @@ plugin.methods.register_function(
 )
 
 # ------------------------ Dispatch ------------------------
-plugin.pipelines.register_function(
-    function=q2_diversity_lib.alpha_dispatch,
-    inputs={'table':
-            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
-    parameters={'metric':
-                Str % Choices(alpha.all_nonphylogenetic_measures_alpha()),
-                'drop_undefined_samples': Bool},
-    outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
-    input_descriptions={
-        'table': ('The feature table containing the samples for which alpha '
-                  'diversity should be computed.')
-    },
-    parameter_descriptions={
-        'metric': 'The alpha diversity metric to be computed.',
-        'drop_undefined_samples': drop_undef_samples_description
-    },
-    output_descriptions={
-        'alpha_diversity': 'Vector containing per-sample alpha diversities.'
-    },
-    name='Alpha diversity dispatch',
-    description=("Selects the most complete implementation of a "
-                 "user-specified non-phylogenetic alpha diversity measure, and"
-                 " computes a vector for all samples in a feature table. ")
+plugin.methods.register_function(
+    function=q2_diversity_lib.alpha_passthrough,
+    inputs={'table': FeatureTable[Frequency]},
+    parameters={'metric': Str % Choices(alpha.METRICS['NONPHYLO']['UNIMPL'])},
+    outputs=[('vector', SampleData[AlphaDiversity])],
+    input_descriptions={'table': "The feature table containing the samples "
+                        "for which a selected metric should be computed."},
+    parameter_descriptions={'metric':
+                            'The alpha diversity metric to be computed.'},
+    output_descriptions={'vector': "Vector containing per-sample values "
+                                   "for the chosen metric."},
+    name="Alpha Passthrough (non-phylogenetic)",
+    description="Computes a vector of values for each samples in a feature "
+                "table using the scikit-bio implementation of a chosen alpha "
+                "diversity metric."
 )
 
-
-plugin.pipelines.register_function(
-    function=q2_diversity_lib.alpha_phylogenetic_dispatch,
-    inputs={'table':
-            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
-            'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric':
-                Str % Choices(alpha.all_phylogenetic_measures_alpha())},
-    outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
-    input_descriptions={
-        'table': ("The feature table containing the samples for which alpha "
-                  "diversity should be computed."),
-        'phylogeny': ("Phylogenetic tree containing tip identifiers that "
-                      "correspond to the feature identifiers in the table. "
-                      "This tree can contain tip ids that are not present in "
-                      "the table, but all feature ids in the table must be "
-                      "present in this tree.")
-    },
-    parameter_descriptions={
-        'metric': 'The alpha diversity metric to be computed.'},
-    output_descriptions={
-        'alpha_diversity': 'Vector containing per-sample alpha diversities.'
-    },
-    name='Alpha diversity (phylogenetic) dispatch',
-    description=("Selects the most complete implementation of a "
-                 "user-specified phylogenetic alpha diversity measure, and "
-                 "computes a vector for all samples in a feature table.")
-)
-
-
-plugin.pipelines.register_function(
-    function=q2_diversity_lib.beta_dispatch,
-    inputs={'table':
-            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
-    parameters={'metric':
-                Str % Choices(beta.all_nonphylogenetic_measures_beta()),
-                'pseudocount': Int % Range(1, None),
-                'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
-    outputs=[('distance_matrix', DistanceMatrix)],
-    input_descriptions={
-        'table': ('The feature table containing the samples over which beta '
-                  'diversity should be computed.')
-    },
-    parameter_descriptions={
-        'metric': 'The beta diversity metric to be computed.',
-        'pseudocount': ('A pseudocount to handle zeros for compositional '
-                        'metrics.  This is ignored for other metrics.'),
-        'n_jobs': n_jobs_description
-    },
-    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Beta diversity dispatcher',
-    description=("Selects the most complete implementation of a "
-                 "user-specified non-phylogenetic beta diversity metric, and "
-                 "computes a distance matrix for all pairs of samples in a "
-                 "feature table. "),
-)
-
-plugin.pipelines.register_function(
-    function=q2_diversity_lib.beta_phylogenetic_dispatch,
-    inputs={'table':
-            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
-            'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric':
-                Str % Choices(beta.all_phylogenetic_measures_beta()),
-                'threads': Int % Range(1, None) | Str % Choices(['auto']),
-                'variance_adjusted': Bool,
-                'alpha': Float % Range(0, 1, inclusive_end=True),
-                'bypass_tips': Bool},
-    outputs=[('distance_matrix', DistanceMatrix)],
-    input_descriptions={
-        'table': ('The feature table containing the samples over which beta '
-                  'diversity should be computed.'),
-        'phylogeny': ('Phylogenetic tree containing tip identifiers that '
-                      'correspond to the feature identifiers in the table. '
-                      'This tree can contain tip ids that are not present in '
-                      'the table, but all feature ids in the table must be '
-                      'present in this tree.')
-    },
-    parameter_descriptions={
-        'metric': 'The beta diversity metric to be computed.',
-        'threads': threads_description,
-        'variance_adjusted': ('Perform variance adjustment based on Chang et '
-                              'al. BMC Bioinformatics 2011. Weights distances '
-                              'based on the proportion of the relative '
-                              'abundance represented between the samples at a'
-                              ' given node under evaluation.'),
-        'alpha': ('This parameter is only used when the choice of metric is '
-                  'generalized_unifrac. The value of alpha controls importance'
-                  ' of sample proportions. 1.0 is weighted normalized UniFrac.'
-                  ' 0.0 is close to unweighted UniFrac, but only if the sample'
-                  ' proportions are dichotomized.'),
-        'bypass_tips': ('In a bifurcating tree, the tips make up about 50% of '
-                        'the nodes in a tree. By ignoring them, specificity '
-                        'can be traded for reduced compute time. This has the'
-                        ' effect of collapsing the phylogeny, and is analogous'
-                        ' (in concept) to moving from 99% to 97% OTUs')
-    },
-    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Beta diversity (phylogenetic) dispatcher',
-    description=("Selects the most complete implementation of a "
-                 "user-specified phylogenetic beta diversity metric, and "
-                 "computes a distance matrix for all pairs of samples in a "
-                 "feature table. ")
-)
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.skbio_dispatch,
+    function=q2_diversity_lib.beta_passthrough,
     inputs={'table': FeatureTable[Frequency]},
-    parameters={'metric':
-                Str % Choices(beta.all_nonphylogenetic_measures_beta()),
+    parameters={'metric': Str % Choices(beta.METRICS['NONPHYLO']['UNIMPL']),
                 'pseudocount': Int % Range(1, None),
                 'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
@@ -404,19 +288,17 @@ plugin.methods.register_function(
         'n_jobs': n_jobs_description
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Scikit-bio direct beta diversity dispatcher',
+    name='Beta Passthrough (non-phylogenetic)',
     description=("Computes a distance matrix for all pairs of samples in a "
                  "feature table using the scikit-bio implementation of a "
                  "chosen beta diversity metric."),
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.unifrac_beta_dispatch,
-    inputs={'table':
-            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
+    function=q2_diversity_lib.beta_phylogenetic_passthrough,
+    inputs={'table': FeatureTable[Frequency],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric':
-                Str % Choices(beta.all_phylogenetic_measures_beta()),
+    parameters={'metric': Str % Choices(beta.METRICS['PHYLO']['UNIMPL']),
                 'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'variance_adjusted': Bool,
                 'alpha': Float % Range(0, 1, inclusive_end=True),
@@ -451,7 +333,7 @@ plugin.methods.register_function(
                         ' (in concept) to moving from 99% to 97% OTUs')
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Unifrac library direct beta diversity dispatcher',
+    name='Beta Phylogenetic Passthrough',
     description=("Computes a distance matrix for all pairs of samples in a "
                  "feature table using the unifrac implementation of a "
                  "chosen beta diversity metric."),
