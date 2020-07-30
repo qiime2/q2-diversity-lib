@@ -57,8 +57,7 @@ plugin.methods.register_function(
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
     parameters=None,
-    outputs=[('vector',
-              SampleData[AlphaDiversity])],
+    outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': "The feature table containing the samples for which Faith's "
                  "phylogenetic diversity should be computed. Table values "
@@ -82,8 +81,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence]},
     parameters=None,
-    outputs=[('vector',
-             SampleData[AlphaDiversity])],
+    outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={'table': "The feature table containing the samples "
                         "for which the number of observed features should be "
                         "calculated. Table values will be converted to "
@@ -100,8 +98,7 @@ plugin.methods.register_function(
     function=q2_diversity_lib.pielou_evenness,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'drop_undefined_samples': Bool},
-    outputs=[('vector',
-             SampleData[AlphaDiversity])],
+    outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={'table': "The feature table containing the samples "
                         "for which Pielou's evenness should be computed."},
     parameter_descriptions={'drop_undefined_samples': "Samples with fewer than"
@@ -121,8 +118,7 @@ plugin.methods.register_function(
     function=q2_diversity_lib.shannon_entropy,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'drop_undefined_samples': Bool},
-    outputs=[('vector',
-             SampleData[AlphaDiversity])],
+    outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={'table': "The feature table containing the samples "
                         "for which Shannon's Entropy should be computed."},
     parameter_descriptions={'drop_undefined_samples': "Samples with no "
