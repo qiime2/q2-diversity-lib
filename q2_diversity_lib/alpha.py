@@ -44,16 +44,12 @@ _all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['IMPL']
 _all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
                        | METRICS['NONPHYLO']['UNIMPL']
 
-def implemented_phylogenetic_measures():
-    return set(implemented_phylogenetic_measures_dict())
 
-
-all_phylogenetic_measures_alpha = implemented_phylogenetic_measures
+def implemented_phylogenetic_measures_dict():
+    return {'faith_pd': unifrac.faith_pd}
 
 
 # TODO: should any of these collections be _private?
-# TODO: can this collection go, now that we're accessing measures by strings in
-# pipelines instead of by directly grabbing functions?
 def implemented_nonphylogenetic_measures_dict():
     return {'observed_features': observed_features,
             'pielou_e': pielou_evenness,
@@ -64,28 +60,10 @@ def measure_name_translator():
     return {'observed_features': 'observed_otus'}
 
 
-def implemented_nonphylogenetic_measures():
-    return set(implemented_nonphylogenetic_measures_dict())
-
-
-def unimplemented_nonphylogenetic_measures():
-    return {'ace', 'chao1', 'chao1_ci', 'berger_parker_d', 'brillouin_d',
-            'dominance', 'doubles', 'enspie', 'esty_ci', 'fisher_alpha',
-            'goods_coverage', 'heip_e', 'kempton_taylor_q', 'margalef',
-            'mcintosh_d', 'mcintosh_e', 'menhinick', 'michaelis_menten_fit',
-            'osd', 'robbins', 'simpson', 'simpson_e', 'singles', 'strong',
-            'gini_index', 'lladser_pe', 'lladser_ci'}
-
-
-def all_nonphylogenetic_measures_alpha():
-    return implemented_nonphylogenetic_measures() | \
-           unimplemented_nonphylogenetic_measures()
-
-
 # --------------------- Method Dispatch --------------------------------------
 def alpha_dispatch(ctx, table, metric, drop_undefined_samples):
-    metrics = all_nonphylogenetic_measures_alpha()
-    implemented_metrics = implemented_nonphylogenetic_measures()
+    metrics = _all_nonphylo_metrics
+    implemented_metrics = METRICS['NONPHYLO']['IMPL']
     if metric not in metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
@@ -114,7 +92,7 @@ def alpha_dispatch(ctx, table, metric, drop_undefined_samples):
 
 # TODO: smoke test empty table
 def alpha_phylogenetic_dispatch(ctx, table, phylogeny, metric):
-    metrics = implemented_phylogenetic_measures()
+    metrics = _all_phylo_metrics
     if metric not in metrics:
         raise ValueError("Unknown phylogenetic metric: %s" % metric)
 
@@ -128,12 +106,13 @@ def alpha_phylogenetic_dispatch(ctx, table, phylogeny, metric):
 def alpha_rarefaction_dispatch(table: biom.Table, metric: str,
                                drop_undefined_samples: bool = False
                                ) -> pd.Series:
-    metrics = all_nonphylogenetic_measures_alpha()
-    implemented_metrics = implemented_nonphylogenetic_measures_dict()
+    metrics = _all_nonphylo_metrics
+    implemented_metrics = METRICS['NONPHYLO']['IMPL']
     if metric not in metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
     if metric in implemented_metrics:
+        # TODO: Handle access to python function
         func = implemented_nonphylogenetic_measures_dict()[metric]
         if 'drop_undefined_samples' in signature(func).parameters:
             func = partial(func, table=table,
@@ -158,10 +137,11 @@ def alpha_rarefaction_dispatch(table: biom.Table, metric: str,
 def alpha_rarefaction_phylogenetic_dispatch(table: BIOMV210Format,
                                             phylogeny: NewickFormat,
                                             metric: str) -> pd.Series:
-    metrics = implemented_phylogenetic_measures()
+    metrics = _all_phylo_metrics
     if metric not in metrics:
         raise ValueError("Unknown phylogenetic metric: %s" % metric)
 
+    # TODO: Handle access to python function
     func = implemented_phylogenetic_measures_dict()[metric]
     result = func(str(table), str(phylogeny))
     result.name = metric

@@ -23,51 +23,37 @@ from ._util import (_disallow_empty_tables,
                     _validate_requested_cpus)
 
 
-# ----------Collections to simplify dispatch process------------------------
-def implemented_nonphylogenetic_metrics_dict():
-    return {'braycurtis': bray_curtis,
-            'jaccard': jaccard}
-
-
-def implemented_nonphylogenetic_metrics():
-    return set(implemented_nonphylogenetic_metrics_dict())
-
-
-def unimplemented_nonphylogenetic_metrics():
-    return {'cityblock', 'euclidean', 'seuclidean', 'sqeuclidean', 'cosine',
-            'correlation', 'hamming', 'chebyshev', 'canberra', 'mahalanobis',
-            'yule', 'matching', 'dice', 'kulsinski', 'rogerstanimoto',
-            'russellrao', 'sokalmichener', 'sokalsneath', 'wminkowski',
-            'aitchison', 'canberra_adkins', 'jensenshannon'}
-
-
-def all_nonphylogenetic_measures_beta():
-    return implemented_nonphylogenetic_metrics() | \
-           unimplemented_nonphylogenetic_metrics()
-
-
-def implemented_phylogenetic_metrics_dict():
-    return {'unweighted_unifrac': unweighted_unifrac,
-            'weighted_unifrac': weighted_unifrac}
-
-
 # NOTE: a metric may be in both implemented and unimplemented collections,
-# if it is only implemented with certain params (e.g. VA Weighted Unifrac is
-# unimplemented, but uses the unifrac.weighted_unnormalized function)
+# if it is only implemented with certain params (e.g. both 'vanilla' and
+# Variance Adjusted weighted unifracs use unifrac.weighted_unnormalized, but
+# only 'vanilla' is currently implemented)
+METRICS = {
+    'PHYLO': {
+        'IMPL': {'unweighted_unifrac', 'weighted_unifrac'},
+        'UNIMPL': {'unweighted_unifrac', 'weighted_unifrac',
+                   'weighted_normalized_unifrac', 'generalized_unifrac'},
+    },
+    'NONPHYLO': {
+        'IMPL': {'braycurtis', 'jaccard'},
+        'UNIMPL': {'cityblock', 'euclidean', 'seuclidean', 'sqeuclidean',
+                   'cosine', 'correlation', 'hamming', 'chebyshev', 'canberra',
+                   'mahalanobis', 'yule', 'matching', 'dice', 'kulsinski',
+                   'rogerstanimoto', 'russellrao', 'sokalmichener',
+                   'sokalsneath', 'wminkowski', 'aitchison', 'canberra_adkins',
+                   'jensenshannon'}
+    }
+}
+
+_all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['IMPL']
+_all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
+                        | METRICS['NONPHYLO']['UNIMPL']
+
+
 def unimplemented_phylogenetic_metrics_dict():
     return {'unweighted_unifrac': unifrac.unweighted,
             'weighted_unifrac': unifrac.weighted_unnormalized,
             'weighted_normalized_unifrac': unifrac.weighted_normalized,
             'generalized_unifrac': unifrac.generalized}
-
-
-def all_phylogenetic_measures_dict():
-    return {**implemented_phylogenetic_metrics_dict(),
-            **unimplemented_phylogenetic_metrics_dict()}
-
-
-def all_phylogenetic_measures_beta():
-    return set(all_phylogenetic_measures_dict())
 
 
 def local_method_names_dict():
@@ -79,13 +65,14 @@ def local_method_names_dict():
 
 # -------------------- Method Dispatch -----------------------
 def beta_dispatch(ctx, table, metric, pseudocount=1, n_jobs=1):
-    all_metrics = all_nonphylogenetic_measures_beta()
-    implemented_metrics = implemented_nonphylogenetic_metrics_dict()
+    all_metrics = _all_nonphylo_metrics
+    implemented_metrics = METRICS['NONPHYLO']['IMPL']
 
     if metric not in all_metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
     if metric in implemented_metrics:
+        # TODO: Make this method_name translation consistent
         func = ctx.get_action(
                 'diversity_lib', local_method_names_dict()[metric])
     else:
@@ -100,10 +87,10 @@ def beta_dispatch(ctx, table, metric, pseudocount=1, n_jobs=1):
 def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
                                variance_adjusted=False, alpha=None,
                                bypass_tips=False):
-    metrics = all_phylogenetic_measures_dict()
+    all_metrics = _all_phylo_metrics
     generalized_unifrac = 'generalized_unifrac'
 
-    if metric not in metrics:
+    if metric not in all_metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
     if alpha is not None and metric != generalized_unifrac:
@@ -170,7 +157,7 @@ def unifrac_beta_dispatch(table: BIOMV210Format, phylogeny: NewickFormat,
                           ) -> skbio.DistanceMatrix:
     # TODO: Should these checks be duplicated in this method and the "parent"
     # pipeline, in case users use unifrac_beta_dispatch directly?
-    if metric not in all_phylogenetic_measures_dict():
+    if metric not in _all_phylo_metrics:
         raise ValueError("Unknown metric: %s" % metric)
 
     if alpha is not None and metric != 'generalized_unifrac':

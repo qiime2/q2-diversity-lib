@@ -273,8 +273,7 @@ plugin.pipelines.register_function(
     function=q2_diversity_lib.alpha_dispatch,
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
-    parameters={'metric':
-                Str % Choices(alpha.all_nonphylogenetic_measures_alpha()),
+    parameters={'metric': Str % Choices(alpha._all_nonphylo_metrics),
                 'drop_undefined_samples': Bool},
     outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
     input_descriptions={
@@ -300,8 +299,7 @@ plugin.pipelines.register_function(
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric':
-                Str % Choices(alpha.all_phylogenetic_measures_alpha())},
+    parameters={'metric': Str % Choices(alpha._all_phylo_metrics)},
     outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': ("The feature table containing the samples for which alpha "
@@ -328,8 +326,7 @@ plugin.pipelines.register_function(
     function=q2_diversity_lib.beta_dispatch,
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
-    parameters={'metric':
-                Str % Choices(beta.all_nonphylogenetic_measures_beta()),
+    parameters={'metric': Str % Choices(beta._all_nonphylo_metrics),
                 'pseudocount': Int % Range(1, None),
                 'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
@@ -356,8 +353,7 @@ plugin.pipelines.register_function(
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric':
-                Str % Choices(beta.all_phylogenetic_measures_beta()),
+    parameters={'metric': Str % Choices(beta._all_phylo_metrics),
                 'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'variance_adjusted': Bool,
                 'alpha': Float % Range(0, 1, inclusive_end=True),
@@ -402,8 +398,7 @@ plugin.pipelines.register_function(
 plugin.methods.register_function(
     function=q2_diversity_lib.skbio_dispatch,
     inputs={'table': FeatureTable[Frequency]},
-    parameters={'metric':
-                Str % Choices(beta.all_nonphylogenetic_measures_beta()),
+    parameters={'metric': Str % Choices(beta._all_nonphylo_metrics),
                 'pseudocount': Int % Range(1, None),
                 'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
@@ -429,8 +424,7 @@ plugin.methods.register_function(
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric':
-                Str % Choices(beta.all_phylogenetic_measures_beta()),
+    parameters={'metric': Str % Choices(beta._all_phylo_metrics),
                 'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'variance_adjusted': Bool,
                 'alpha': Float % Range(0, 1, inclusive_end=True),
