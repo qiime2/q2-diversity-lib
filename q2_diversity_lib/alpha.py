@@ -40,7 +40,7 @@ METRICS = {
 }
 
 
-_all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['IMPL']
+_all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['UNIMPL']
 _all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
                        | METRICS['NONPHYLO']['UNIMPL']
 
