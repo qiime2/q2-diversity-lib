@@ -27,7 +27,7 @@ METRICS = {
         'UNIMPL': set()
     },
     'NONPHYLO': {
-        'IMPL': {'observed_features', 'pielou_e', 'shannon'},
+        'IMPL': {'observed_features', 'pielou_evenness', 'shannon_entropy'},
         'UNIMPL': {'ace', 'chao1', 'chao1_ci', 'berger_parker_d',
                    'brillouin_d', 'dominance', 'doubles', 'enspie', 'esty_ci',
                    'fisher_alpha', 'goods_coverage', 'heip_e',
@@ -50,48 +50,7 @@ def implemented_phylogenetic_measures_dict():
     return {'faith_pd': unifrac.faith_pd}
 
 
-# TODO: remove once this functionality is exported to q2_diversity
-def implemented_nonphylogenetic_measures_dict():
-    return {'observed_features': observed_features,
-            'pielou_e': pielou_evenness,
-            'shannon': shannon_entropy}
-
-
-# TODO: remove once this functionality is exported to q2_diversity
-def measure_name_translator():
-    return {'observed_features': 'observed_otus'}
-
-
 # --------------------- Method Dispatch --------------------------------------
-def alpha_dispatch(ctx, table, metric, drop_undefined_samples):
-    metrics = _all_nonphylo_metrics
-    implemented_metrics = METRICS['NONPHYLO']['IMPL']
-    if metric not in metrics:
-        raise ValueError("Unknown metric: %s" % metric)
-
-    if metric in implemented_metrics:
-        func = ctx.get_action('diversity_lib', metric)
-        if 'drop_undefined_samples' in signature(func).parameters:
-            func = partial(func, table=table,
-                           drop_undefined_samples=drop_undefined_samples)
-        else:
-            if drop_undefined_samples:
-                warnings.warn(f"The {metric} metric does not support dropping "
-                              "undefined samples.")
-            func = partial(func, table=table)
-    else:
-        if metric in measure_name_translator():
-            metric = measure_name_translator()[metric]
-        table = table.view(biom.Table)
-        counts = table.matrix_data.toarray().astype(int).T
-        sample_ids = table.ids(axis='sample')
-        func = partial(skbio.diversity.alpha_diversity, metric=metric,
-                       counts=counts, ids=sample_ids)
-
-    result = func()
-    return tuple(result)
-
-
 # TODO: smoke test empty table
 def alpha_phylogenetic_dispatch(ctx, table, phylogeny, metric):
     metrics = _all_phylo_metrics
@@ -114,8 +73,10 @@ def alpha_rarefaction_dispatch(table: biom.Table, metric: str,
         raise ValueError("Unknown metric: %s" % metric)
 
     if metric in implemented_metrics:
-        # TODO: Handle access to python function
-        func = implemented_nonphylogenetic_measures_dict()[metric]
+        implemented_funcs = {'observed_features': observed_features,
+                             'pielou_evenness': pielou_evenness,
+                             'shannon_entropy': shannon_entropy}
+        func = implemented_funcs[metric]
         if 'drop_undefined_samples' in signature(func).parameters:
             func = partial(func, table=table,
                            drop_undefined_samples=drop_undefined_samples)
@@ -166,8 +127,7 @@ def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa(inplace=False)
     counts = presence_absence_table.matrix_data.toarray().astype(int).T
     sample_ids = presence_absence_table.ids(axis='sample')
-    metric = measure_name_translator()['observed_features']
-    result = skbio.diversity.alpha_diversity(metric=metric,
+    result = skbio.diversity.alpha_diversity(metric='observed_otus',
                                              counts=counts, ids=sample_ids)
     result.name = 'observed_features'
     return result

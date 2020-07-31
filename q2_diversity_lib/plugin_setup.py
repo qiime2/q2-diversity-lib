@@ -270,31 +270,6 @@ plugin.methods.register_function(
 
 # ------------------------ Dispatch ------------------------
 plugin.pipelines.register_function(
-    function=q2_diversity_lib.alpha_dispatch,
-    inputs={'table':
-            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
-    parameters={'metric': Str % Choices(alpha._all_nonphylo_metrics),
-                'drop_undefined_samples': Bool},
-    outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
-    input_descriptions={
-        'table': ('The feature table containing the samples for which alpha '
-                  'diversity should be computed.')
-    },
-    parameter_descriptions={
-        'metric': 'The alpha diversity metric to be computed.',
-        'drop_undefined_samples': drop_undef_samples_description
-    },
-    output_descriptions={
-        'alpha_diversity': 'Vector containing per-sample alpha diversities.'
-    },
-    name='Alpha diversity dispatch',
-    description=("Selects the most complete implementation of a "
-                 "user-specified non-phylogenetic alpha diversity measure, and"
-                 " computes a vector for all samples in a feature table. ")
-)
-
-
-plugin.pipelines.register_function(
     function=q2_diversity_lib.alpha_phylogenetic_dispatch,
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],

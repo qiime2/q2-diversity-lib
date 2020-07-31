@@ -239,3 +239,5 @@ class ShannonEntropyTests(TestPluginBase):
 # table doesn't get mutated?
 # TODO: test dispatch
 # TODO: confirm dispatch captures citation details in provenance
+
+# TODO: smoke test drop_undefined_samples here
