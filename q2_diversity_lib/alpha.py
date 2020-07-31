@@ -51,17 +51,6 @@ def implemented_phylogenetic_measures_dict():
 
 
 # --------------------- Method Dispatch --------------------------------------
-# TODO: smoke test empty table
-def alpha_phylogenetic_dispatch(ctx, table, phylogeny, metric):
-    metrics = _all_phylo_metrics
-    if metric not in metrics:
-        raise ValueError("Unknown phylogenetic metric: %s" % metric)
-
-    func = ctx.get_action('diversity_lib', metric)
-    result = func(table, phylogeny)
-    return tuple(result)
-
-
 # TODO: test drop_undefined_samples logic (including test for warning)
 # TODO: smoke test to confirm l.86-88 doesn't blow up with an empty table
 def alpha_rarefaction_dispatch(table: biom.Table, metric: str,

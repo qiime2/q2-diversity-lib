@@ -270,34 +270,6 @@ plugin.methods.register_function(
 
 # ------------------------ Dispatch ------------------------
 plugin.pipelines.register_function(
-    function=q2_diversity_lib.alpha_phylogenetic_dispatch,
-    inputs={'table':
-            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
-            'phylogeny': Phylogeny[Rooted]},
-    parameters={'metric': Str % Choices(alpha._all_phylo_metrics)},
-    outputs=[('alpha_diversity', SampleData[AlphaDiversity])],
-    input_descriptions={
-        'table': ("The feature table containing the samples for which alpha "
-                  "diversity should be computed."),
-        'phylogeny': ("Phylogenetic tree containing tip identifiers that "
-                      "correspond to the feature identifiers in the table. "
-                      "This tree can contain tip ids that are not present in "
-                      "the table, but all feature ids in the table must be "
-                      "present in this tree.")
-    },
-    parameter_descriptions={
-        'metric': 'The alpha diversity metric to be computed.'},
-    output_descriptions={
-        'alpha_diversity': 'Vector containing per-sample alpha diversities.'
-    },
-    name='Alpha diversity (phylogenetic) dispatch',
-    description=("Selects the most complete implementation of a "
-                 "user-specified phylogenetic alpha diversity measure, and "
-                 "computes a vector for all samples in a feature table.")
-)
-
-
-plugin.pipelines.register_function(
     function=q2_diversity_lib.beta_dispatch,
     inputs={'table':
             FeatureTable[Frequency | RelativeFrequency | PresenceAbsence]},
