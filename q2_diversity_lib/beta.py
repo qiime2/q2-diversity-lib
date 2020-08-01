@@ -59,54 +59,6 @@ def local_method_names_dict():
 
 
 # -------------------- Method Dispatch -----------------------
-def beta_dispatch(ctx, table, metric, pseudocount=1, n_jobs=1):
-    all_metrics = _all_nonphylo_metrics
-    implemented_metrics = METRICS['NONPHYLO']['IMPL']
-
-    if metric not in all_metrics:
-        raise ValueError("Unknown metric: %s" % metric)
-
-    if metric in implemented_metrics:
-        # TODO: Make this method_name translation consistent
-        func = ctx.get_action(
-                'diversity_lib', local_method_names_dict()[metric])
-    else:
-        func = ctx.get_action('diversity_lib', 'beta_passthrough')
-        func = partial(func, metric=metric, pseudocount=pseudocount)
-
-    # TODO: test dispatch to skbio and local measures to ensure partial works
-    result = func(table=table, n_jobs=n_jobs)
-    return tuple(result)
-
-
-def beta_phylogenetic_dispatch(ctx, table, phylogeny, metric, threads=1,
-                               variance_adjusted=False, alpha=None,
-                               bypass_tips=False):
-    all_metrics = _all_phylo_metrics
-    generalized_unifrac = 'generalized_unifrac'
-
-    if metric not in all_metrics:
-        raise ValueError("Unknown metric: %s" % metric)
-
-    if alpha is not None and metric != generalized_unifrac:
-        raise ValueError('The alpha parameter is only allowed when the choice'
-                         ' of metric is generalized_unifrac')
-
-    # HACK: this logic will be simpler once the remaining unifracs are done
-    if metric in ('unweighted_unifrac', 'weighted_unifrac') \
-            and not variance_adjusted:
-        func = ctx.get_action('diversity_lib', metric)
-    else:
-        # handle unimplemented unifracs
-        func = ctx.get_action('diversity_lib', 'beta_phylogenetic_passthrough')
-        func = partial(func, metric=metric, alpha=alpha,
-                       variance_adjusted=variance_adjusted)
-
-    result = func(table, phylogeny, threads=threads,
-                  bypass_tips=bypass_tips)
-    return tuple(result)
-
-
 @_disallow_empty_tables
 @_validate_requested_cpus
 def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
