@@ -14,6 +14,7 @@ from .beta import (bray_curtis, jaccard, unweighted_unifrac,
                    weighted_unifrac,
                    beta_dispatch, beta_phylogenetic_dispatch,
                    beta_passthrough, beta_phylogenetic_passthrough)
+from ._util import translate_metric_name
 from ._version import get_versions
 
 __version__ = get_versions()['version']
@@ -26,4 +27,5 @@ __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'alpha_rarefaction_phylogenetic_dispatch', 'beta_dispatch',
            'beta_phylogenetic_dispatch', 'beta_passthrough',
            'beta_phylogenetic_passthrough',
+           'translate_metric_name'
            ]

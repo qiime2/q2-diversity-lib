@@ -41,7 +41,8 @@ METRICS = {
                    'rogerstanimoto', 'russellrao', 'sokalmichener',
                    'sokalsneath', 'wminkowski', 'aitchison', 'canberra_adkins',
                    'jensenshannon'}
-    }
+    },
+    'METRIC_NAME_TRANSLATIONS': {'braycurtis': 'bray_curtis'}
 }
 
 _all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['UNIMPL']
