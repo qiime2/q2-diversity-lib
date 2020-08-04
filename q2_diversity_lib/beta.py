@@ -50,14 +50,6 @@ _all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
                         | METRICS['NONPHYLO']['UNIMPL']
 
 
-# TODO: remove once this functionality is exported to q2_diversity
-def local_method_names_dict():
-    return {'braycurtis': 'bray_curtis',
-            'jaccard': 'jaccard',
-            'unweighted_unifrac': 'unweighted_unifrac',
-            'weighted_unifrac': 'weighted_unifrac'}
-
-
 # -------------------- Method Dispatch -----------------------
 @_disallow_empty_tables
 @_validate_requested_cpus

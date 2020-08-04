@@ -47,11 +47,6 @@ _all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
                        | METRICS['NONPHYLO']['UNIMPL']
 
 
-# TODO: remove once this functionality is exported to q2_diversity
-def implemented_phylogenetic_measures_dict():
-    return {'faith_pd': unifrac.faith_pd}
-
-
 # --------------------- Method Dispatch --------------------------------------
 # TODO: test drop_undefined_samples logic (including test for warning)
 # TODO: smoke test to confirm l.86-88 doesn't blow up with an empty table
@@ -97,8 +92,9 @@ def alpha_rarefaction_phylogenetic_dispatch(table: BIOMV210Format,
     if metric not in metrics:
         raise ValueError("Unknown phylogenetic metric: %s" % metric)
 
-    # TODO: Handle access to python function
-    func = implemented_phylogenetic_measures_dict()[metric]
+    # NOTE: This collection must contain a function for each alpha phylo metric
+    alpha_phylo_functions = {'faith_pd': unifrac.faith_pd}
+    func = alpha_phylo_functions[metric]
     result = func(str(table), str(phylogeny))
     result.name = metric
     return result
