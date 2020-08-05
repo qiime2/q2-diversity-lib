@@ -15,7 +15,6 @@ import biom
 
 import q2_diversity_lib
 from q2_types.feature_table import BIOMV210Format
-from qiime2 import Artifact
 
 
 def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
@@ -41,8 +40,6 @@ def _disallow_empty_tables(wrapped_function, *args, **kwargs):
         table_obj = biom.load_table(table)
     elif isinstance(table, biom.Table):
         table_obj = table
-    elif isinstance(table, Artifact):
-        table_obj = table.view(biom.Table)
     else:
         raise ValueError("Invalid view type: table passed as "
                          f"{type(table)}")

@@ -7,9 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from .alpha import (faith_pd, observed_features, pielou_evenness,
-                    shannon_entropy, alpha_passthrough,
-                    alpha_rarefaction_dispatch,
-                    alpha_rarefaction_phylogenetic_dispatch)
+                    shannon_entropy, alpha_passthrough)
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
                    weighted_unifrac,
                    beta_passthrough, beta_phylogenetic_passthrough)
@@ -22,8 +20,6 @@ del get_versions
 __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'shannon_entropy', 'alpha_passthrough', 'bray_curtis', 'jaccard',
            'unweighted_unifrac', 'weighted_unifrac',
-           'alpha_rarefaction_dispatch',
-           'alpha_rarefaction_phylogenetic_dispatch',
            'beta_passthrough',
            'beta_phylogenetic_passthrough',
            'translate_metric_name',

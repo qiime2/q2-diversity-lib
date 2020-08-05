@@ -237,6 +237,6 @@ class ShannonEntropyTests(TestPluginBase):
 
 # TODO: Can we test a single table run through multiple methods to ensure the
 # table doesn't get mutated?
-# TODO: test dispatch
-# TODO: confirm dispatch captures citation details in provenance
+# TODO: test passthrough
+# TODO: confirm passthrough captures citation details in provenance
 # TODO: smoke test drop_undefined_samples here

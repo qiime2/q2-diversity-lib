@@ -6,10 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from inspect import signature
-from functools import partial
-import warnings
-
 import pandas as pd
 import skbio.diversity
 import biom
@@ -45,59 +41,6 @@ METRICS = {
 _all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['UNIMPL']
 _all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
                        | METRICS['NONPHYLO']['UNIMPL']
-
-
-# --------------------- Method Dispatch --------------------------------------
-# TODO: test drop_undefined_samples logic (including test for warning)
-# TODO: smoke test to confirm l.86-88 doesn't blow up with an empty table
-def alpha_rarefaction_dispatch(table: biom.Table, metric: str,
-                               drop_undefined_samples: bool = False
-                               ) -> pd.Series:
-    # HACK - metrics overly permissive to squash test failures
-    # TODO: revert this to just _all_nonphylo_metrics on transfer
-    metrics = (_all_nonphylo_metrics |
-               set(METRICS['METRIC_NAME_TRANSLATIONS'].values()))
-    if metric not in metrics:
-        raise ValueError("Unknown metric: %s" % metric)
-
-    implemented_funcs = {'observed_features': observed_features,
-                         'pielou_evenness': pielou_evenness,
-                         'shannon_entropy': shannon_entropy}
-    if metric in implemented_funcs:
-        func = implemented_funcs[metric]
-        if 'drop_undefined_samples' in signature(func).parameters:
-            func = partial(func, table=table,
-                           drop_undefined_samples=drop_undefined_samples)
-        else:
-            if drop_undefined_samples:
-                warnings.warn(f"The {metric} metric does not support dropping "
-                              "undefined samples.")
-            func = partial(func, table=table)
-    else:
-        counts = table.matrix_data.toarray().astype(int).T
-        sample_ids = table.ids(axis='sample')
-        func = partial(skbio.diversity.alpha_diversity, metric=metric,
-                       counts=counts, ids=sample_ids)
-
-    result = func()
-    result.name = metric
-    return result
-
-
-# TODO: smoke test empty table
-def alpha_rarefaction_phylogenetic_dispatch(table: BIOMV210Format,
-                                            phylogeny: NewickFormat,
-                                            metric: str) -> pd.Series:
-    metrics = _all_phylo_metrics
-    if metric not in metrics:
-        raise ValueError("Unknown phylogenetic metric: %s" % metric)
-
-    # NOTE: This collection must contain a function for each alpha phylo metric
-    alpha_phylo_functions = {'faith_pd': unifrac.faith_pd}
-    func = alpha_phylo_functions[metric]
-    result = func(str(table), str(phylogeny))
-    result.name = metric
-    return result
 
 
 # --------------------- Phylogenetic -----------------------------------------
