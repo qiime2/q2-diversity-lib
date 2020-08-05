@@ -111,7 +111,7 @@ class MockPipelineContext():
                 'pielou_evenness': q2_diversity_lib.alpha.pielou_evenness,
                 'shannon_entropy': q2_diversity_lib.alpha.shannon_entropy,
                 'alpha_passthrough': q2_diversity_lib.alpha.alpha_passthrough,
-                'braycurtis': q2_diversity_lib.beta.bray_curtis,
+                'bray_curtis': q2_diversity_lib.beta.bray_curtis,
                 'jaccard': q2_diversity_lib.beta.jaccard,
                 'unweighted_unifrac': q2_diversity_lib.beta.unweighted_unifrac,
                 'weighted_unifrac': q2_diversity_lib.beta.weighted_unifrac,
