@@ -13,7 +13,7 @@ from .alpha import (faith_pd, observed_features, pielou_evenness,
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
                    weighted_unifrac,
                    beta_passthrough, beta_phylogenetic_passthrough)
-from ._util import translate_metric_name
+from ._util import translate_metric_name, MockPipelineContext
 from ._version import get_versions
 
 __version__ = get_versions()['version']
@@ -26,5 +26,6 @@ __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'alpha_rarefaction_phylogenetic_dispatch',
            'beta_passthrough',
            'beta_phylogenetic_passthrough',
-           'translate_metric_name'
+           'translate_metric_name',
+           'MockPipelineContext'
            ]
