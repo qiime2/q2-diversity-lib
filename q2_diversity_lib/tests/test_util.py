@@ -17,7 +17,9 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from .._util import (_disallow_empty_tables,
-                     _validate_requested_cpus)
+                     _validate_requested_cpus,
+                     translate_metric_name)
+import q2_diversity_lib
 
 
 class DisallowEmptyTablesTests(TestPluginBase):
@@ -158,3 +160,42 @@ class ValidateRequestedCPUsTests(TestPluginBase):
         self.assertEqual(self.function_w_n_jobs_param(n_jobs='auto'), 3)
         self.assertEqual(self.function_w_threads_param('auto'), 3)
         self.assertEqual(self.function_w_threads_param(threads='auto'), 3)
+
+
+class TranslateMetricNameTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+
+        self.a_translations = q2_diversity_lib.alpha.METRICS[
+            'METRIC_NAME_TRANSLATIONS']
+
+        self.b_translations = q2_diversity_lib.beta.METRICS[
+            'METRIC_NAME_TRANSLATIONS']
+
+    def test_alpha_translations(self):
+        to_translate = (q2_diversity_lib.alpha._all_phylo_metrics |
+                        q2_diversity_lib.alpha._all_nonphylo_metrics)
+        expected = to_translate
+        for name in self.a_translations:
+            expected.remove(name)
+            expected.add(self.a_translations[name])
+
+        for name, exp_translation in zip(to_translate, expected):
+            actual_translation = translate_metric_name(name,
+                                                       self.a_translations)
+            self.assertEqual(exp_translation, actual_translation)
+
+    def test_beta_translations(self):
+        to_translate = (q2_diversity_lib.beta._all_phylo_metrics |
+                        q2_diversity_lib.beta._all_nonphylo_metrics)
+        expected = to_translate
+        for name in self.b_translations:
+            expected.remove(name)
+            expected.add(self.b_translations[name])
+
+        for name, exp_translation in zip(to_translate, expected):
+            actual_translation = translate_metric_name(name,
+                                                       self.a_translations)
+            self.assertEqual(exp_translation, actual_translation)
