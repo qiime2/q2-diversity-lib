@@ -145,7 +145,7 @@ plugin.methods.register_function(
                             'The alpha diversity metric to be computed.'},
     output_descriptions={'vector': "Vector containing per-sample values "
                                    "for the chosen metric."},
-    name="Alpha Passthrough",
+    name="Alpha Passthrough (non-phylogenetic)",
     description="Computes a vector of values for each samples in a feature "
                 "table using the scikit-bio implementation of a chosen alpha "
                 "diversity metric."
@@ -287,7 +287,7 @@ plugin.methods.register_function(
         'n_jobs': n_jobs_description
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Scikit-bio direct beta diversity dispatcher',
+    name='Beta Passthrough (non-phylogenetic)',
     description=("Computes a distance matrix for all pairs of samples in a "
                  "feature table using the scikit-bio implementation of a "
                  "chosen beta diversity metric."),
@@ -333,7 +333,7 @@ plugin.methods.register_function(
                         ' (in concept) to moving from 99% to 97% OTUs')
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
-    name='Unifrac library direct beta diversity dispatcher',
+    name='Beta Phylogenetic Passthrough',
     description=("Computes a distance matrix for all pairs of samples in a "
                  "feature table using the unifrac implementation of a "
                  "chosen beta diversity metric."),
