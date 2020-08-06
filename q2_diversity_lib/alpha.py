@@ -30,7 +30,7 @@ METRICS = {
                    'kempton_taylor_q', 'margalef', 'mcintosh_d', 'mcintosh_e',
                    'menhinick', 'michaelis_menten_fit', 'osd', 'robbins',
                    'simpson', 'simpson_e', 'singles', 'strong', 'gini_index',
-                   'lladser_pe', 'lladser_ci'
+                   'lladser_pe'
                    }
     },
     'METRIC_NAME_TRANSLATIONS': {'shannon': 'shannon_entropy',
