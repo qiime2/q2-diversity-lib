@@ -134,23 +134,6 @@ plugin.methods.register_function(
 )
 
 
-plugin.methods.register_function(
-    function=q2_diversity_lib.alpha_passthrough,
-    inputs={'table': FeatureTable[Frequency]},
-    parameters={'metric': Str % Choices(alpha.METRICS['NONPHYLO']['UNIMPL'])},
-    outputs=[('vector', SampleData[AlphaDiversity])],
-    input_descriptions={'table': "The feature table containing the samples "
-                        "for which a selected metric should be computed."},
-    parameter_descriptions={'metric':
-                            'The alpha diversity metric to be computed.'},
-    output_descriptions={'vector': "Vector containing per-sample values "
-                                   "for the chosen metric."},
-    name="Alpha Passthrough (non-phylogenetic)",
-    description="Computes a vector of values for each samples in a feature "
-                "table using the scikit-bio implementation of a chosen alpha "
-                "diversity metric."
-)
-
 # ------------------------ beta-diversity -----------------------
 # TODO: Augment citations as needed
 plugin.methods.register_function(
@@ -269,6 +252,24 @@ plugin.methods.register_function(
 )
 
 # ------------------------ Dispatch ------------------------
+plugin.methods.register_function(
+    function=q2_diversity_lib.alpha_passthrough,
+    inputs={'table': FeatureTable[Frequency]},
+    parameters={'metric': Str % Choices(alpha.METRICS['NONPHYLO']['UNIMPL'])},
+    outputs=[('vector', SampleData[AlphaDiversity])],
+    input_descriptions={'table': "The feature table containing the samples "
+                        "for which a selected metric should be computed."},
+    parameter_descriptions={'metric':
+                            'The alpha diversity metric to be computed.'},
+    output_descriptions={'vector': "Vector containing per-sample values "
+                                   "for the chosen metric."},
+    name="Alpha Passthrough (non-phylogenetic)",
+    description="Computes a vector of values for each samples in a feature "
+                "table using the scikit-bio implementation of a chosen alpha "
+                "diversity metric."
+)
+
+
 plugin.methods.register_function(
     function=q2_diversity_lib.beta_passthrough,
     inputs={'table': FeatureTable[Frequency]},
