@@ -15,10 +15,11 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
-                              shannon_entropy)
+                              shannon_entropy, alpha, translate_metric_name)
+from qiime2 import Artifact
 
-nonphylogenetic_measures = [observed_features, pielou_evenness,
-                            shannon_entropy]
+nonphylogenetic_metrics = alpha.METRICS['NONPHYLO']['IMPL']
+metric_name_translations = alpha.METRICS['METRIC_NAME_TRANSLATIONS']
 
 
 class SmokeTests(TestPluginBase):
@@ -26,12 +27,16 @@ class SmokeTests(TestPluginBase):
 
     def setUp(self):
         super().setUp()
-        self.empty_table = biom.Table(np.array([]), [], [])
+        empty_table = biom.Table(np.array([]), [], [])
+        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
+                                                empty_table)
 
     def test_non_phylogenetic_passed_empty_table(self):
-        for measure in nonphylogenetic_measures:
+        for metric in nonphylogenetic_metrics:
+            metric_tr = translate_metric_name(metric, metric_name_translations)
+            method = self.plugin.actions[metric_tr]
             with self.assertRaisesRegex(ValueError, 'empty'):
-                measure(table=self.empty_table)
+                method(table=self.empty_table)
 
 
 class FaithPDTests(TestPluginBase):
