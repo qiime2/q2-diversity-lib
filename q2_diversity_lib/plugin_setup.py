@@ -296,8 +296,7 @@ plugin.methods.register_function(
 
 plugin.methods.register_function(
     function=q2_diversity_lib.beta_phylogenetic_passthrough,
-    inputs={'table':
-            FeatureTable[Frequency | RelativeFrequency | PresenceAbsence],
+    inputs={'table': FeatureTable[Frequency],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'metric': Str % Choices(beta.METRICS['PHYLO']['UNIMPL']),
                 'threads': Int % Range(1, None) | Str % Choices(['auto']),
