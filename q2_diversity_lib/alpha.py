@@ -96,7 +96,9 @@ def shannon_entropy(table: biom.Table,
 
 @_disallow_empty_tables
 def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
-    counts = table.matrix_data.toarray().T
+    # Note: some metrics require ints, but biom.Table seems to default to float
+    # (e.g. ace, lladser_pe, michaelis_menten_fit)
+    counts = table.matrix_data.astype(int).toarray().T
     sample_ids = table.ids(axis='sample')
 
     result = skbio.diversity.alpha_diversity(metric=metric, counts=counts,

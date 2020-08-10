@@ -269,6 +269,13 @@ class AlphaPassthroughTests(TestPluginBase):
         self.input_table = Artifact.import_data('FeatureTable[Frequency]',
                                                 input_table)
 
+    def testMethod(self):
+        for metric in self.available_metrics:
+            # NOTE: crawford table used b/c input_table too minimal for `ace`
+            self.method(table=self.crawford_tbl, metric=metric)
+        # If we get here, then our methods ran without error
+        self.assertTrue(True)
+
     def test_passed_empty_table(self):
         for metric in self.available_metrics:
             with self.assertRaisesRegex(ValueError, 'empty'):
