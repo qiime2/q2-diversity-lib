@@ -244,4 +244,44 @@ class ShannonEntropyTests(TestPluginBase):
 # table doesn't get mutated?
 # TODO: test passthrough
 # TODO: confirm passthrough captures citation details in provenance
-# TODO: smoke test drop_undefined_samples here
+
+
+class AlphaPassthroughTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.method = self.plugin.actions['alpha_passthrough']
+        self.available_metrics = alpha.METRICS['NONPHYLO']['UNIMPL']
+        empty_table = biom.Table(np.array([]), [], [])
+        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
+                                                empty_table)
+        crawford_tbl = self.get_data_path('crawford.biom')
+        self.crawford_tbl = Artifact.import_data('FeatureTable[Frequency]',
+                                                 crawford_tbl)
+
+        # TODO: remove this guy...
+        input_table = biom.Table(np.array([[1, 0, 1, 999, 1],
+                                           [0, 1, 2, 0, 5],
+                                           [0, 0, 0, 1, 10]]),
+                                 ['A', 'B', 'C'],
+                                 ['S1', 'S2', 'S3', 'S4', 'S5'])
+        self.input_table = Artifact.import_data('FeatureTable[Frequency]',
+                                                input_table)
+
+    def test_passed_empty_table(self):
+        for metric in self.available_metrics:
+            with self.assertRaisesRegex(ValueError, 'empty'):
+                self.method(table=self.empty_table, metric=metric)
+
+    def test_passed_bad_metric(self):
+        with self.assertRaisesRegex(TypeError,
+                                    'imaginary_metric.*incompatible'):
+            self.method(table=self.crawford_tbl, metric='imaginary_metric')
+
+    def test_passed_implemented_metric(self):
+        # alpha_passthrough does not provide access to measures that have been
+        # implemented locally
+        for metric in alpha.METRICS['NONPHYLO']['IMPL']:
+            with self.assertRaisesRegex(TypeError, f"{metric}.*incompatible"):
+                self.method(table=self.crawford_tbl, metric=metric)

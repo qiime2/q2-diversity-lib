@@ -55,9 +55,6 @@ _all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
 @_validate_requested_cpus
 def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
                      n_jobs: int = 1) -> skbio.DistanceMatrix:
-    if metric not in METRICS['NONPHYLO']['UNIMPL']:
-        raise ValueError("Unsupported metric: %s" % metric)
-
     def aitchison(x, y, **kwds):
         return euclidean(clr(x), clr(y))
 
@@ -120,7 +117,8 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
     else:
         func = partial(func, variance_adjusted=variance_adjusted)
 
-    return func(table, phylogeny, threads=threads, bypass_tips=bypass_tips)
+    return func(str(table), str(phylogeny), threads=threads,
+                bypass_tips=bypass_tips)
 
 
 # --------------------Non-Phylogenetic-----------------------
