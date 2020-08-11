@@ -92,9 +92,6 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
                                   alpha: float = None,
                                   bypass_tips: bool = False
                                   ) -> skbio.DistanceMatrix:
-    if metric not in METRICS['PHYLO']['UNIMPL']:
-        raise ValueError("Unsupported metric: %s" % metric)
-
     unifrac_functions = {
             'unweighted_unifrac': unifrac.unweighted,
             'weighted_unifrac': unifrac.weighted_unnormalized,
