@@ -462,3 +462,12 @@ class BetaPhylogeneticPassthroughTests(TestPluginBase):
             self.method(table=self.crawford_tbl,
                         phylogeny=self.crawford_tree,
                         metric='imaginary_metric')
+
+    def test_beta_phylogenetic_alpha_on_non_generalized(self):
+        with self.assertRaisesRegex(ValueError, 'The alpha parameter is only '
+                                    'allowed when the choice of metric is '
+                                    'generalized_unifrac'):
+            self.method(table=self.crawford_tbl,
+                        phylogeny=self.crawford_tree,
+                        metric='unweighted_unifrac',
+                        alpha=0.11)
