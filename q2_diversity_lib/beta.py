@@ -59,10 +59,6 @@ def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
         return euclidean(clr(x), clr(y))
 
     def canberra_adkins(x, y, **kwds):
-        if (x < 0).any() or (y < 0).any():
-            raise ValueError("Canberra-Adkins is only defined over positive "
-                             "values.")
-
         nz = ((x > 0) | (y > 0))
         x_ = x[nz]
         y_ = y[nz]

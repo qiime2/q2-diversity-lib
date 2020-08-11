@@ -403,6 +403,15 @@ class BetaPassthroughTests(TestPluginBase):
             for id2 in actual.ids:
                 npt.assert_almost_equal(actual[id1, id2], expected[id1, id2])
 
+    def test_beta_canberra_adkins_negative_values(self):
+        t = biom.Table(np.array([[0, 0], [0, 1], [-1, -2]]),
+                       ['O1', 'O2', 'O3'],
+                       ['S1', 'S2'])
+        t = Artifact.import_data('FeatureTable[Frequency]', t)
+
+        with self.assertRaisesRegex(ValueError, 'cannot.*negative values'):
+            self.method(table=t, metric='canberra_adkins')
+
     def test_jensenshannon(self):
         actual = self.method(table=self.table, metric='jensenshannon')
         # expected computed with scipy.spatial.distance.jensenshannon
