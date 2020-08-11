@@ -242,7 +242,6 @@ class ShannonEntropyTests(TestPluginBase):
 
 # TODO: Can we test a single table run through multiple methods to ensure the
 # table doesn't get mutated?
-# TODO: test passthrough
 # TODO: confirm passthrough captures citation details in provenance
 
 
@@ -259,15 +258,6 @@ class AlphaPassthroughTests(TestPluginBase):
         crawford_tbl = self.get_data_path('crawford.biom')
         self.crawford_tbl = Artifact.import_data('FeatureTable[Frequency]',
                                                  crawford_tbl)
-
-        # TODO: remove this guy...
-        input_table = biom.Table(np.array([[1, 0, 1, 999, 1],
-                                           [0, 1, 2, 0, 5],
-                                           [0, 0, 0, 1, 10]]),
-                                 ['A', 'B', 'C'],
-                                 ['S1', 'S2', 'S3', 'S4', 'S5'])
-        self.input_table = Artifact.import_data('FeatureTable[Frequency]',
-                                                input_table)
 
     def testMethod(self):
         for metric in self.available_metrics:

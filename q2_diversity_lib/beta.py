@@ -23,10 +23,10 @@ from ._util import (_disallow_empty_tables,
                     _validate_requested_cpus)
 
 
-# NOTE: a metric may be in both implemented and unimplemented collections,
-# if it is only implemented with certain params (e.g. both 'vanilla' and
-# Variance Adjusted weighted unifracs use unifrac.weighted_unnormalized, but
-# only 'vanilla' is currently implemented)
+# NOTE: some phylo metrics are currently in both implemented and unimplemented
+# collections, when implemented with certain params only (e.g. both 'vanilla'
+# and Variance Adjusted weighted unifracs use unifrac.weighted_unnormalized,
+# but only 'vanilla' is currently implemented)
 METRICS = {
     'PHYLO': {
         'IMPL': {'unweighted_unifrac', 'weighted_unifrac'},
