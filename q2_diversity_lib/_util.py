@@ -13,7 +13,6 @@ from decorator import decorator
 import psutil
 import biom
 
-import q2_diversity_lib
 from q2_types.feature_table import BIOMV210Format
 
 
@@ -100,26 +99,3 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
 
 def translate_metric_name(metric: str, translations: dict) -> str:
     return translations[metric] if metric in translations else metric
-
-
-class MockPipelineContext():
-    def __init__(self):
-        self.mappings = {
-            'diversity_lib': {
-                'faith_pd': q2_diversity_lib.alpha.faith_pd,
-                'observed_features': q2_diversity_lib.alpha.observed_features,
-                'pielou_evenness': q2_diversity_lib.alpha.pielou_evenness,
-                'shannon_entropy': q2_diversity_lib.alpha.shannon_entropy,
-                'alpha_passthrough': q2_diversity_lib.alpha.alpha_passthrough,
-                'bray_curtis': q2_diversity_lib.beta.bray_curtis,
-                'jaccard': q2_diversity_lib.beta.jaccard,
-                'unweighted_unifrac': q2_diversity_lib.beta.unweighted_unifrac,
-                'weighted_unifrac': q2_diversity_lib.beta.weighted_unifrac,
-                'beta_passthrough': q2_diversity_lib.beta.beta_passthrough,
-                'beta_phylogenetic_passthrough':
-                    q2_diversity_lib.beta.beta_phylogenetic_passthrough
-                 }
-            }
-
-    def get_action(self, plugin, action):
-        return self.mappings[plugin][action]
