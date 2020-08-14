@@ -240,10 +240,6 @@ class ShannonEntropyTests(TestPluginBase):
                                  drop_undefined_samples=False)
         pdt.assert_series_equal(actual, self.expected)
 
-# TODO: Can we test a single table run through multiple methods to ensure the
-# table doesn't get mutated?
-# TODO: confirm passthrough captures citation details in provenance
-
 
 class AlphaPassthroughTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
@@ -282,3 +278,5 @@ class AlphaPassthroughTests(TestPluginBase):
         for metric in alpha.METRICS['NONPHYLO']['IMPL']:
             with self.assertRaisesRegex(TypeError, f"{metric}.*incompatible"):
                 self.method(table=self.crawford_tbl, metric=metric)
+
+# TODO: confirm passthrough captures citation details in provenance
