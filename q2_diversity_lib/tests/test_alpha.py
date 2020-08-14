@@ -278,5 +278,3 @@ class AlphaPassthroughTests(TestPluginBase):
         for metric in alpha.METRICS['NONPHYLO']['IMPL']:
             with self.assertRaisesRegex(TypeError, f"{metric}.*incompatible"):
                 self.method(table=self.crawford_tbl, metric=metric)
-
-# TODO: confirm passthrough captures citation details in provenance

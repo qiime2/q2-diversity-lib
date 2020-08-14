@@ -351,7 +351,6 @@ class BetaPassthroughTests(TestPluginBase):
 
     def testMethod(self):
         for metric in self.available_metrics:
-            print(metric)
             self.method(table=self.crawford_tbl, metric=metric)
         # If we get here, then our methods ran without error
         self.assertTrue(True)
