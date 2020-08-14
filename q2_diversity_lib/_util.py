@@ -90,8 +90,6 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
                          "available to the system.")
 
     return wrapped_function(*bound_arguments.args, **bound_arguments.kwargs)
-    return wrapped_function(*args, **kwargs)
-
 
 def translate_metric_name(metric: str, translations: dict) -> str:
     return translations[metric] if metric in translations else metric
