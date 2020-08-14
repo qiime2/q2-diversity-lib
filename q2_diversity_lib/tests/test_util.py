@@ -215,6 +215,7 @@ class ValidateRequestedCPUsTests(TestPluginBase):
         # If we get here, then it ran without error
         self.assertTrue(True)
 
+
 class TranslateMetricNameTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
