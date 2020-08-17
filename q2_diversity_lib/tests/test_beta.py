@@ -337,7 +337,7 @@ class BetaPassthroughTests(TestPluginBase):
     def setUp(self):
         super().setUp()
         self.method = self.plugin.actions['beta_passthrough']
-        self.available_metrics = beta.METRICS['NONPHYLO']['UNIMPL']
+        beta.METRICS['NONPHYLO']['UNIMPL'] = beta.METRICS['NONPHYLO']['UNIMPL']
         empty_table = biom.Table(np.array([]), [], [])
         self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
                                                 empty_table)
@@ -350,13 +350,13 @@ class BetaPassthroughTests(TestPluginBase):
         self.table = Artifact.import_data('FeatureTable[Frequency]', table)
 
     def test_method(self):
-        for metric in self.available_metrics:
+        for metric in beta.METRICS['NONPHYLO']['UNIMPL']:
             self.method(table=self.crawford_tbl, metric=metric)
         # If we get here, then our methods ran without error
         self.assertTrue(True)
 
     def test_passed_empty_table(self):
-        for metric in self.available_metrics:
+        for metric in beta.METRICS['NONPHYLO']['UNIMPL']:
             with self.assertRaisesRegex(ValueError, 'empty'):
                 self.method(table=self.empty_table, metric=metric)
 
@@ -432,7 +432,7 @@ class BetaPhylogeneticPassthroughTests(TestPluginBase):
     def setUp(self):
         super().setUp()
         self.method = self.plugin.actions['beta_phylogenetic_passthrough']
-        self.available_metrics = beta.METRICS['PHYLO']['UNIMPL']
+        beta.METRICS['PHYLO']['UNIMPL'] = beta.METRICS['PHYLO']['UNIMPL']
         empty_table = biom.Table(np.array([]), [], [])
         self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
                                                 empty_table)
@@ -443,15 +443,15 @@ class BetaPhylogeneticPassthroughTests(TestPluginBase):
         self.crawford_tree = Artifact.import_data('Phylogeny[Rooted]',
                                                   crawford_tree)
 
-    def testMethod(self):
-        for metric in self.available_metrics:
+    def test_method(self):
+        for metric in beta.METRICS['PHYLO']['UNIMPL']:
             self.method(table=self.crawford_tbl,
                         phylogeny=self.crawford_tree, metric=metric)
         # If we get here, then our methods ran without error
         self.assertTrue(True)
 
     def test_passed_empty_table(self):
-        for metric in self.available_metrics:
+        for metric in beta.METRICS['PHYLO']['UNIMPL']:
             with self.assertRaisesRegex(ValueError, 'empty'):
                 self.method(table=self.empty_table,
                             phylogeny=self.crawford_tree, metric=metric)

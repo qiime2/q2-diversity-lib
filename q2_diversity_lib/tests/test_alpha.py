@@ -18,9 +18,6 @@ from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
                               shannon_entropy, alpha, translate_metric_name)
 from qiime2 import Artifact
 
-nonphylogenetic_metrics = alpha.METRICS['NONPHYLO']['IMPL']
-metric_name_translations = alpha.METRICS['NAME_TRANSLATIONS']
-
 
 class SmokeTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
@@ -32,11 +29,11 @@ class SmokeTests(TestPluginBase):
                                                 empty_table)
 
     def test_non_phylogenetic_passed_empty_table(self):
-        for metric in nonphylogenetic_metrics:
-            metric_tr = translate_metric_name(metric, metric_name_translations)
-            method = self.plugin.actions[metric_tr]
+        for metric in alpha.METRICS['NONPHYLO']['IMPL']:
+            metric_tr = translate_metric_name(
+                    metric, alpha.METRICS['NAME_TRANSLATIONS'])
             with self.assertRaisesRegex(ValueError, 'empty'):
-                method(table=self.empty_table)
+                self.plugin.actions[metric_tr](table=self.empty_table)
 
 
 class FaithPDTests(TestPluginBase):
@@ -247,7 +244,6 @@ class AlphaPassthroughTests(TestPluginBase):
     def setUp(self):
         super().setUp()
         self.method = self.plugin.actions['alpha_passthrough']
-        self.available_metrics = alpha.METRICS['NONPHYLO']['UNIMPL']
         empty_table = biom.Table(np.array([]), [], [])
         self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
                                                 empty_table)
@@ -255,15 +251,15 @@ class AlphaPassthroughTests(TestPluginBase):
         self.crawford_tbl = Artifact.import_data('FeatureTable[Frequency]',
                                                  crawford_tbl)
 
-    def testMethod(self):
-        for metric in self.available_metrics:
+    def test_method(self):
+        for metric in alpha.METRICS['NONPHYLO']['UNIMPL']:
             # NOTE: crawford table used b/c input_table too minimal for `ace`
             self.method(table=self.crawford_tbl, metric=metric)
         # If we get here, then our methods ran without error
         self.assertTrue(True)
 
     def test_passed_empty_table(self):
-        for metric in self.available_metrics:
+        for metric in alpha.METRICS['NONPHYLO']['UNIMPL']:
             with self.assertRaisesRegex(ValueError, 'empty'):
                 self.method(table=self.empty_table, metric=metric)
 

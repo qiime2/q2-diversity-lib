@@ -86,7 +86,8 @@ def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
 @_validate_requested_cpus
 def beta_phylogenetic_passthrough(table: BIOMV210Format,
                                   phylogeny: NewickFormat,
-                                  metric: str, threads: int = 1,
+                                  metric: str,
+                                  threads: int = 1,
                                   variance_adjusted: bool = False,
                                   alpha: float = None,
                                   bypass_tips: bool = False
@@ -105,12 +106,10 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
     # handle unimplemented unifracs
     if metric == 'generalized_unifrac':
         alpha = 1.0 if alpha is None else alpha
-        func = partial(func, alpha=alpha, variance_adjusted=variance_adjusted)
-    else:
-        func = partial(func, variance_adjusted=variance_adjusted)
+        func = partial(func, alpha=alpha)
 
     return func(str(table), str(phylogeny), threads=threads,
-                bypass_tips=bypass_tips)
+                variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
 
 
 # --------------------Non-Phylogenetic-----------------------
