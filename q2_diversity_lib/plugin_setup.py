@@ -45,7 +45,7 @@ threads_description = (
 drop_undef_samples_description = (
     "When calculating some metrics, samples with fewer than a predetermined "
     "number of features produce undefined (NaN) values. If true, affected "
-    "samples are are dropped from metrics with 'drop_undefined_samples' "
+    "samples are dropped from metrics with 'drop_undefined_samples' "
     "implemented. For metrics without a 'drop_undefined_samples' parameter, "
     "this value will be ignored and no samples will be dropped."
 )
@@ -251,7 +251,7 @@ plugin.methods.register_function(
         citations['mcdonald2018unifrac']]
 )
 
-# ------------------------ Dispatch ------------------------
+# ------------------------ Passthrough Methods ------------------------
 plugin.methods.register_function(
     function=q2_diversity_lib.alpha_passthrough,
     inputs={'table': FeatureTable[Frequency]},
@@ -264,9 +264,9 @@ plugin.methods.register_function(
     output_descriptions={'vector': "Vector containing per-sample values "
                                    "for the chosen metric."},
     name="Alpha Passthrough (non-phylogenetic)",
-    description="Computes a vector of values for each samples in a feature "
-                "table using the scikit-bio implementation of a chosen alpha "
-                "diversity metric."
+    description="Computes a vector of values (one value for each samples in a "
+                "feature table) using the scikit-bio implementation of the "
+                "selected alpha diversity metric."
 )
 
 
@@ -278,20 +278,21 @@ plugin.methods.register_function(
                 'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
-        'table': ('The feature table containing the samples over which beta '
-                  'diversity should be computed.')
+        'table': 'The feature table containing the samples over which beta '
+                 'diversity should be computed.'
     },
     parameter_descriptions={
         'metric': 'The beta diversity metric to be computed.',
-        'pseudocount': ('A pseudocount to handle zeros for compositional '
-                        'metrics.  This is ignored for other metrics.'),
+        'pseudocount': 'A pseudocount to handle zeros for compositional '
+                       'metrics. This is ignored for non-compositional '
+                       'metrics.',
         'n_jobs': n_jobs_description
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
     name='Beta Passthrough (non-phylogenetic)',
-    description=("Computes a distance matrix for all pairs of samples in a "
-                 "feature table using the scikit-bio implementation of a "
-                 "chosen beta diversity metric."),
+    description="Computes a distance matrix for all pairs of samples in a "
+                "feature table using the scikit-bio implementation of the "
+                "selected beta diversity metric.",
 )
 
 plugin.methods.register_function(
@@ -305,38 +306,38 @@ plugin.methods.register_function(
                 'bypass_tips': Bool},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
-        'table': ('The feature table containing the samples over which beta '
-                  'diversity should be computed.'),
-        'phylogeny': ('Phylogenetic tree containing tip identifiers that '
-                      'correspond to the feature identifiers in the table. '
-                      'This tree can contain tip ids that are not present in '
-                      'the table, but all feature ids in the table must be '
-                      'present in this tree.')
+        'table': 'The feature table containing the samples over which beta '
+                 'diversity should be computed.',
+        'phylogeny': 'Phylogenetic tree containing tip identifiers that '
+                     'correspond to the feature identifiers in the table. '
+                     'This tree can contain tip ids that are not present in '
+                     'the table, but all feature ids in the table must be '
+                     'present in this tree.'
     },
     parameter_descriptions={
         'metric': 'The beta diversity metric to be computed.',
         'threads': threads_description,
-        'variance_adjusted': ('Perform variance adjustment based on Chang et '
-                              'al. BMC Bioinformatics 2011. Weights distances '
-                              'based on the proportion of the relative '
-                              'abundance represented between the samples at a'
-                              ' given node under evaluation.'),
-        'alpha': ('This parameter is only used when the choice of metric is '
-                  'generalized_unifrac. The value of alpha controls importance'
-                  ' of sample proportions. 1.0 is weighted normalized UniFrac.'
-                  ' 0.0 is close to unweighted UniFrac, but only if the sample'
-                  ' proportions are dichotomized.'),
-        'bypass_tips': ('In a bifurcating tree, the tips make up about 50% of '
-                        'the nodes in a tree. By ignoring them, specificity '
-                        'can be traded for reduced compute time. This has the'
-                        ' effect of collapsing the phylogeny, and is analogous'
-                        ' (in concept) to moving from 99% to 97% OTUs')
+        'variance_adjusted': 'Perform variance adjustment based on Chang et '
+                             'al. BMC Bioinformatics 2011. Weights distances '
+                             'based on the proportion of the relative '
+                             'abundance represented between the samples at a'
+                             ' given node under evaluation.',
+        'alpha': 'This parameter is only used when the choice of metric is '
+                 'generalized_unifrac. The value of alpha controls importance'
+                 ' of sample proportions. 1.0 is weighted normalized UniFrac.'
+                 ' 0.0 is close to unweighted UniFrac, but only if the sample'
+                 ' proportions are dichotomized.',
+        'bypass_tips': 'In a bifurcating tree, the tips make up about 50% of '
+                       'the nodes in a tree. By ignoring them, specificity '
+                       'can be traded for reduced compute time. This has the '
+                       'effect of collapsing the phylogeny, and is analogous '
+                       '(in concept) to moving from 99% to 97% OTUs'
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
     name='Beta Phylogenetic Passthrough',
-    description=("Computes a distance matrix for all pairs of samples in a "
-                 "feature table using the unifrac implementation of a "
-                 "chosen beta diversity metric."),
+    description="Computes a distance matrix for all pairs of samples in a "
+                "feature table using the unifrac implementation of the "
+                "selected beta diversity metric.",
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
