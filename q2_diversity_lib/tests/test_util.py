@@ -21,8 +21,8 @@ from .._util import (_disallow_empty_tables,
                      translate_metric_name)
 import q2_diversity_lib
 
-a_METRICS = q2_diversity_lib.alpha.METRICS
-b_METRICS = q2_diversity_lib.beta.METRICS
+A_METRICS = q2_diversity_lib.alpha.METRICS
+B_METRICS = q2_diversity_lib.beta.METRICS
 
 
 class DisallowEmptyTablesTests(TestPluginBase):
@@ -222,12 +222,14 @@ class TranslateMetricNameTests(TestPluginBase):
     def setUp(self):
         super().setUp()
 
-        self.a_translations = a_METRICS['METRIC_NAME_TRANSLATIONS']
-        self.b_translations = b_METRICS['METRIC_NAME_TRANSLATIONS']
+        self.a_translations = A_METRICS['NAME_TRANSLATIONS']
+        self.b_translations = B_METRICS['NAME_TRANSLATIONS']
 
     def test_alpha_translations(self):
-        to_translate = (q2_diversity_lib.alpha._all_phylo_metrics |
-                        q2_diversity_lib.alpha._all_nonphylo_metrics)
+        to_translate = (A_METRICS['PHYLO']['IMPL'] |
+                        A_METRICS['PHYLO']['UNIMPL'] |
+                        A_METRICS['NONPHYLO']['IMPL'] |
+                        A_METRICS['NONPHYLO']['UNIMPL'])
         expected = to_translate
         for name in self.a_translations:
             expected.remove(name)
@@ -239,8 +241,10 @@ class TranslateMetricNameTests(TestPluginBase):
             self.assertEqual(exp_translation, actual_translation)
 
     def test_beta_translations(self):
-        to_translate = (q2_diversity_lib.beta._all_phylo_metrics |
-                        q2_diversity_lib.beta._all_nonphylo_metrics)
+        to_translate = (B_METRICS['PHYLO']['IMPL'] |
+                        B_METRICS['PHYLO']['UNIMPL'] |
+                        B_METRICS['NONPHYLO']['IMPL'] |
+                        B_METRICS['NONPHYLO']['UNIMPL'])
         expected = to_translate
         for name in self.b_translations:
             expected.remove(name)

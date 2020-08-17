@@ -33,14 +33,9 @@ METRICS = {
                    'lladser_pe'
                    }
     },
-    'METRIC_NAME_TRANSLATIONS': {'shannon': 'shannon_entropy',
-                                 'pielou_e': 'pielou_evenness'}
+    'NAME_TRANSLATIONS': {'shannon': 'shannon_entropy',
+                          'pielou_e': 'pielou_evenness'}
 }
-
-
-_all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['UNIMPL']
-_all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
-                       | METRICS['NONPHYLO']['UNIMPL']
 
 
 # --------------------- Phylogenetic -----------------------------------------

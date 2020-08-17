@@ -42,12 +42,8 @@ METRICS = {
                    'sokalsneath', 'minkowski', 'aitchison', 'canberra_adkins',
                    'jensenshannon'}
     },
-    'METRIC_NAME_TRANSLATIONS': {'braycurtis': 'bray_curtis'}
+    'NAME_TRANSLATIONS': {'braycurtis': 'bray_curtis'}
 }
-
-_all_phylo_metrics = METRICS['PHYLO']['IMPL'] | METRICS['PHYLO']['UNIMPL']
-_all_nonphylo_metrics = METRICS['NONPHYLO']['IMPL'] \
-                        | METRICS['NONPHYLO']['UNIMPL']
 
 
 # -------------------- Method Dispatch -----------------------
@@ -78,6 +74,9 @@ def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
         metric = canberra_adkins
     elif metric == 'jensenshannon':
         metric = jensen_shannon
+    else:
+        pass
+
     return skbio.diversity.beta_diversity(
             metric=metric, counts=counts, ids=sample_ids, validate=True,
             pairwise_func=sklearn.metrics.pairwise_distances, n_jobs=n_jobs)
@@ -100,8 +99,8 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
     func = unifrac_functions[metric]
 
     if alpha is not None and metric != 'generalized_unifrac':
-        raise ValueError('The alpha parameter is only allowed when the choice'
-                         ' of metric is generalized_unifrac')
+        raise ValueError("The alpha parameter is only allowed when the "
+                         "selected metric is 'generalized_unifrac'")
 
     # handle unimplemented unifracs
     if metric == 'generalized_unifrac':

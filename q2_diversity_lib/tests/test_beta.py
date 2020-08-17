@@ -349,7 +349,7 @@ class BetaPassthroughTests(TestPluginBase):
                            ['S1', 'S2', 'S3'])
         self.table = Artifact.import_data('FeatureTable[Frequency]', table)
 
-    def testMethod(self):
+    def test_method(self):
         for metric in self.available_metrics:
             self.method(table=self.crawford_tbl, metric=metric)
         # If we get here, then our methods ran without error
@@ -373,8 +373,8 @@ class BetaPassthroughTests(TestPluginBase):
                 self.method(table=self.crawford_tbl, metric=metric)
 
     def test_aitchison(self):
-        actual = self.method(table=self.table, metric='aitchison')
-        actual = actual[0].view(skbio.DistanceMatrix)
+        actual, = self.method(table=self.table, metric='aitchison')
+        actual = actual.view(skbio.DistanceMatrix)
         expected = skbio.DistanceMatrix([[0.0000000, 0.4901290, 0.6935510],
                                          [0.4901290, 0.0000000, 0.2034219],
                                          [0.6935510, 0.2034219, 0.0000000]],
@@ -390,12 +390,12 @@ class BetaPassthroughTests(TestPluginBase):
                        ['O1', 'O2', 'O3'],
                        ['S1', 'S2'])
         t = Artifact.import_data('FeatureTable[Frequency]', t)
-        d = (1. / 2.) * sum([abs(0. - 1.) / (0. + 1.),
-                             abs(1. - 2.) / (1. + 2.)])
-        expected = skbio.DistanceMatrix(np.array([[0.0, d], [d, 0.0]]),
+        # expected calculated by hand
+        expected = skbio.DistanceMatrix(np.array([[0.0, 0.66666666666],
+                                                  [0.66666666666, 0.0]]),
                                         ids=['S1', 'S2'])
-        actual = self.method(table=t, metric='canberra_adkins')
-        actual = actual[0].view(skbio.DistanceMatrix)
+        actual, = self.method(table=t, metric='canberra_adkins')
+        actual = actual.view(skbio.DistanceMatrix)
 
         self.assertEqual(actual.ids, expected.ids)
         for id1 in actual.ids:
@@ -412,14 +412,14 @@ class BetaPassthroughTests(TestPluginBase):
             self.method(table=t, metric='canberra_adkins')
 
     def test_jensenshannon(self):
-        actual = self.method(table=self.table, metric='jensenshannon')
         # expected computed with scipy.spatial.distance.jensenshannon
         expected = skbio.DistanceMatrix([[0.0000000, 0.4645014, 0.52379239],
                                          [0.4645014, 0.0000000, 0.07112939],
                                          [0.52379239, 0.07112939, 0.0000000]],
                                         ids=['S1', 'S2', 'S3'])
 
-        actual = actual[0].view(skbio.DistanceMatrix)
+        actual, = self.method(table=self.table, metric='jensenshannon')
+        actual = actual.view(skbio.DistanceMatrix)
         self.assertEqual(actual.ids, expected.ids)
         for id1 in actual.ids:
             for id2 in actual.ids:
@@ -465,8 +465,8 @@ class BetaPhylogeneticPassthroughTests(TestPluginBase):
 
     def test_beta_phylogenetic_alpha_on_non_generalized(self):
         with self.assertRaisesRegex(ValueError, 'The alpha parameter is only '
-                                    'allowed when the choice of metric is '
-                                    'generalized_unifrac'):
+                                    'allowed when the selected metric is '
+                                    '\'generalized_unifrac\''):
             self.method(table=self.crawford_tbl,
                         phylogeny=self.crawford_tree,
                         metric='unweighted_unifrac',

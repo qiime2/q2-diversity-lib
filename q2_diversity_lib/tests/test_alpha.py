@@ -19,7 +19,7 @@ from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
 from qiime2 import Artifact
 
 nonphylogenetic_metrics = alpha.METRICS['NONPHYLO']['IMPL']
-metric_name_translations = alpha.METRICS['METRIC_NAME_TRANSLATIONS']
+metric_name_translations = alpha.METRICS['NAME_TRANSLATIONS']
 
 
 class SmokeTests(TestPluginBase):
