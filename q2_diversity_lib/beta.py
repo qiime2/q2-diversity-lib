@@ -46,30 +46,6 @@ METRICS = {
                           'jaccard': 'jaccard',
                           'unweighted_unifrac': 'unweighted_unifrac',
                           'weighted_unifrac': 'weighted_unifrac',
-                          'weighted_normalized_unifrac':
-                              'weighted_normalized_unifrac',
-                          'generalized_unifrac': 'generalized_unifrac',
-                          'euclidean': 'euclidean',
-                          'sokalmichener': 'sokalmichener',
-                          'chebyshev': 'chebyshev',
-                          'seuclidean': 'seuclidean',
-                          'canberra': 'canberra',
-                          'jensenshannon': 'jensenshannon',
-                          'canberra_adkins': 'canberra_adkins',
-                          'yule': 'yule',
-                          'minkowski': 'minkowski',
-                          'aitchison': 'aitchison',
-                          'cityblock': 'cityblock',
-                          'rogerstanimoto': 'rogerstanimoto',
-                          'kulsinski': 'kulsinski',
-                          'correlation': 'correlation',
-                          'russellrao': 'russellrao',
-                          'sqeuclidean': 'sqeuclidean',
-                          'sokalsneath': 'sokalsneath',
-                          'dice': 'dice',
-                          'cosine': 'cosine',
-                          'matching': 'matching',
-                          'hamming': 'hamming'
                           }
 }
 
