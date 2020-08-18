@@ -16,9 +16,7 @@ from qiime2 import Artifact
 from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from .._util import (_disallow_empty_tables,
-                     _validate_requested_cpus,
-                     translate_metric_name)
+from .._util import _disallow_empty_tables, _validate_requested_cpus
 import q2_diversity_lib
 
 A_METRICS = q2_diversity_lib.alpha.METRICS
@@ -214,43 +212,3 @@ class ValidateRequestedCPUsTests(TestPluginBase):
                 self.valid_tree_as_artifact, threads='auto')
         # If we get here, then it ran without error
         self.assertTrue(True)
-
-
-class TranslateMetricNameTests(TestPluginBase):
-    package = 'q2_diversity_lib.tests'
-
-    def setUp(self):
-        super().setUp()
-
-        self.a_translations = A_METRICS['NAME_TRANSLATIONS']
-        self.b_translations = B_METRICS['NAME_TRANSLATIONS']
-
-    def test_alpha_translations(self):
-        to_translate = (A_METRICS['PHYLO']['IMPL'] |
-                        A_METRICS['PHYLO']['UNIMPL'] |
-                        A_METRICS['NONPHYLO']['IMPL'] |
-                        A_METRICS['NONPHYLO']['UNIMPL'])
-        expected = to_translate
-        for name in self.a_translations:
-            expected.remove(name)
-            expected.add(self.a_translations[name])
-
-        for name, exp_translation in zip(to_translate, expected):
-            actual_translation = translate_metric_name(name,
-                                                       self.a_translations)
-            self.assertEqual(exp_translation, actual_translation)
-
-    def test_beta_translations(self):
-        to_translate = (B_METRICS['PHYLO']['IMPL'] |
-                        B_METRICS['PHYLO']['UNIMPL'] |
-                        B_METRICS['NONPHYLO']['IMPL'] |
-                        B_METRICS['NONPHYLO']['UNIMPL'])
-        expected = to_translate
-        for name in self.b_translations:
-            expected.remove(name)
-            expected.add(self.b_translations[name])
-
-        for name, exp_translation in zip(to_translate, expected):
-            actual_translation = translate_metric_name(name,
-                                                       self.a_translations)
-            self.assertEqual(exp_translation, actual_translation)

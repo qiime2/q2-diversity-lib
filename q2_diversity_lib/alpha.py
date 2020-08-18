@@ -34,7 +34,36 @@ METRICS = {
                    }
     },
     'NAME_TRANSLATIONS': {'shannon': 'shannon_entropy',
-                          'pielou_e': 'pielou_evenness'}
+                          'pielou_e': 'pielou_evenness',
+                          'faith_pd': 'faith_pd',
+                          'observed_features': 'observed_features',
+                          'brillouin_d': 'brillouin_d',
+                          'ace': 'ace',
+                          'esty_ci': 'esty_ci',
+                          'margalef': 'margalef',
+                          'robbins': 'robbins',
+                          'strong': 'strong',
+                          'lladser_pe': 'lladser_pe',
+                          'goods_coverage': 'goods_coverage',
+                          'chao1_ci': 'chao1_ci',
+                          'enspie': 'enspie',
+                          'kempton_taylor_q': 'kempton_taylor_q',
+                          'simpson': 'simpson',
+                          'berger_parker_d': 'berger_parker_d',
+                          'menhinick': 'menhinick',
+                          'chao1': 'chao1',
+                          'gini_index': 'gini_index',
+                          'osd': 'osd',
+                          'fisher_alpha': 'fisher_alpha',
+                          'heip_e': 'heip_e',
+                          'doubles': 'doubles',
+                          'michaelis_menten_fit': 'michaelis_menten_fit',
+                          'dominance': 'dominance',
+                          'mcintosh_d': 'mcintosh_d',
+                          'singles': 'singles',
+                          'mcintosh_e': 'mcintosh_e',
+                          'simpson_e': 'simpson_e'
+                          }
 }
 
 

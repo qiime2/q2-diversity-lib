@@ -11,7 +11,6 @@ from .alpha import (faith_pd, observed_features, pielou_evenness,
 from .beta import (bray_curtis, jaccard, unweighted_unifrac,
                    weighted_unifrac,
                    beta_passthrough, beta_phylogenetic_passthrough)
-from ._util import translate_metric_name
 from ._version import get_versions
 
 __version__ = get_versions()['version']
@@ -21,6 +20,5 @@ __all__ = ['faith_pd', 'observed_features', 'pielou_evenness',
            'shannon_entropy', 'alpha_passthrough', 'bray_curtis', 'jaccard',
            'unweighted_unifrac', 'weighted_unifrac',
            'beta_passthrough',
-           'beta_phylogenetic_passthrough',
-           'translate_metric_name'
+           'beta_phylogenetic_passthrough'
            ]
