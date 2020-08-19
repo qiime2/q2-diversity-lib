@@ -13,11 +13,11 @@ import skbio
 from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from q2_diversity_lib import (
-        bray_curtis, jaccard, unweighted_unifrac,
-        weighted_unifrac, beta)
-
 from qiime2 import Artifact
+
+from ..beta import (bray_curtis, jaccard, unweighted_unifrac,
+                    weighted_unifrac, METRICS)
+
 
 nonphylogenetic_measures = [bray_curtis, jaccard]
 phylogenetic_measures = [unweighted_unifrac, weighted_unifrac]
@@ -337,7 +337,6 @@ class BetaPassthroughTests(TestPluginBase):
     def setUp(self):
         super().setUp()
         self.method = self.plugin.actions['beta_passthrough']
-        beta.METRICS['NONPHYLO']['UNIMPL'] = beta.METRICS['NONPHYLO']['UNIMPL']
         empty_table = biom.Table(np.array([]), [], [])
         self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
                                                 empty_table)
@@ -350,13 +349,13 @@ class BetaPassthroughTests(TestPluginBase):
         self.table = Artifact.import_data('FeatureTable[Frequency]', table)
 
     def test_method(self):
-        for metric in beta.METRICS['NONPHYLO']['UNIMPL']:
+        for metric in METRICS['NONPHYLO']['UNIMPL']:
             self.method(table=self.crawford_tbl, metric=metric)
         # If we get here, then our methods ran without error
         self.assertTrue(True)
 
     def test_passed_empty_table(self):
-        for metric in beta.METRICS['NONPHYLO']['UNIMPL']:
+        for metric in METRICS['NONPHYLO']['UNIMPL']:
             with self.assertRaisesRegex(ValueError, 'empty'):
                 self.method(table=self.empty_table, metric=metric)
 
@@ -368,7 +367,7 @@ class BetaPassthroughTests(TestPluginBase):
     def test_passed_implemented_metric(self):
         # beta_passthrough does not provide access to measures that have been
         # implemented locally
-        for metric in beta.METRICS['NONPHYLO']['IMPL']:
+        for metric in METRICS['NONPHYLO']['IMPL']:
             with self.assertRaisesRegex(TypeError, f"{metric}.*incompatible"):
                 self.method(table=self.crawford_tbl, metric=metric)
 
@@ -432,7 +431,6 @@ class BetaPhylogeneticPassthroughTests(TestPluginBase):
     def setUp(self):
         super().setUp()
         self.method = self.plugin.actions['beta_phylogenetic_passthrough']
-        beta.METRICS['PHYLO']['UNIMPL'] = beta.METRICS['PHYLO']['UNIMPL']
         empty_table = biom.Table(np.array([]), [], [])
         self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
                                                 empty_table)
@@ -444,14 +442,14 @@ class BetaPhylogeneticPassthroughTests(TestPluginBase):
                                                   crawford_tree)
 
     def test_method(self):
-        for metric in beta.METRICS['PHYLO']['UNIMPL']:
+        for metric in METRICS['PHYLO']['UNIMPL']:
             self.method(table=self.crawford_tbl,
                         phylogeny=self.crawford_tree, metric=metric)
         # If we get here, then our methods ran without error
         self.assertTrue(True)
 
     def test_passed_empty_table(self):
-        for metric in beta.METRICS['PHYLO']['UNIMPL']:
+        for metric in METRICS['PHYLO']['UNIMPL']:
             with self.assertRaisesRegex(ValueError, 'empty'):
                 self.method(table=self.empty_table,
                             phylogeny=self.crawford_tree, metric=metric)

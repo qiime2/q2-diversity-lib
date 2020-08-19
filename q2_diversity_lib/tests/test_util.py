@@ -11,16 +11,12 @@ from unittest import mock
 import numpy as np
 import biom
 import psutil
-
 from qiime2 import Artifact
 from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from .._util import _disallow_empty_tables, _validate_requested_cpus
-import q2_diversity_lib
 
-A_METRICS = q2_diversity_lib.alpha.METRICS
-B_METRICS = q2_diversity_lib.beta.METRICS
+from .._util import _disallow_empty_tables, _validate_requested_cpus
 
 
 class DisallowEmptyTablesTests(TestPluginBase):

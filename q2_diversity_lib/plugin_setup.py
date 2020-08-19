@@ -6,21 +6,20 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import q2_diversity_lib
 from qiime2.plugin import (Plugin, Citations, Bool, Int, Range, Choices, Str,
                            Float)
-
 from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
                                     PresenceAbsence)
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.sample_data import AlphaDiversity, SampleData
 from q2_types.distance_matrix import DistanceMatrix
-from q2_diversity_lib import alpha, beta
+
+from . import alpha, beta, __version__
 
 citations = Citations.load('citations.bib', package='q2_diversity_lib')
 plugin = Plugin(
     name="diversity-lib",
-    version=q2_diversity_lib.__version__,
+    version=__version__,
     website="https://github.com/qiime2/q2-diversity-lib",
     short_description="Plugin for computing community diversity.",
     package="q2_diversity_lib",
@@ -52,7 +51,7 @@ drop_undef_samples_description = (
 
 # ------------------------ alpha-diversity -----------------------
 plugin.methods.register_function(
-    function=q2_diversity_lib.faith_pd,
+    function=alpha.faith_pd,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
@@ -77,7 +76,7 @@ plugin.methods.register_function(
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.observed_features,
+    function=alpha.observed_features,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence]},
     parameters=None,
@@ -95,7 +94,7 @@ plugin.methods.register_function(
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.pielou_evenness,
+    function=alpha.pielou_evenness,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'drop_undefined_samples': Bool},
     outputs=[('vector', SampleData[AlphaDiversity])],
@@ -115,7 +114,7 @@ plugin.methods.register_function(
 
 # TODO: Augment citations as needed
 plugin.methods.register_function(
-    function=q2_diversity_lib.shannon_entropy,
+    function=alpha.shannon_entropy,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'drop_undefined_samples': Bool},
     outputs=[('vector', SampleData[AlphaDiversity])],
@@ -137,7 +136,7 @@ plugin.methods.register_function(
 # ------------------------ beta-diversity -----------------------
 # TODO: Augment citations as needed
 plugin.methods.register_function(
-    function=q2_diversity_lib.bray_curtis,
+    function=beta.bray_curtis,
     inputs={'table': FeatureTable[Frequency]},
     parameters={'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
@@ -158,7 +157,7 @@ plugin.methods.register_function(
 
 # TODO: Augment citations as needed
 plugin.methods.register_function(
-    function=q2_diversity_lib.jaccard,
+    function=beta.jaccard,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence]},
     parameters={'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
@@ -179,7 +178,7 @@ plugin.methods.register_function(
 
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.unweighted_unifrac,
+    function=beta.unweighted_unifrac,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
@@ -216,7 +215,7 @@ plugin.methods.register_function(
 )
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.weighted_unifrac,
+    function=beta.weighted_unifrac,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'threads': Int % Range(1, None) | Str % Choices(['auto']),
@@ -253,7 +252,7 @@ plugin.methods.register_function(
 
 # ------------------------ Passthrough Methods ------------------------
 plugin.methods.register_function(
-    function=q2_diversity_lib.alpha_passthrough,
+    function=alpha.alpha_passthrough,
     inputs={'table': FeatureTable[Frequency]},
     parameters={'metric': Str % Choices(alpha.METRICS['NONPHYLO']['UNIMPL'])},
     outputs=[('vector', SampleData[AlphaDiversity])],
@@ -271,7 +270,7 @@ plugin.methods.register_function(
 
 
 plugin.methods.register_function(
-    function=q2_diversity_lib.beta_passthrough,
+    function=beta.beta_passthrough,
     inputs={'table': FeatureTable[Frequency]},
     parameters={'metric': Str % Choices(beta.METRICS['NONPHYLO']['UNIMPL']),
                 'pseudocount': Int % Range(1, None),
@@ -295,8 +294,9 @@ plugin.methods.register_function(
                 "selected beta diversity metric.",
 )
 
+
 plugin.methods.register_function(
-    function=q2_diversity_lib.beta_phylogenetic_passthrough,
+    function=beta.beta_phylogenetic_passthrough,
     inputs={'table': FeatureTable[Frequency],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'metric': Str % Choices(beta.METRICS['PHYLO']['UNIMPL']),

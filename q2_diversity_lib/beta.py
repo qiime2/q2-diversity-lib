@@ -103,6 +103,7 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
             'generalized_unifrac': unifrac.generalized}
     func = unifrac_functions[metric]
 
+    # Ideally we remove this when we can support optional type-mapped params.
     if alpha is not None and metric != 'generalized_unifrac':
         raise ValueError("The alpha parameter is only allowed when the "
                          "selected metric is 'generalized_unifrac'")

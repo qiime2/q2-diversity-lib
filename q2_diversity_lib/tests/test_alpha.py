@@ -14,9 +14,10 @@ import biom
 from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from q2_diversity_lib import (faith_pd, pielou_evenness, observed_features,
-                              shannon_entropy, alpha)
 from qiime2 import Artifact
+
+from ..alpha import (faith_pd, pielou_evenness, observed_features,
+                     shannon_entropy, METRICS)
 
 
 class SmokeTests(TestPluginBase):
@@ -29,8 +30,8 @@ class SmokeTests(TestPluginBase):
                                                 empty_table)
 
     def test_non_phylogenetic_passed_empty_table(self):
-        for metric in alpha.METRICS['NONPHYLO']['IMPL']:
-            metric = alpha.METRICS['NAME_TRANSLATIONS'][metric]
+        for metric in METRICS['NONPHYLO']['IMPL']:
+            metric = METRICS['NAME_TRANSLATIONS'][metric]
             with self.assertRaisesRegex(ValueError, 'empty'):
                 self.plugin.actions[metric](table=self.empty_table)
 
@@ -251,14 +252,14 @@ class AlphaPassthroughTests(TestPluginBase):
                                                  crawford_tbl)
 
     def test_method(self):
-        for metric in alpha.METRICS['NONPHYLO']['UNIMPL']:
+        for metric in METRICS['NONPHYLO']['UNIMPL']:
             # NOTE: crawford table used b/c input_table too minimal for `ace`
             self.method(table=self.crawford_tbl, metric=metric)
         # If we get here, then our methods ran without error
         self.assertTrue(True)
 
     def test_passed_empty_table(self):
-        for metric in alpha.METRICS['NONPHYLO']['UNIMPL']:
+        for metric in METRICS['NONPHYLO']['UNIMPL']:
             with self.assertRaisesRegex(ValueError, 'empty'):
                 self.method(table=self.empty_table, metric=metric)
 
@@ -270,6 +271,6 @@ class AlphaPassthroughTests(TestPluginBase):
     def test_passed_implemented_metric(self):
         # alpha_passthrough does not provide access to measures that have been
         # implemented locally
-        for metric in alpha.METRICS['NONPHYLO']['IMPL']:
+        for metric in METRICS['NONPHYLO']['IMPL']:
             with self.assertRaisesRegex(TypeError, f"{metric}.*incompatible"):
                 self.method(table=self.crawford_tbl, metric=metric)
