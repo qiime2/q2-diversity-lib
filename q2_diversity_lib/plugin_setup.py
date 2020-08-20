@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from qiime2.plugin import (Plugin, Citations, Bool, Int, Range, Choices, Str,
-                           Float)
+                           Float, List)
 from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
                                     PresenceAbsence)
 from q2_types.tree import Phylogeny, Rooted
@@ -335,6 +335,61 @@ plugin.methods.register_function(
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
     name='Beta Phylogenetic Passthrough',
+    description="Computes a distance matrix for all pairs of samples in a "
+                "feature table using the unifrac implementation of the "
+                "selected beta diversity metric.",
+    citations=[
+        citations['lozupone2005unifrac'],
+        citations['lozupone2007unifrac'],
+        citations['hamady2010unifrac'],
+        citations['lozupone2011unifrac'],
+        citations['mcdonald2018unifrac'],
+        citations['chang2011variance'],
+        citations['chen2012genUnifrac']
+    ]
+)
+
+
+plugin.methods.register_function(
+    function=beta.beta_phylogenetic_meta_passthrough,
+    inputs={'table': List[FeatureTable[Frequency]],
+            'phylogeny': List[Phylogeny[Rooted]]},
+    parameters={'metric': Str % Choices(beta.METRICS['PHYLO']['UNIMPL']),
+                'threads': Int % Range(1, None) | Str % Choices(['auto']),
+                'variance_adjusted': Bool,
+                'alpha': Float % Range(0, 1, inclusive_end=True),
+                'bypass_tips': Bool},
+    outputs=[('distance_matrix', DistanceMatrix)],
+    input_descriptions={
+        'table': 'The feature tables containing the samples over which beta '
+                 'diversity should be computed.',
+        'phylogeny': 'Phylogenetic trees containing tip identifiers that '
+                     'correspond to the feature identifiers in the table. '
+                     'This tree can contain tip ids that are not present in '
+                     'the table, but all feature ids in the table must be '
+                     'present in this tree.'
+    },
+    parameter_descriptions={
+        'metric': 'The beta diversity metric to be computed.',
+        'threads': threads_description,
+        'variance_adjusted': 'Perform variance adjustment based on Chang et '
+                             'al. BMC Bioinformatics 2011. Weights distances '
+                             'based on the proportion of the relative '
+                             'abundance represented between the samples at a'
+                             ' given node under evaluation.',
+        'alpha': 'This parameter is only used when the choice of metric is '
+                 'generalized_unifrac. The value of alpha controls importance'
+                 ' of sample proportions. 1.0 is weighted normalized UniFrac.'
+                 ' 0.0 is close to unweighted UniFrac, but only if the sample'
+                 ' proportions are dichotomized.',
+        'bypass_tips': 'In a bifurcating tree, the tips make up about 50% of '
+                       'the nodes in a tree. By ignoring them, specificity '
+                       'can be traded for reduced compute time. This has the '
+                       'effect of collapsing the phylogeny, and is analogous '
+                       '(in concept) to moving from 99% to 97% OTUs'
+    },
+    output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
+    name='Beta Phylogenetic Meta Passthrough',
     description="Computes a distance matrix for all pairs of samples in a "
                 "feature table using the unifrac implementation of the "
                 "selected beta diversity metric.",

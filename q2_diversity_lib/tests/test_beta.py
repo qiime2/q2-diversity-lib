@@ -9,6 +9,7 @@ import numpy as np
 import numpy.testing as npt
 import biom
 import skbio
+import pkg_resources
 
 from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
@@ -329,6 +330,43 @@ class WeightedUnifrac(TestPluginBase):
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
+
+
+class BetaPhylogeneticMetaPassthroughTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def setUp(self):
+        super().setUp()
+        self.method = self.plugin.actions['beta_phylogenetic_meta_passthrough']
+        empty_table = biom.Table(np.array([]), [], [])
+        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
+                                                empty_table)
+
+        # checking parity with the unifrac.meta tests
+        table1 = pkg_resources.resource_filename('unifrac.tests',
+                                                 'data/e1.biom')
+        table2 = pkg_resources.resource_filename('unifrac.tests',
+                                                 'data/e2.biom')
+        self.tables = [Artifact.import_data('FeatureTable[Frequency]', table1),
+                       Artifact.import_data('FeatureTable[Frequency]', table2)]
+
+        tree1 = pkg_resources.resource_filename('unifrac.tests',
+                                                'data/t1.newick')
+        tree2 = pkg_resources.resource_filename('unifrac.tests',
+                                                'data/t2.newick')
+        self.trees = [Artifact.import_data('Phylogeny[Rooted]', tree1),
+                      Artifact.import_data('Phylogeny[Rooted]', tree2)]
+
+    def test_method(self):
+        for metric in METRICS['PHYLO']['UNIMPL'] | METRICS['PHYLO']['IMPL']:
+            self.method(table=self.tables, phylogeny=self.trees, metric=metric)
+        self.assertTrue(True)
+
+    def test_passed_bad_metric(self):
+        with self.assertRaisesRegex(TypeError,
+                                    'imaginary_metric.*incompatible'):
+            self.method(table=self.tables, phylogeny=self.trees,
+                        metric='imaginary_metric')
 
 
 class BetaPassthroughTests(TestPluginBase):

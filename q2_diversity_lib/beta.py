@@ -117,6 +117,34 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
                 variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
 
 
+@_validate_requested_cpus
+def beta_phylogenetic_meta_passthrough(table: BIOMV210Format,
+                                       phylogeny: NewickFormat,
+                                       metric: str,
+                                       threads: int = 1,
+                                       variance_adjusted: bool = False,
+                                       alpha: float = None,
+                                       bypass_tips: bool = False
+                                       ) -> skbio.DistanceMatrix:
+    # Ideally we remove this when we can support optional type-mapped params.
+    if alpha is not None and metric != 'generalized_unifrac':
+        raise ValueError("The alpha parameter is only allowed when the "
+                         "selected metric is 'generalized_unifrac'")
+
+    metric_map = {'unweighted_unifrac': 'unweighted',
+                  'weighted_normalized_unifrac': 'weighted_normalized',
+                  'weighted_unifrac': 'weighted_unnormalized',
+                  'generalized_unifrac': 'generalized'}
+    metric = metric_map[metric]
+
+    return unifrac.meta(tuple([str(t) for t in table]),
+                        tuple([str(p) for p in phylogeny]),
+                        weights=None, threads=threads,
+                        consolidation=None, method=metric,
+                        variance_adjusted=variance_adjusted,
+                        alpha=alpha, bypass_tips=bypass_tips)
+
+
 # --------------------Non-Phylogenetic-----------------------
 @_disallow_empty_tables
 @_validate_requested_cpus
