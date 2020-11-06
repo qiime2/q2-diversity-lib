@@ -390,9 +390,9 @@ plugin.methods.register_function(
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
     name='Beta Phylogenetic Meta Passthrough',
-    description="Computes a distance matrix for all pairs of samples in a "
-                "feature table using the unifrac implementation of the "
-                "selected beta diversity metric.",
+    description="Computes a distance matrix for all pairs of samples in the "
+                "set of feature table and phylogeny pairs, using the unifrac "
+                "implementation of the selected beta diversity metric.",
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
@@ -400,6 +400,7 @@ plugin.methods.register_function(
         citations['lozupone2011unifrac'],
         citations['mcdonald2018unifrac'],
         citations['chang2011variance'],
-        citations['chen2012genUnifrac']
+        citations['chen2012genUnifrac'],
+        citations['lozupone2008metaunifrac']
     ]
 )
