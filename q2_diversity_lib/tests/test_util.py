@@ -35,6 +35,13 @@ class DisallowEmptyTablesTests(TestPluginBase):
         not_a_table_fp = self.get_data_path('crawford.nwk')
         self.invalid_view_type = NewickFormat(not_a_table_fp, mode='r')
 
+        self.valid_table_list = [self.valid_table_as_BIOMV210Format,
+                                 self.valid_table_as_BIOMV210Format]
+        self.invalid_table_list = [self.valid_table_as_BIOMV210Format,
+                                   self.invalid_view_type]
+        self.has_empty_table_list = [self.empty_table_as_BIOMV210Format,
+                                     self.valid_table_as_BIOMV210Format]
+
         @_disallow_empty_tables
         def f1(table: biom.Table):
             pass
@@ -49,15 +56,29 @@ class DisallowEmptyTablesTests(TestPluginBase):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
             self.function_with_table_param(self.empty_table_as_BIOMV210Format)
 
+    def test_pass_empty_table_positionally_list(self):
+        with self.assertRaisesRegex(ValueError, "table.*is empty"):
+            self.function_with_table_param(self.has_empty_table_list)
+
     def test_pass_empty_table_as_kwarg(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
             self.function_with_table_param(
                 table=self.empty_table_as_BIOMV210Format)
 
+    def test_pass_empty_table_as_kwarg_list(self):
+        with self.assertRaisesRegex(ValueError, "table.*is empty"):
+            self.function_with_table_param(
+                table=self.has_empty_table_list)
+
     def test_decorated_lambda_with_table_param(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
             decorated_lambda = _disallow_empty_tables(lambda table: None)
             decorated_lambda(self.empty_table_as_BIOMV210Format)
+
+    def test_decorated_lambda_with_table_param_list(self):
+        with self.assertRaisesRegex(ValueError, "table.*is empty"):
+            decorated_lambda = _disallow_empty_tables(lambda table: None)
+            decorated_lambda(self.has_empty_table_list)
 
     def test_wrapped_function_has_no_table_param(self):
         with self.assertRaisesRegex(TypeError, "no parameter.*table"):
@@ -67,6 +88,11 @@ class DisallowEmptyTablesTests(TestPluginBase):
         with self.assertRaisesRegex(
                     ValueError, "Invalid view type.*Newick"):
             self.function_with_table_param(table=self.invalid_view_type)
+
+    def test_passed_invalid_view_type_list(self):
+        with self.assertRaisesRegex(
+                    ValueError, "Invalid view type.*Newick"):
+            self.function_with_table_param(table=self.invalid_table_list)
 
 
 class ValidateRequestedCPUsTests(TestPluginBase):

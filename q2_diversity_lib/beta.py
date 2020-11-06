@@ -117,6 +117,7 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
                 variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
 
 
+@_disallow_empty_tables
 @_validate_requested_cpus
 def beta_phylogenetic_meta_passthrough(table: BIOMV210Format,
                                        phylogeny: NewickFormat,

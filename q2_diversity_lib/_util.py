@@ -34,17 +34,21 @@ def _disallow_empty_tables(wrapped_function, *args, **kwargs):
     if table is None:
         raise TypeError("The wrapped function has no parameter 'table'")
 
-    if isinstance(table, BIOMV210Format):
-        table = str(table)
-        table_obj = biom.load_table(table)
-    elif isinstance(table, biom.Table):
-        table_obj = table
-    else:
-        raise ValueError("Invalid view type: table passed as "
-                         f"{type(table)}")
+    if not isinstance(table, (tuple, list, set)):
+        table = [table]
 
-    if table_obj.is_empty():
-        raise ValueError("The provided table is empty")
+    for tab in table:
+        if isinstance(tab, BIOMV210Format):
+            tab = str(tab)
+            tab_obj = biom.load_table(tab)
+        elif isinstance(tab, biom.Table):
+            tab_obj = tab
+        else:
+            raise ValueError("Invalid view type: table passed as "
+                             f"{type(tab)}")
+
+        if tab_obj.is_empty():
+            raise ValueError("The provided table is empty")
 
     return wrapped_function(*args, **kwargs)
 
