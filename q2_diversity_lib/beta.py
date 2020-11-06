@@ -124,7 +124,9 @@ def beta_phylogenetic_meta_passthrough(table: BIOMV210Format,
                                        threads: int = 1,
                                        variance_adjusted: bool = False,
                                        alpha: float = None,
-                                       bypass_tips: bool = False
+                                       bypass_tips: bool = False,
+                                       weights: list = None,
+                                       consolidation: str='skipping_missing_values'  # noqa
                                        ) -> skbio.DistanceMatrix:
     # Ideally we remove this when we can support optional type-mapped params.
     if alpha is not None and metric != 'generalized_unifrac':
@@ -139,8 +141,8 @@ def beta_phylogenetic_meta_passthrough(table: BIOMV210Format,
 
     return unifrac.meta(tuple([str(t) for t in table]),
                         tuple([str(p) for p in phylogeny]),
-                        weights=None, threads=threads,
-                        consolidation=None, method=metric,
+                        weights=weights, threads=threads,
+                        consolidation=consolidation, method=metric,
                         variance_adjusted=variance_adjusted,
                         alpha=alpha, bypass_tips=bypass_tips)
 

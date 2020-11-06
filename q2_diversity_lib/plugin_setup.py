@@ -13,6 +13,7 @@ from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.sample_data import AlphaDiversity, SampleData
 from q2_types.distance_matrix import DistanceMatrix
+from unifrac._meta import CONSOLIDATIONS
 
 from . import alpha, beta, __version__
 
@@ -358,7 +359,9 @@ plugin.methods.register_function(
                 'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'variance_adjusted': Bool,
                 'alpha': Float % Range(0, 1, inclusive_end=True),
-                'bypass_tips': Bool},
+                'bypass_tips': Bool,
+                'weights': List[Float],
+                'consolidation': Str % Choices(list(CONSOLIDATIONS))},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
         'table': 'The feature tables containing the samples over which beta '
@@ -386,7 +389,13 @@ plugin.methods.register_function(
                        'the nodes in a tree. By ignoring them, specificity '
                        'can be traded for reduced compute time. This has the '
                        'effect of collapsing the phylogeny, and is analogous '
-                       '(in concept) to moving from 99% to 97% OTUs'
+                       '(in concept) to moving from 99% to 97% OTUs',
+        'weights': 'The weight applied to each tree/table pair. This tuple is '
+                   'expected to be in index order with tables and phylogenies.'
+                   ' Default is to weight each tree/table pair evenly.',
+        'consolidation': 'The matrix consolidation method, which determines '
+                         'how the individual distance matrices are '
+                         'aggregated'
     },
     output_descriptions={'distance_matrix': 'The resulting distance matrix.'},
     name='Beta Phylogenetic Meta Passthrough',
