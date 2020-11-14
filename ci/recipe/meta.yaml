@@ -27,7 +27,7 @@ requirements:
     - q2-types {{ release }}.*
     - scikit-bio
     - scipy
-    - unifrac
+    - unifrac >=0.20.0
 
 test:
   imports:
