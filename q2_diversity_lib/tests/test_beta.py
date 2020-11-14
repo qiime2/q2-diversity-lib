@@ -67,7 +67,7 @@ class SmokeTests(TestPluginBase):
                         phylogeny=self.valid_tree_as_NewickFormat)
 
     def test_phylogenetic_measures_passed_empty_tree(self):
-       for measure in phylogenetic_measures:
+        for measure in phylogenetic_measures:
             with self.assertRaisesRegex(ValueError, "newick"):
                 measure(table=self.valid_table_as_BIOMV210Format,
                         phylogeny=self.empty_tree_as_NewickFormat)
