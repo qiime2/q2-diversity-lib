@@ -37,7 +37,7 @@ jobs:
     # for versioneer
     - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
     - uses: qiime2/action-library-packaging@alpha1
-      with: 
-        plugin-name: q2-diversity-lib
+      with:
+        package-name: q2-diversity-lib
         build-target: staging
         additional-tests: pytest --pyargs q2_diversity_lib --capture=tee-sys
