@@ -67,20 +67,10 @@ class SmokeTests(TestPluginBase):
                         phylogeny=self.valid_tree_as_NewickFormat)
 
     def test_phylogenetic_measures_passed_empty_tree(self):
-        # HACK: different regular expressions are used here for unweighted and
-        # all other unifracs, because tree/table validation is not being
-        # applied to the other unifracs. Once unifrac PR #106 is merged, this
-        # change will need to be reverted.
-        for measure in phylogenetic_measures:
-            if (measure.__name__ == 'unweighted_unifrac'):
-                with self.assertRaisesRegex(ValueError, "newick"):
-                    measure(table=self.valid_table_as_BIOMV210Format,
-                            phylogeny=self.empty_tree_as_NewickFormat)
-            else:
-                with self.assertRaisesRegex(
-                        ValueError, 'table.*not.*completely represented'):
-                    measure(table=self.valid_table_as_BIOMV210Format,
-                            phylogeny=self.empty_tree_as_NewickFormat)
+       for measure in phylogenetic_measures:
+            with self.assertRaisesRegex(ValueError, "newick"):
+                measure(table=self.valid_table_as_BIOMV210Format,
+                        phylogeny=self.empty_tree_as_NewickFormat)
 
     def test_phylogenetic_measures_passed_root_only_tree(self):
         for measure in phylogenetic_measures:
