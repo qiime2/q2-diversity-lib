@@ -353,8 +353,8 @@ plugin.methods.register_function(
 
 plugin.methods.register_function(
     function=beta.beta_phylogenetic_meta_passthrough,
-    inputs={'table': List[FeatureTable[Frequency]],
-            'phylogeny': List[Phylogeny[Rooted]]},
+    inputs={'tables': List[FeatureTable[Frequency]],
+            'phylogenies': List[Phylogeny[Rooted]]},
     parameters={'metric': Str % Choices(beta.METRICS['PHYLO']['UNIMPL']),
                 'threads': Int % Range(1, None) | Str % Choices(['auto']),
                 'variance_adjusted': Bool,
@@ -364,13 +364,13 @@ plugin.methods.register_function(
                 'consolidation': Str % Choices(list(CONSOLIDATIONS))},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
-        'table': 'The feature tables containing the samples over which beta '
-                 'diversity should be computed.',
-        'phylogeny': 'Phylogenetic trees containing tip identifiers that '
-                     'correspond to the feature identifiers in the table. '
-                     'This tree can contain tip ids that are not present in '
-                     'the table, but all feature ids in the table must be '
-                     'present in this tree.'
+        'tables': 'The feature tables containing the samples over which beta '
+                  'diversity should be computed.',
+        'phylogenies': 'Phylogenetic trees containing tip identifiers that '
+                       'correspond to the feature identifiers in the table. '
+                       'This tree can contain tip ids that are not present in '
+                       'the table, but all feature ids in the table must be '
+                       'present in this tree.'
     },
     parameter_descriptions={
         'metric': 'The beta diversity metric to be computed.',

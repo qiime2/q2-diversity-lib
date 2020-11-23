@@ -32,7 +32,11 @@ def _disallow_empty_tables(wrapped_function, *args, **kwargs):
     bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
     table = bound_arguments.arguments.get('table')
     if table is None:
-        raise TypeError("The wrapped function has no parameter 'table'")
+        table = bound_arguments.arguments.get('tables')
+
+    if table is None:
+        raise TypeError("The wrapped function is missing argument 'table' or "
+                        "'tables'")
 
     if not isinstance(table, (tuple, list, set)):
         table = [table]

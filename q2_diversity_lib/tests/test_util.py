@@ -81,7 +81,7 @@ class DisallowEmptyTablesTests(TestPluginBase):
             decorated_lambda(self.has_empty_table_list)
 
     def test_wrapped_function_has_no_table_param(self):
-        with self.assertRaisesRegex(TypeError, "no parameter.*table"):
+        with self.assertRaisesRegex(TypeError, "missing argument.*table"):
             self.function_without_table_param()
 
     def test_passed_invalid_view_type(self):

@@ -119,8 +119,8 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
 
 @_disallow_empty_tables
 @_validate_requested_cpus
-def beta_phylogenetic_meta_passthrough(table: BIOMV210Format,
-                                       phylogeny: NewickFormat,
+def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
+                                       phylogenies: NewickFormat,
                                        metric: str,
                                        threads: int = 1,
                                        variance_adjusted: bool = False,
@@ -140,8 +140,8 @@ def beta_phylogenetic_meta_passthrough(table: BIOMV210Format,
                   'generalized_unifrac': 'generalized'}
     metric = metric_map[metric]
 
-    return unifrac.meta(tuple([str(t) for t in table]),
-                        tuple([str(p) for p in phylogeny]),
+    return unifrac.meta(tuple([str(t) for t in tables]),
+                        tuple([str(p) for p in phylogenies]),
                         weights=weights, threads=threads,
                         consolidation=consolidation, method=metric,
                         variance_adjusted=variance_adjusted,

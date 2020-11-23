@@ -348,14 +348,15 @@ class BetaPhylogeneticMetaPassthroughTests(TestPluginBase):
                       Artifact.import_data('Phylogeny[Rooted]', tree2)]
 
     def test_method(self):
-        for metric in METRICS['PHYLO']['UNIMPL'] | METRICS['PHYLO']['IMPL']:
-            self.method(table=self.tables, phylogeny=self.trees, metric=metric)
+        for metric in METRICS['PHYLO']['UNIMPL']:
+            self.method(tables=self.tables, phylogenies=self.trees,
+                        metric=metric)
         self.assertTrue(True)
 
     def test_passed_bad_metric(self):
         with self.assertRaisesRegex(TypeError,
                                     'imaginary_metric.*incompatible'):
-            self.method(table=self.tables, phylogeny=self.trees,
+            self.method(tables=self.tables, phylogenies=self.trees,
                         metric='imaginary_metric')
 
 
