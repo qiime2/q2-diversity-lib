@@ -24,13 +24,16 @@ requirements:
     - numpy
     - pandas
     - psutil
-    - qiime2 {{ release }}.*
-    - q2-types {{ release }}.*
+    - qiime2 {{ qiime2 }}
+    - q2-types {{ q2_types }}
     - scikit-bio
     - scipy
     - unifrac >=0.20.0
 
 test:
+  requires:
+    - pytest
+
   imports:
     - q2_diversity_lib
     - qiime2.plugins.diversity_lib
