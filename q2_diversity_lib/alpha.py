@@ -13,7 +13,7 @@ import unifrac
 
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from ._util import (_drop_undefined_samples,
+from ._util import (_drop_undefined_samples, _partition,
                     _disallow_empty_tables)
 
 
@@ -62,14 +62,17 @@ def observed_features(table: biom.Table) -> pd.Series:
 @_disallow_empty_tables
 def pielou_evenness(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
-    counts = table.matrix_data.toarray().T
-    sample_ids = table.ids(axis='sample')
     if drop_undefined_samples:
-        counts, sample_ids = _drop_undefined_samples(
-                counts, sample_ids, minimum_nonzero_elements=2)
+        table = _drop_undefined_samples(table, minimum_nonzero_elements=2)
 
-    result = skbio.diversity.alpha_diversity(metric='pielou_e', counts=counts,
-                                             ids=sample_ids)
+    results = []
+    for partition in _partition(table):
+        counts = partition.matrix_data.astype(int).toarray().T
+        sample_ids = partition.ids(axis='sample')
+        result = skbio.diversity.alpha_diversity(metric='pielou_e',
+                                                 counts=counts,
+                                                 ids=sample_ids)
+    result = pd.concat(results)
     result.name = 'pielou_evenness'
     return result
 
@@ -77,25 +80,31 @@ def pielou_evenness(table: biom.Table,
 @_disallow_empty_tables
 def shannon_entropy(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
-    counts = table.matrix_data.toarray().T
-    sample_ids = table.ids(axis='sample')
     if drop_undefined_samples:
-        counts, sample_ids = _drop_undefined_samples(
-                counts, sample_ids, minimum_nonzero_elements=1)
-    result = skbio.diversity.alpha_diversity(metric='shannon', counts=counts,
-                                             ids=sample_ids)
+        table = _drop_undefined_samples(table, minimum_nonzero_elements=1)
+
+    results = []
+    for partition in _partition(table):
+        counts = partition.matrix_data.astype(int).toarray().T
+        sample_ids = partition.ids(axis='sample')
+        result = skbio.diversity.alpha_diversity(metric='shannon',
+                                                 counts=counts,
+                                                 ids=sample_ids)
+    result = pd.concat(results)
     result.name = 'shannon_entropy'
     return result
 
 
 @_disallow_empty_tables
 def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
-    # Note: some metrics require ints, but biom.Table seems to default to float
-    # (e.g. ace, lladser_pe, michaelis_menten_fit)
-    counts = table.matrix_data.astype(int).toarray().T
-    sample_ids = table.ids(axis='sample')
+    results = []
+    for partition in _partition(table):
+        counts = partition.matrix_data.astype(int).toarray().T
+        sample_ids = partition.ids(axis='sample')
 
-    result = skbio.diversity.alpha_diversity(metric=metric, counts=counts,
-                                             ids=sample_ids)
+        result = skbio.diversity.alpha_diversity(metric=metric,
+                                                 counts=counts,
+                                                 ids=sample_ids)
+    results = pd.concat(results)
     result.name = metric
     return result

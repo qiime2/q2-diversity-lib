@@ -9,6 +9,7 @@
 from unittest import mock
 
 import numpy as np
+import numpy.testing as npt
 import biom
 import psutil
 from qiime2 import Artifact
@@ -16,7 +17,31 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 
-from .._util import _disallow_empty_tables, _validate_requested_cpus
+from .._util import (_disallow_empty_tables, _validate_requested_cpus,
+                     _partition)
+
+
+class PartitionTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def test_table_below_batch_size(self):
+        tab = biom.example_table.copy()
+        partitions = list(_partition(tab, block_size=10))
+        self.assertEqual(len(partitions), 1)
+        self.assertEqual(tab, partitions[0])
+
+    def test_table_above_batch_size(self):
+        tab = biom.example_table.copy()
+        partitions = list(_partition(tab, block_size=2))
+        self.assertEqual(len(partitions), 2)
+        npt.assert_equal(partitions[0].ids(), tab.ids()[:2])
+        npt.assert_equal(partitions[1].ids(), tab.ids()[2])
+
+    def test_table_equal_to_batch_size(self):
+        tab = biom.example_table.copy()
+        partitions = list(_partition(tab, block_size=3))
+        self.assertEqual(len(partitions), 1)
+        self.assertEqual(tab, partitions[0])
 
 
 class DisallowEmptyTablesTests(TestPluginBase):

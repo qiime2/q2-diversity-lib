@@ -16,15 +16,25 @@ import biom
 from q2_types.feature_table import BIOMV210Format
 
 
-def _drop_undefined_samples(counts: np.ndarray, sample_ids: np.ndarray,
-                            minimum_nonzero_elements: int) -> (np.ndarray,
-                                                               np.ndarray):
-    nonzero_elements_per_sample = (counts != 0).sum(axis=1)
-    fancy_index = np.where(
-            nonzero_elements_per_sample < minimum_nonzero_elements)
-    filtered_counts = np.delete(counts, fancy_index, axis=0)
-    filtered_sample_ids = np.delete(sample_ids, fancy_index)
-    return (filtered_counts, filtered_sample_ids)
+def _drop_undefined_samples(table, minimum_nonzero_elements):
+    f = lambda v, i, m: (v > 0).sum() >= minimum_nonzero_elements
+    return table.filter(f, inplace=False).remove_empty()
+
+
+def _partition(table, block_size):
+    number_of_splits = max(1, np.ceil(len(table.ids()) / block_size))
+    splits = np.array_split(table.ids(), number_of_splits)
+    split_map = {}
+    for idx, split in enumerate(splits):
+        for id_ in split:
+            split_map[id_] = idx
+
+    def part_f(i, m):
+        return split_map[i]
+
+    for _, block in table.partition(part_f):
+        block.remove_empty(inplace=True)
+        yield block
 
 
 @decorator
