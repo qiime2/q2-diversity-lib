@@ -17,7 +17,8 @@ from q2_types.feature_table import BIOMV210Format
 
 
 def _drop_undefined_samples(table, minimum_nonzero_elements):
-    f = lambda v, i, m: (v > 0).sum() >= minimum_nonzero_elements
+    def f(v, i, m):
+        return (v > 0).sum() >= minimum_nonzero_elements
     return table.filter(f, inplace=False).remove_empty()
 
 
