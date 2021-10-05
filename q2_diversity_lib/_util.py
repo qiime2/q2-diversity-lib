@@ -19,10 +19,10 @@ from q2_types.feature_table import BIOMV210Format
 def _drop_undefined_samples(table, minimum_nonzero_elements):
     def f(v, i, m):
         return (v > 0).sum() >= minimum_nonzero_elements
-    return table.filter(f, inplace=False).remove_empty()
+    return table.filter(f, inplace=False)
 
 
-def _partition(table, block_size):
+def _partition(table, block_size=100):
     number_of_splits = max(1, np.ceil(len(table.ids()) / block_size))
     splits = np.array_split(table.ids(), number_of_splits)
     split_map = {}
@@ -34,7 +34,6 @@ def _partition(table, block_size):
         return split_map[i]
 
     for _, block in table.partition(part_f):
-        block.remove_empty(inplace=True)
         yield block
 
 
