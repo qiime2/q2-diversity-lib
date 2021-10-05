@@ -55,12 +55,8 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
 @_disallow_empty_tables
 def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa(inplace=False)
-    counts = presence_absence_table.matrix_data.toarray().astype(int).T
-    sample_ids = presence_absence_table.ids(axis='sample')
-    result = skbio.diversity.alpha_diversity(metric='observed_otus',
-                                             counts=counts, ids=sample_ids)
-    result.name = 'observed_features'
-    return result
+    return pd.Series(presence_absence_table.sum('sample'),
+                     index=table.ids(), name='observed_features')
 
 
 @_disallow_empty_tables
