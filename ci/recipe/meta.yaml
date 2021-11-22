@@ -20,6 +20,7 @@ requirements:
     - python {{ python }}
     - biom-format >=2.1.5,<2.2.0
     - decorator
+    # TODO: remove this pin
     # Inherit global hard pin
     - hdf5 {{ hdf5 }}
     - numpy
@@ -29,7 +30,7 @@ requirements:
     - q2-types {{ qiime2_epoch }}.*
     - scikit-bio
     - scipy
-    - unifrac >=0.20.0
+    - unifrac {{ unifrac }}
 
 test:
   requires:
