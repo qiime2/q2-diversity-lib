@@ -20,8 +20,6 @@ requirements:
     - python {{ python }}
     - biom-format >=2.1.5,<2.2.0
     - decorator
-    # Inherit global hard pin
-    - hdf5 {{ hdf5 }}
     - numpy
     - pandas
     - psutil
