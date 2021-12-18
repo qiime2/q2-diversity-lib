@@ -15,7 +15,7 @@ from q2_types.sample_data import AlphaDiversity, SampleData
 from q2_types.distance_matrix import DistanceMatrix
 from unifrac._meta import CONSOLIDATIONS
 
-from . import alpha, beta, __version__
+from . import alpha, beta, __version__, examples
 
 citations = Citations.load('citations.bib', package='q2_diversity_lib')
 plugin = Plugin(
@@ -91,7 +91,8 @@ plugin.methods.register_function(
                                    "observed features."},
     name="Observed Features",
     description="Compute the number of observed features for each sample in a "
-                "feature table"
+                "feature table",
+    examples={'basic': examples.observed_features_example}
 )
 
 plugin.methods.register_function(
