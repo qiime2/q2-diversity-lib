@@ -26,22 +26,11 @@ def ft1_factory():
 def observed_features_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     result, = use.action(
-    # This also works just fine, and is probably more idiomatic.
-    # We're mutating the injected usage, and it's recording the process.
-    # use.action(
-        # NOTE: This uses the plugin ID, not the registered plugin name.
-        # IDs are "normalized" by str.replace-ing dashes with underscores
-        # This is likely done to reduce friction around imports
         use.UsageAction(plugin_id='diversity_lib',
                         action_id='observed_features'),
         use.UsageInputs(table=ft),
         use.UsageOutputNames(vector='obs_feat_vector'))
 
-    use.comment(f'Our result vector is named {result.name},'
-                f' and it is a(n) {result.var_type}')
-
-    # Check semantic type of output (and presumably that the example ran)
-    # result.assert_output_type('SampleData[gerbil]')
     result.assert_output_type('SampleData[AlphaDiversity]')
 
     # AssertRegex for lines in output files
@@ -52,3 +41,5 @@ def observed_features_example(use):
             expression=f'{id}\t{val}'
         )
 
+def pielou_evenness_example(use):
+    ft = use.init_artifact
