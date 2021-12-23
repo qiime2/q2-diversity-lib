@@ -73,6 +73,7 @@ plugin.methods.register_function(
     name="Faith's Phylogenetic Diversity",
     description="Computes Faith's Phylogenetic Diversity for all samples in "
                 "a feature table.",
+    examples={'basic': examples.faith_pd_example},
     citations=[citations['faith1992conservation']]
 )
 
@@ -111,6 +112,8 @@ plugin.methods.register_function(
     name="Pielou's Evenness",
     description="Compute Pielou's Evenness for each sample in a "
                 "feature table",
+    examples={'basic': examples.pielou_evenness_example,
+              'dropping undefined samples': examples.pielou_drop_example},
     citations=[citations['pielou1966measurement']]
 )
 
@@ -131,6 +134,8 @@ plugin.methods.register_function(
     name="Shannon's Entropy",
     description="Compute Shannon's Entropy for each sample in a "
                 "feature table",
+    examples={'basic': examples.shannon_entropy_example,
+              'dropping undefined samples': examples.shannon_drop_example},
     citations=[citations['shannon1948communication']]
 )
 

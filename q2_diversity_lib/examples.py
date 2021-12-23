@@ -8,8 +8,13 @@
 
 import biom
 import numpy as np
+import pkg_resources
 
 from qiime2 import Artifact
+
+def get_test_data_path(filename):
+    return pkg_resources.resource_filename('q2_diversity_lib.tests',
+                                           f'data/{filename}')
 
 s_ids_1 = ['S1', 'S2', 'S3', 'S4', 'S5']
 def ft1_factory():
@@ -22,6 +27,22 @@ def ft1_factory():
                    s_ids_1)
     )
 
+def tree_factory():
+    input_tree_fp = get_test_data_path('faith_test.tree')
+    return Artifact.import_data(
+        'Phylogeny[Rooted]', input_tree_fp
+    )
+
+def faith_pd_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='faith_pd'),
+        use.UsageInputs(table=ft, phylogeny=tree),
+        use.UsageOutputNames(vector='faith_pd_vector'))
+
+    result.assert_output_type('SampleData[AlphaDiversity]')
 
 def observed_features_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
@@ -42,4 +63,45 @@ def observed_features_example(use):
         )
 
 def pielou_evenness_example(use):
-    ft = use.init_artifact
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='pielou_evenness'),
+        use.UsageInputs(table=ft),
+        use.UsageOutputNames(vector='pielou_vector')
+    )
+
+    result.assert_output_type('SampleData[AlphaDiversity]')
+
+def pielou_drop_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='pielou_evenness'),
+        use.UsageInputs(table=ft, drop_undefined_samples=True),
+        use.UsageOutputNames(vector='pielou_vector')
+    )
+
+    result.assert_output_type('SampleData[AlphaDiversity]')
+
+def shannon_entropy_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='shannon_entropy'),
+        use.UsageInputs(table=ft),
+        use.UsageOutputNames(vector='shannon_vector')
+    )
+
+    result.assert_output_type('SampleData[AlphaDiversity]')
+
+def shannon_drop_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='shannon_entropy'),
+        use.UsageInputs(table=ft, drop_undefined_samples=True),
+        use.UsageOutputNames(vector='shannon_vector')
+    )
+
+    result.assert_output_type('SampleData[AlphaDiversity]')
