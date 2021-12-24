@@ -161,7 +161,7 @@ plugin.methods.register_function(
                 "you use Bray-Curtis with count data that has not been "
                 "adjusted (normalized).",
     examples={"run on one core (by default)": examples.bray_curtis_example,
-              "to run on n cores, replace 1 here with your preferred number":
+              "to run on n cores, replace 1 here with your preferred integer":
               examples.bray_curtis_n_jobs_example,
               "use 'auto' to run on all of host system's available CPU cores":
               examples.bray_curtis_auto_jobs_example,
@@ -188,7 +188,7 @@ plugin.methods.register_function(
                 "FeatureTable[Frequency | Relative Frequency] is reduced"
                 "to presence/absence prior to calculation.",
     examples={"run on one core (by default)": examples.jaccard_example,
-              "to run on n cores, replace 1 here with your preferred number":
+              "to run on n cores, replace 1 here with your preferred integer":
               examples.jaccard_n_jobs_example,
               "use 'auto' to run on all of host system's available CPU cores":
               examples.jaccard_auto_jobs_example,
@@ -226,7 +226,7 @@ plugin.methods.register_function(
     description="Compute Unweighted Unifrac for each sample in a "
                 "feature table",
     examples={"run on one core (by default)": examples.u_u_example,
-              "to run on n cores, replace 1 here with your preferred number":
+              "to run on n cores, replace 1 here with your preferred integer":
               examples.u_u_n_threads_example,
               "use 'auto' to run on all of host system's available CPU cores":
               examples.u_u_auto_threads_example,
@@ -270,7 +270,7 @@ plugin.methods.register_function(
     description="Compute Weighted Unifrac for each sample in a "
                 "feature table",
     examples={"run on one core (by default)": examples.w_u_example,
-              "to run on n cores, replace 1 here with your preferred number":
+              "to run on n cores, replace 1 here with your preferred integer":
               examples.w_u_n_threads_example,
               "use 'auto' to run on all of host system's available CPU cores":
               examples.w_u_auto_threads_example,
@@ -300,7 +300,8 @@ plugin.methods.register_function(
     name="Alpha Passthrough (non-phylogenetic)",
     description="Computes a vector of values (one value for each samples in a "
                 "feature table) using the scikit-bio implementation of the "
-                "selected alpha diversity metric."
+                "selected alpha diversity metric.",
+    examples={'basic': examples.alpha_passthrough_example},
 )
 
 
@@ -327,6 +328,16 @@ plugin.methods.register_function(
     description="Computes a distance matrix for all pairs of samples in a "
                 "feature table using the scikit-bio implementation of the "
                 "selected beta diversity metric.",
+    examples={"run on one core (by default)":
+              examples.beta_passthrough_example,
+              "to run on n cores, replace 1 here with your preferred integer":
+              examples.beta_passthrough_n_jobs_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.beta_passthrough_auto_jobs_example,
+              "use 'pseudocount' to manually set a pseudocount for " +
+              "compositional metrics":
+              examples.beta_passthrough_pseudocount_example,
+              },
 )
 
 
@@ -373,6 +384,21 @@ plugin.methods.register_function(
     description="Computes a distance matrix for all pairs of samples in a "
                 "feature table using the unifrac implementation of the "
                 "selected beta diversity metric.",
+    examples={"run on one core (by default)":
+              examples.beta_phylo_passthrough_example,
+              "to run on n cores, replace 1 here with your preferred integer":
+              examples.beta_phylo_passthrough_n_threads_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.beta_phylo_passthrough_auto_threads_example,
+              "use bypass_tips to trade specificity for reduced compute time":
+              examples.beta_phylo_passthrough_bypass_tips_example,
+              "variance adjustment":
+              examples.beta_phylo_passthrough_variance_adjusted_example,
+              "minimal generalized unifrac":
+              examples.beta_phylo_passthrough_min_generalized_unifrac_example,
+              "generalized unifrac":
+              examples.beta_phylo_passthrough_generalized_unifrac_example,
+              },
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
@@ -436,6 +462,12 @@ plugin.methods.register_function(
     description="Computes a distance matrix for all pairs of samples in the "
                 "set of feature table and phylogeny pairs, using the unifrac "
                 "implementation of the selected beta diversity metric.",
+    examples={
+        "Basic meta unifrac": examples.beta_phylo_meta_passthrough_example,
+        "meta with weights": examples.beta_phylo_meta_weights_example,
+        "changing the consolidation method":
+        examples.beta_phylo_meta_consolidation_example,
+    },
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
