@@ -20,7 +20,7 @@ s_ids_1 = ['S1', 'S2', 'S3', 'S4', 'S5']
 def ft1_factory():
     return Artifact.import_data(
         'FeatureTable[Frequency]',
-        biom.Table(np.array([[1, 0, .5, 999, 1],
+        biom.Table(np.array([[1, 0, 5, 999, 1],
                             [0, 1, 2, 0, 5],
                             [0, 0, 0, 1, 10]]),
                    ['A', 'B', 'C'],
@@ -33,6 +33,7 @@ def tree_factory():
         'Phylogeny[Rooted]', input_tree_fp
     )
 
+# ------------------------ alpha-diversity -----------------------
 def faith_pd_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     tree = use.init_artifact('phylogeny', tree_factory)
@@ -41,7 +42,6 @@ def faith_pd_example(use):
                         action_id='faith_pd'),
         use.UsageInputs(table=ft, phylogeny=tree),
         use.UsageOutputNames(vector='faith_pd_vector'))
-
     result.assert_output_type('SampleData[AlphaDiversity]')
 
 def observed_features_example(use):
@@ -70,7 +70,6 @@ def pielou_evenness_example(use):
         use.UsageInputs(table=ft),
         use.UsageOutputNames(vector='pielou_vector')
     )
-
     result.assert_output_type('SampleData[AlphaDiversity]')
 
 def pielou_drop_example(use):
@@ -81,7 +80,6 @@ def pielou_drop_example(use):
         use.UsageInputs(table=ft, drop_undefined_samples=True),
         use.UsageOutputNames(vector='pielou_vector')
     )
-
     result.assert_output_type('SampleData[AlphaDiversity]')
 
 def shannon_entropy_example(use):
@@ -92,7 +90,6 @@ def shannon_entropy_example(use):
         use.UsageInputs(table=ft),
         use.UsageOutputNames(vector='shannon_vector')
     )
-
     result.assert_output_type('SampleData[AlphaDiversity]')
 
 def shannon_drop_example(use):
@@ -103,5 +100,164 @@ def shannon_drop_example(use):
         use.UsageInputs(table=ft, drop_undefined_samples=True),
         use.UsageOutputNames(vector='shannon_vector')
     )
-
     result.assert_output_type('SampleData[AlphaDiversity]')
+
+# ------------------------ beta-diversity -----------------------
+def bray_curtis_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='bray_curtis'),
+        use.UsageInputs(table=ft),
+        use.UsageOutputNames(distance_matrix='bray_curtis_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+
+def bray_curtis_n_jobs_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='bray_curtis'),
+        use.UsageInputs(table=ft, n_jobs=1),
+        use.UsageOutputNames(distance_matrix='bray_curtis_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def bray_curtis_auto_jobs_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='bray_curtis'),
+        use.UsageInputs(table=ft, n_jobs='auto'),
+        use.UsageOutputNames(distance_matrix='bray_curtis_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def jaccard_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='jaccard'),
+        use.UsageInputs(table=ft),
+        use.UsageOutputNames(distance_matrix='jaccard_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+
+def jaccard_n_jobs_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='jaccard'),
+        use.UsageInputs(table=ft, n_jobs=1),
+        use.UsageOutputNames(distance_matrix='jaccard_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def jaccard_auto_jobs_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='jaccard'),
+        use.UsageInputs(table=ft, n_jobs='auto'),
+        use.UsageOutputNames(distance_matrix='jaccard_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def u_u_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='unweighted_unifrac'),
+        use.UsageInputs(table=ft, phylogeny=tree),
+        use.UsageOutputNames(distance_matrix='unweighted_unifrac_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def u_u_n_threads_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='unweighted_unifrac'),
+        use.UsageInputs(table=ft, phylogeny=tree, threads=1),
+        use.UsageOutputNames(distance_matrix='unweighted_unifrac_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def u_u_auto_threads_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='unweighted_unifrac'),
+        use.UsageInputs(table=ft, phylogeny=tree, threads='auto'),
+        use.UsageOutputNames(distance_matrix='unweighted_unifrac_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def u_u_bypass_tips_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    use.comment("bypass_tips can be used with any threads setting, "
+                "but auto may be a good choice if you're trimming run time.")
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='unweighted_unifrac'),
+        use.UsageInputs(table=ft, phylogeny=tree,
+                        threads='auto', bypass_tips=True),
+        use.UsageOutputNames(distance_matrix='unweighted_unifrac_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def w_u_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='weighted_unifrac'),
+        use.UsageInputs(table=ft, phylogeny=tree),
+        use.UsageOutputNames(distance_matrix='weighted_unifrac_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def w_u_n_threads_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='weighted_unifrac'),
+        use.UsageInputs(table=ft, phylogeny=tree, threads=1),
+        use.UsageOutputNames(distance_matrix='weighted_unifrac_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def w_u_auto_threads_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='weighted_unifrac'),
+        use.UsageInputs(table=ft, phylogeny=tree, threads='auto'),
+        use.UsageOutputNames(distance_matrix='weighted_unifrac_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+def w_u_bypass_tips_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    tree = use.init_artifact('phylogeny', tree_factory)
+    use.comment("bypass_tips can be used with any threads setting, "
+                "but auto may be a good choice if you're trimming run time.")
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='weighted_unifrac'),
+        use.UsageInputs(table=ft, phylogeny=tree,
+                        threads='auto', bypass_tips=True),
+        use.UsageOutputNames(distance_matrix='weighted_unifrac_dm')
+    )
+    result.assert_output_type('DistanceMatrix')
+
+# ------------------------ Passthrough Methods ------------------------
+# TODO!

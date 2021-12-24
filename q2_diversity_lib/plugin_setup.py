@@ -160,6 +160,12 @@ plugin.methods.register_function(
                 "identical. Please consider the impact on your results if "
                 "you use Bray-Curtis with count data that has not been "
                 "adjusted (normalized).",
+    examples={"run on one core (by default)": examples.bray_curtis_example,
+              "to run on n cores, replace 1 here with your preferred number":
+              examples.bray_curtis_n_jobs_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.bray_curtis_auto_jobs_example,
+              },
     citations=[citations['sorensen1948method']])
 
 # TODO: Augment citations as needed
@@ -181,6 +187,12 @@ plugin.methods.register_function(
                 "presence/absence data. Data of type "
                 "FeatureTable[Frequency | Relative Frequency] is reduced"
                 "to presence/absence prior to calculation.",
+    examples={"run on one core (by default)": examples.jaccard_example,
+              "to run on n cores, replace 1 here with your preferred number":
+              examples.jaccard_n_jobs_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.jaccard_auto_jobs_example,
+              },
     citations=[citations['jaccard1908nouvelles']])
 
 
@@ -213,6 +225,14 @@ plugin.methods.register_function(
     name="Unweighted Unifrac",
     description="Compute Unweighted Unifrac for each sample in a "
                 "feature table",
+    examples={"run on one core (by default)": examples.u_u_example,
+              "to run on n cores, replace 1 here with your preferred number":
+              examples.u_u_n_threads_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.u_u_auto_threads_example,
+              "use bypass_tips to trade specificity for reduced compute time":
+              examples.u_u_bypass_tips_example,
+              },
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
@@ -249,6 +269,14 @@ plugin.methods.register_function(
     name="Weighted Unifrac",
     description="Compute Weighted Unifrac for each sample in a "
                 "feature table",
+    examples={"run on one core (by default)": examples.w_u_example,
+              "to run on n cores, replace 1 here with your preferred number":
+              examples.w_u_n_threads_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.w_u_auto_threads_example,
+              "use bypass_tips to trade specificity for reduced compute time":
+              examples.w_u_bypass_tips_example,
+              },
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
