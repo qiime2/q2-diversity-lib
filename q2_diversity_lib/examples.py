@@ -12,11 +12,15 @@ import pkg_resources
 
 from qiime2 import Artifact
 
+
 def get_test_data_path(filename):
     return pkg_resources.resource_filename('q2_diversity_lib.tests',
                                            f'data/{filename}')
 
+
 s_ids_1 = ['S1', 'S2', 'S3', 'S4', 'S5']
+
+
 def ft1_factory():
     return Artifact.import_data(
         'FeatureTable[Frequency]',
@@ -27,11 +31,13 @@ def ft1_factory():
                    s_ids_1)
     )
 
+
 def tree_factory():
     input_tree_fp = get_test_data_path('faith_test.tree')
     return Artifact.import_data(
         'Phylogeny[Rooted]', input_tree_fp
     )
+
 
 # ------------------------ alpha-diversity -----------------------
 def faith_pd_example(use):
@@ -44,6 +50,7 @@ def faith_pd_example(use):
         use.UsageOutputNames(vector='faith_pd_vector'))
     result.assert_output_type('SampleData[AlphaDiversity]')
 
+
 def observed_features_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     result, = use.action(
@@ -51,7 +58,6 @@ def observed_features_example(use):
                         action_id='observed_features'),
         use.UsageInputs(table=ft),
         use.UsageOutputNames(vector='obs_feat_vector'))
-
     result.assert_output_type('SampleData[AlphaDiversity]')
 
     # AssertRegex for lines in output files
@@ -61,6 +67,7 @@ def observed_features_example(use):
             path='alpha-diversity.tsv',
             expression=f'{id}\t{val}'
         )
+
 
 def pielou_evenness_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
@@ -72,6 +79,7 @@ def pielou_evenness_example(use):
     )
     result.assert_output_type('SampleData[AlphaDiversity]')
 
+
 def pielou_drop_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     result, = use.action(
@@ -81,6 +89,7 @@ def pielou_drop_example(use):
         use.UsageOutputNames(vector='pielou_vector')
     )
     result.assert_output_type('SampleData[AlphaDiversity]')
+
 
 def shannon_entropy_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
@@ -92,6 +101,7 @@ def shannon_entropy_example(use):
     )
     result.assert_output_type('SampleData[AlphaDiversity]')
 
+
 def shannon_drop_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     result, = use.action(
@@ -101,6 +111,7 @@ def shannon_drop_example(use):
         use.UsageOutputNames(vector='shannon_vector')
     )
     result.assert_output_type('SampleData[AlphaDiversity]')
+
 
 # ------------------------ beta-diversity -----------------------
 def bray_curtis_example(use):
@@ -124,6 +135,7 @@ def bray_curtis_n_jobs_example(use):
     )
     result.assert_output_type('DistanceMatrix')
 
+
 def bray_curtis_auto_jobs_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     result, = use.action(
@@ -133,6 +145,7 @@ def bray_curtis_auto_jobs_example(use):
         use.UsageOutputNames(distance_matrix='bray_curtis_dm')
     )
     result.assert_output_type('DistanceMatrix')
+
 
 def jaccard_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
@@ -155,6 +168,7 @@ def jaccard_n_jobs_example(use):
     )
     result.assert_output_type('DistanceMatrix')
 
+
 def jaccard_auto_jobs_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     result, = use.action(
@@ -164,6 +178,7 @@ def jaccard_auto_jobs_example(use):
         use.UsageOutputNames(distance_matrix='jaccard_dm')
     )
     result.assert_output_type('DistanceMatrix')
+
 
 def u_u_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
@@ -176,6 +191,7 @@ def u_u_example(use):
     )
     result.assert_output_type('DistanceMatrix')
 
+
 def u_u_n_threads_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     tree = use.init_artifact('phylogeny', tree_factory)
@@ -187,6 +203,7 @@ def u_u_n_threads_example(use):
     )
     result.assert_output_type('DistanceMatrix')
 
+
 def u_u_auto_threads_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     tree = use.init_artifact('phylogeny', tree_factory)
@@ -197,6 +214,7 @@ def u_u_auto_threads_example(use):
         use.UsageOutputNames(distance_matrix='unweighted_unifrac_dm')
     )
     result.assert_output_type('DistanceMatrix')
+
 
 def u_u_bypass_tips_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
@@ -212,6 +230,7 @@ def u_u_bypass_tips_example(use):
     )
     result.assert_output_type('DistanceMatrix')
 
+
 def w_u_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     tree = use.init_artifact('phylogeny', tree_factory)
@@ -222,6 +241,7 @@ def w_u_example(use):
         use.UsageOutputNames(distance_matrix='weighted_unifrac_dm')
     )
     result.assert_output_type('DistanceMatrix')
+
 
 def w_u_n_threads_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
@@ -234,6 +254,7 @@ def w_u_n_threads_example(use):
     )
     result.assert_output_type('DistanceMatrix')
 
+
 def w_u_auto_threads_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     tree = use.init_artifact('phylogeny', tree_factory)
@@ -244,6 +265,7 @@ def w_u_auto_threads_example(use):
         use.UsageOutputNames(distance_matrix='weighted_unifrac_dm')
     )
     result.assert_output_type('DistanceMatrix')
+
 
 def w_u_bypass_tips_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
@@ -258,6 +280,7 @@ def w_u_bypass_tips_example(use):
         use.UsageOutputNames(distance_matrix='weighted_unifrac_dm')
     )
     result.assert_output_type('DistanceMatrix')
+
 
 # ------------------------ Passthrough Methods ------------------------
 # TODO!
