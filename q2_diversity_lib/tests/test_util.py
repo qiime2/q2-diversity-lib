@@ -41,6 +41,10 @@ class ValidateTablesTests(TestPluginBase):
                                    self.invalid_view_type]
         self.has_empty_table_list = [self.empty_table_as_BIOMV210Format,
                                      self.valid_table_as_BIOMV210Format]
+        self.has_nan = biom.Table(np.array([[np.nan, 0, 1],
+                                            [2, 3, 4]]),
+                                  ['a', 'b'],
+                                  ['x', 'y', 'z'])
 
         @_validate_tables
         def f1(table: biom.Table):
@@ -51,6 +55,10 @@ class ValidateTablesTests(TestPluginBase):
         def f2():
             pass
         self.function_without_table_param = f2
+
+    def test_pass_table_with_nan(self):
+        with self.assertRaisesRegex(ValueError, "table.*contains NaN"):
+            self.function_with_table_param(self.has_nan)
 
     def test_pass_empty_table_positionally(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):

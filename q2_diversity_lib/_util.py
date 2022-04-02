@@ -8,6 +8,7 @@
 
 from inspect import signature
 
+import numpy as np
 from decorator import decorator
 import psutil
 import biom
@@ -41,6 +42,9 @@ def _validate_tables(wrapped_function, *args, **kwargs):
 
         if tab_obj.is_empty():
             raise ValueError("The provided table is empty")
+
+        if np.isnan(tab_obj.matrix_data.data).sum() > 0:
+            raise ValueError("The provided table contains NaN")
 
     return wrapped_function(*args, **kwargs)
 
