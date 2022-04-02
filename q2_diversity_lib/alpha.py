@@ -91,15 +91,17 @@ def pielou_evenness(table: biom.Table,
 @_disallow_empty_tables
 def shannon_entropy(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
-    counts = table.matrix_data.toarray().T
-    sample_ids = table.ids(axis='sample')
     if drop_undefined_samples:
-        counts, sample_ids = _drop_undefined_samples(
-                counts, sample_ids, minimum_nonzero_elements=1)
-    result = skbio.diversity.alpha_diversity(metric='shannon', counts=counts,
-                                             ids=sample_ids)
-    result.name = 'shannon_entropy'
-    return result
+        table = table.remove_empty(inplace=False)
+
+    results = []
+    for v, i, m in table.iter(dense=True):
+        result = skbio.diversity.alpha_diversity(metric='shannon',
+                                                 counts=v,
+                                                 ids=['placeholder', ])
+        results.append(result.iloc[0])
+    results = pd.Series(results, index=table.ids(), name='shannon_entropy')
+    return results
 
 
 @_disallow_empty_tables
