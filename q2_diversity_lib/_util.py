@@ -8,7 +8,6 @@
 
 from inspect import signature
 
-import numpy as np
 from decorator import decorator
 import psutil
 import biom
