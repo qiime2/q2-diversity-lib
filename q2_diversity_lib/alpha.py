@@ -14,8 +14,7 @@ import numpy as np
 
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from ._util import (_drop_undefined_samples,
-                    _disallow_empty_tables)
+from ._util import _disallow_empty_tables
 
 
 METRICS = {
