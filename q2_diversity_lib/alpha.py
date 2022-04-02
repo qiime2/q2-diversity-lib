@@ -52,16 +52,23 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
 
 
 # --------------------- Non-Phylogenetic -------------------------------------
+def _skbio_alpha_diversity_from_1d(v, metric):
+    # alpha_diversity expects a 2d structure
+    v = np.reshape(v, (1, len(v)))
+    result = skbio.diversity.alpha_diversity(metric=metric,
+                                             counts=v,
+                                             ids=['placeholder', ],
+                                             validate=False)
+    return result.iloc[0]
+
+
 @_disallow_empty_tables
 def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa(inplace=False)
     results = []
     for v in presence_absence_table.iter_data(dense=True):
-        result = skbio.diversity.alpha_diversity(metric='observed_otus',
-                                                 counts=v.astype(int),
-                                                 ids=['placeholder', ],
-                                                 validate=True)
-        results.append(result.iloc[0])
+        results.append(_skbio_alpha_diversity_from_1d(v.astype(int),
+                                                      'observed_otus'))
     results = pd.Series(results, index=table.ids(), name='observed_features')
     return results
 
@@ -79,12 +86,8 @@ def pielou_evenness(table: biom.Table,
         table = table.transform(transform_, inplace=False).remove_empty()
 
     results = []
-    for v, i, m in table.iter(dense=True):
-        result = skbio.diversity.alpha_diversity(metric='pielou_e',
-                                                 counts=v,
-                                                 ids=['placeholder', ],
-                                                 validate=True)
-        results.append(result.iloc[0])
+    for v in table.iter_data(dense=True):
+        results.append(_skbio_alpha_diversity_from_1d(v, 'pielou_e'))
     results = pd.Series(results, index=table.ids(), name='pielou_evenness')
     return results
 
@@ -96,12 +99,8 @@ def shannon_entropy(table: biom.Table,
         table = table.remove_empty(inplace=False)
 
     results = []
-    for v, i, m in table.iter(dense=True):
-        result = skbio.diversity.alpha_diversity(metric='shannon',
-                                                 counts=v,
-                                                 ids=['placeholder', ],
-                                                 validate=True)
-        results.append(result.iloc[0])
+    for v in table.iter_data(dense=True):
+        results.append(_skbio_alpha_diversity_from_1d(v, 'shannon'))
     results = pd.Series(results, index=table.ids(), name='shannon_entropy')
     return results
 
@@ -109,11 +108,7 @@ def shannon_entropy(table: biom.Table,
 @_disallow_empty_tables
 def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
     results = []
-    for v, i, m in table.iter(dense=True):
-        result = skbio.diversity.alpha_diversity(metric=metric,
-                                                 counts=v.astype(int),
-                                                 ids=['placeholder', ],
-                                                 validate=True)
-        results.append(result.iloc[0])
+    for v in table.iter_data(dense=True):
+        results.append(_skbio_alpha_diversity_from_1d(v.astype(int), metric))
     results = pd.Series(results, index=table.ids(), name=metric)
     return results
