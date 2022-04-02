@@ -82,7 +82,7 @@ def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
         pass
 
     return skbio.diversity.beta_diversity(
-            metric=metric, counts=counts, ids=sample_ids, validate=True,
+            metric=metric, counts=counts, ids=sample_ids, validate=False,
             pairwise_func=sklearn.metrics.pairwise_distances, n_jobs=n_jobs)
 
 
@@ -158,7 +158,7 @@ def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
         metric='braycurtis',
         counts=counts,
         ids=sample_ids,
-        validate=True,
+        validate=False,
         pairwise_func=sklearn.metrics.pairwise_distances,
         n_jobs=n_jobs
     )
@@ -173,7 +173,7 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
         metric='jaccard',
         counts=counts,
         ids=sample_ids,
-        validate=True,
+        validate=False,
         pairwise_func=sklearn.metrics.pairwise_distances,
         n_jobs=n_jobs
     )
