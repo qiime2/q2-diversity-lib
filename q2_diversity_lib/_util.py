@@ -16,7 +16,7 @@ from q2_types.feature_table import BIOMV210Format
 
 
 @decorator
-def _disallow_empty_tables(wrapped_function, *args, **kwargs):
+def _validate_tables(wrapped_function, *args, **kwargs):
     bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
     table = bound_arguments.arguments.get('table')
     if table is None:

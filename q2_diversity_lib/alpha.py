@@ -14,7 +14,7 @@ import numpy as np
 
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from ._util import _disallow_empty_tables
+from ._util import _validate_tables
 
 
 METRICS = {
@@ -42,7 +42,7 @@ METRICS = {
 
 
 # --------------------- Phylogenetic -----------------------------------------
-@_disallow_empty_tables
+@_validate_tables
 def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
     table_str = str(table)
     tree_str = str(phylogeny)
@@ -62,7 +62,7 @@ def _skbio_alpha_diversity_from_1d(v, metric):
     return result.iloc[0]
 
 
-@_disallow_empty_tables
+@_validate_tables
 def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa(inplace=False)
     results = []
@@ -73,7 +73,7 @@ def observed_features(table: biom.Table) -> pd.Series:
     return results
 
 
-@_disallow_empty_tables
+@_validate_tables
 def pielou_evenness(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
     if drop_undefined_samples:
@@ -92,7 +92,7 @@ def pielou_evenness(table: biom.Table,
     return results
 
 
-@_disallow_empty_tables
+@_validate_tables
 def shannon_entropy(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
     if drop_undefined_samples:
@@ -105,7 +105,7 @@ def shannon_entropy(table: biom.Table,
     return results
 
 
-@_disallow_empty_tables
+@_validate_tables
 def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
     results = []
     for v in table.iter_data(dense=True):

@@ -16,10 +16,10 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 
-from .._util import _disallow_empty_tables, _validate_requested_cpus
+from .._util import _validate_tables, _validate_requested_cpus
 
 
-class DisallowEmptyTablesTests(TestPluginBase):
+class ValidateTablesTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
@@ -42,12 +42,12 @@ class DisallowEmptyTablesTests(TestPluginBase):
         self.has_empty_table_list = [self.empty_table_as_BIOMV210Format,
                                      self.valid_table_as_BIOMV210Format]
 
-        @_disallow_empty_tables
+        @_validate_tables
         def f1(table: biom.Table):
             pass
         self.function_with_table_param = f1
 
-        @_disallow_empty_tables
+        @_validate_tables
         def f2():
             pass
         self.function_without_table_param = f2
@@ -72,12 +72,12 @@ class DisallowEmptyTablesTests(TestPluginBase):
 
     def test_decorated_lambda_with_table_param(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            decorated_lambda = _disallow_empty_tables(lambda table: None)
+            decorated_lambda = _validate_tables(lambda table: None)
             decorated_lambda(self.empty_table_as_BIOMV210Format)
 
     def test_decorated_lambda_with_table_param_list(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            decorated_lambda = _disallow_empty_tables(lambda table: None)
+            decorated_lambda = _validate_tables(lambda table: None)
             decorated_lambda(self.has_empty_table_list)
 
     def test_wrapped_function_has_no_table_param(self):
