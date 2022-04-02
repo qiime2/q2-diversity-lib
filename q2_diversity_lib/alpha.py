@@ -59,7 +59,8 @@ def observed_features(table: biom.Table) -> pd.Series:
     for v in presence_absence_table.iter_data(dense=True):
         result = skbio.diversity.alpha_diversity(metric='observed_otus',
                                                  counts=v.astype(int),
-                                                 ids=['placeholder', ])
+                                                 ids=['placeholder', ],
+                                                 validate=True)
         results.append(result.iloc[0])
     results = pd.Series(results, index=table.ids(), name='observed_features')
     return results
@@ -81,7 +82,8 @@ def pielou_evenness(table: biom.Table,
     for v, i, m in table.iter(dense=True):
         result = skbio.diversity.alpha_diversity(metric='pielou_e',
                                                  counts=v,
-                                                 ids=['placeholder', ])
+                                                 ids=['placeholder', ],
+                                                 validate=True)
         results.append(result.iloc[0])
     results = pd.Series(results, index=table.ids(), name='pielou_evenness')
     return results
@@ -97,7 +99,8 @@ def shannon_entropy(table: biom.Table,
     for v, i, m in table.iter(dense=True):
         result = skbio.diversity.alpha_diversity(metric='shannon',
                                                  counts=v,
-                                                 ids=['placeholder', ])
+                                                 ids=['placeholder', ],
+                                                 validate=True)
         results.append(result.iloc[0])
     results = pd.Series(results, index=table.ids(), name='shannon_entropy')
     return results
@@ -109,7 +112,8 @@ def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
     for v, i, m in table.iter(dense=True):
         result = skbio.diversity.alpha_diversity(metric=metric,
                                                  counts=v.astype(int),
-                                                 ids=['placeholder', ])
+                                                 ids=['placeholder', ],
+                                                 validate=True)
         results.append(result.iloc[0])
     results = pd.Series(results, index=table.ids(), name=metric)
     return results
