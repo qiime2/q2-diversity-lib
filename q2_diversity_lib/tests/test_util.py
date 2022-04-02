@@ -45,6 +45,10 @@ class ValidateTablesTests(TestPluginBase):
                                             [2, 3, 4]]),
                                   ['a', 'b'],
                                   ['x', 'y', 'z'])
+        self.has_neg = biom.Table(np.array([[-1, 0, 1],
+                                            [2, 3, 4]]),
+                                  ['a', 'b'],
+                                  ['x', 'y', 'z'])
 
         @_validate_tables
         def f1(table: biom.Table):
@@ -59,6 +63,11 @@ class ValidateTablesTests(TestPluginBase):
     def test_pass_table_with_nan(self):
         with self.assertRaisesRegex(ValueError, "table.*contains NaN"):
             self.function_with_table_param(self.has_nan)
+
+    def test_pass_table_with_negative_values(self):
+        with self.assertRaisesRegex(ValueError,
+                                    "table.*contains negative values"):
+            self.function_with_table_param(self.has_neg)
 
     def test_pass_empty_table_positionally(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):

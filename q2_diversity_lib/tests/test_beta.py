@@ -436,7 +436,7 @@ class BetaPassthroughTests(TestPluginBase):
                        ['S1', 'S2'])
         t = Artifact.import_data('FeatureTable[Frequency]', t)
 
-        with self.assertRaisesRegex(ValueError, 'cannot.*negative values'):
+        with self.assertRaisesRegex(ValueError, '.*negative values'):
             self.method(table=t, metric='canberra_adkins')
 
     def test_jensenshannon(self):

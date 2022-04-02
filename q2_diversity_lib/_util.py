@@ -46,6 +46,9 @@ def _validate_tables(wrapped_function, *args, **kwargs):
         if np.isnan(tab_obj.matrix_data.data).sum() > 0:
             raise ValueError("The provided table contains NaN")
 
+        if (tab_obj.matrix_data.data < 0).sum() > 0:
+            raise ValueError("The provided table contains negative values")
+
     return wrapped_function(*args, **kwargs)
 
 
