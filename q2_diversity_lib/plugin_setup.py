@@ -73,7 +73,8 @@ plugin.methods.register_function(
     name="Faith's Phylogenetic Diversity",
     description="Computes Faith's Phylogenetic Diversity for all samples in "
                 "a feature table.",
-    citations=[citations['faith1992conservation']]
+    citations=[citations['faith1992conservation'],
+               citations['armstrong2021faithspd']]
 )
 
 plugin.methods.register_function(
@@ -346,7 +347,8 @@ plugin.methods.register_function(
         citations['lozupone2011unifrac'],
         citations['mcdonald2018unifrac'],
         citations['chang2011variance'],
-        citations['chen2012genUnifrac']
+        citations['chen2012genUnifrac'],
+        citations['sfiligoi2022unifrac']
     ]
 )
 
