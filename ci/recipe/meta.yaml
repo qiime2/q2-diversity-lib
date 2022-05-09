@@ -23,7 +23,7 @@ requirements:
     # Inherit global hard pin
     - hdf5 {{ hdf5 }}
     - numpy
-    - pandas
+    - pandas {{ pandas }}
     - psutil
     - qiime2 {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
