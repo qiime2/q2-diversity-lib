@@ -106,7 +106,7 @@ def _omp_wrapper(wrapped_function, *args, **kwargs):
     bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
     threads = bound_arguments.arguments.get('threads')
     threads_backup = environ.pop('OMP_NUM_THREADS', None)
-    updater = lambda val: environ.update({'OMP_NUM_THREADS': val})
+    updater = lambda val: environ.update({'OMP_NUM_THREADS': val})  # noqa:E731
     try:
         updater(str(threads))
         result = wrapped_function(*args, **kwargs)
