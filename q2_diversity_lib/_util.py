@@ -7,6 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from inspect import signature
+from os import environ
 
 import numpy as np
 from decorator import decorator
@@ -98,3 +99,18 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
                          "available to the system.")
 
     return wrapped_function(*bound_arguments.args, **bound_arguments.kwargs)
+
+
+def _omp_wrapper(threads, func, /, *args, **kwargs):
+    threads = 0 if threads == 'auto' else threads
+    threads_backup = environ.pop('OMP_NUM_THREADS', None)
+    try:
+        environ.update({'OMP_NUM_THREADS': str(threads)})
+        result = func(*args, **kwargs)
+    finally:
+        # we want to make sure we clean up after ourselves, just in case
+        if threads_backup is None:
+            environ.pop('OMP_NUM_THREADS')
+        else:
+            environ.update({'OMP_NUM_THREADS': threads_backup})
+    return result
