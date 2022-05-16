@@ -45,12 +45,13 @@ METRICS = {
 
 # --------------------- Phylogenetic -----------------------------------------
 @_disallow_empty_tables
+@_omp_wrapper
 @_validate_requested_cpus
 def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
              threads: int = 1) -> pd.Series:
     table_str = str(table)
     tree_str = str(phylogeny)
-    result = _omp_wrapper(threads, unifrac.faith_pd, table_str, tree_str)
+    result = unifrac.faith_pd(table_str, tree_str)
     result.name = 'faith_pd'
     return result
 

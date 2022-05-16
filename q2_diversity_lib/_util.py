@@ -101,16 +101,19 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     return wrapped_function(*bound_arguments.args, **bound_arguments.kwargs)
 
 
-def _omp_wrapper(threads, func, /, *args, **kwargs):
-    threads = 0 if threads == 'auto' else threads
+@decorator
+def _omp_wrapper(wrapped_function, *args, **kwargs):
+    bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
+    threads = bound_arguments.arguments.get('threads')
     threads_backup = environ.pop('OMP_NUM_THREADS', None)
+    updater = lambda val: environ.update({'OMP_NUM_THREADS': val})
     try:
-        environ.update({'OMP_NUM_THREADS': str(threads)})
-        result = func(*args, **kwargs)
+        updater(str(threads))
+        result = wrapped_function(*args, **kwargs)
     finally:
-        # we want to make sure we clean up after ourselves, just in case
+        # we want to make sure we clean up after ourselves, just in case!
         if threads_backup is None:
-            environ.pop('OMP_NUM_THREADS')
+            environ.pop('OMP_NUM_THREADS', 'this value does not matter')
         else:
-            environ.update({'OMP_NUM_THREADS': threads_backup})
+            updater(threads_backup)
     return result
