@@ -101,15 +101,15 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     return wrapped_function(*bound_arguments.args, **bound_arguments.kwargs)
 
 
-@decorator
-def _omp_wrapper(wrapped_function, *args, **kwargs):
-    bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
-    threads = bound_arguments.arguments.get('threads')
+# note: the reason this is not a decorator is because it needs to be run
+# _after_ the `_validate_requested_cpus` decorator - rather than leave that
+# up to chance, this wrapper just requires use in the action's body.
+def _omp_wrapper(threads, func, /, *args, **kwargs):
     threads_backup = environ.pop('OMP_NUM_THREADS', None)
     updater = lambda val: environ.update({'OMP_NUM_THREADS': val})  # noqa:E731
     try:
         updater(str(threads))
-        result = wrapped_function(*args, **kwargs)
+        result = func(*args, **kwargs)
     finally:
         # we want to make sure we clean up after ourselves, just in case!
         if threads_backup is None:

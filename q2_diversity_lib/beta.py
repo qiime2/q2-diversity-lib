@@ -88,7 +88,6 @@ def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
 
 
 @_disallow_empty_tables
-@_omp_wrapper
 @_validate_requested_cpus
 def beta_phylogenetic_passthrough(table: BIOMV210Format,
                                   phylogeny: NewickFormat,
@@ -115,12 +114,12 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
         alpha = 1.0 if alpha is None else alpha
         func = partial(func, alpha=alpha)
 
-    return func(str(table), str(phylogeny),
-                variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
+    return _omp_wrapper(threads, func, str(table), str(phylogeny),
+                        variance_adjusted=variance_adjusted,
+                        bypass_tips=bypass_tips)
 
 
 @_disallow_empty_tables
-@_omp_wrapper
 @_validate_requested_cpus
 def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
                                        phylogenies: NewickFormat,
@@ -143,7 +142,7 @@ def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
                   'generalized_unifrac': 'generalized'}
     metric = metric_map[metric]
 
-    return unifrac.meta(tuple([str(t) for t in tables]),
+    return _omp_wrapper(threads, unifrac.meta, tuple([str(t) for t in tables]),
                         tuple([str(p) for p in phylogenies]),
                         weights=weights,
                         consolidation=consolidation, method=metric,
@@ -184,22 +183,21 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
 
 # ------------------------Phylogenetic-----------------------
 @_disallow_empty_tables
-@_omp_wrapper
 @_validate_requested_cpus
 def unweighted_unifrac(table: BIOMV210Format,
                        phylogeny: NewickFormat,
                        threads: int = 1,
                        bypass_tips: bool = False) -> skbio.DistanceMatrix:
-    return unifrac.unweighted(str(table), str(phylogeny),
-                              variance_adjusted=False, bypass_tips=bypass_tips)
+    return _omp_wrapper(threads, unifrac.unweighted, str(table),
+                        str(phylogeny), variance_adjusted=False,
+                        bypass_tips=bypass_tips)
 
 
 @_disallow_empty_tables
-@_omp_wrapper
 @_validate_requested_cpus
 def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
                      threads: int = 1, bypass_tips: bool = False
                      ) -> skbio.DistanceMatrix:
-    return unifrac.weighted_unnormalized(str(table), str(phylogeny),
-                                         variance_adjusted=False,
-                                         bypass_tips=bypass_tips)
+    return _omp_wrapper(threads, unifrac.weighted_unnormalized, str(table),
+                        str(phylogeny), variance_adjusted=False,
+                        bypass_tips=bypass_tips)
