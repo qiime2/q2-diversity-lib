@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from unittest import mock
+from unittest import mock, TestCase
 
 import numpy as np
 import biom
@@ -16,7 +16,8 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 
-from .._util import _disallow_empty_tables, _validate_requested_cpus
+from .._util import (_disallow_empty_tables, _validate_requested_cpus,
+                     _omp_wrapper)
 
 
 class DisallowEmptyTablesTests(TestPluginBase):
@@ -234,3 +235,32 @@ class ValidateRequestedCPUsTests(TestPluginBase):
                 self.valid_tree_as_artifact, threads='auto')
         # If we get here, then it ran without error
         self.assertTrue(True)
+
+
+class OMPWrapperTests(TestCase):
+    def setUp(self):
+        def who_watches_the_watchmen():
+            from os import environ
+            return environ['OMP_NUM_THREADS']
+
+        self.func = who_watches_the_watchmen
+
+    def test_set_fresh_env_var(self):
+        from os import environ
+        self.assertTrue('OMP_NUM_THREADS' not in environ)
+
+        result = _omp_wrapper(42, self.func)
+
+        self.assertEqual(result, '42')
+        self.assertTrue('OMP_NUM_THREADS' not in environ)
+
+    def test_reset_env_var(self):
+        from os import environ
+        self.assertTrue('OMP_NUM_THREADS' not in environ)
+
+        environ['OMP_NUM_THREADS'] = '123'
+
+        result = _omp_wrapper(42, self.func)
+
+        self.assertEqual(result, '42')
+        self.assertEqual(environ.pop('OMP_NUM_THREADS'), '123')
