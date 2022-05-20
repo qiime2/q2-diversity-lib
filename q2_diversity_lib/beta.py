@@ -11,6 +11,7 @@ from functools import partial
 import biom
 import skbio.diversity
 import sklearn.metrics
+import unifrac
 from skbio.stats.composition import clr
 from scipy.spatial.distance import euclidean
 from scipy.spatial.distance import jensenshannon
@@ -19,8 +20,7 @@ import numpy as np
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from ._util import (_disallow_empty_tables,
-                    _validate_requested_cpus,
-                    _omp_cmd_wrapper)
+                    _validate_requested_cpus)
 
 
 # NOTE: some phylo metrics are currently in both implemented and unimplemented
@@ -113,9 +113,8 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
         alpha = 1.0 if alpha is None else alpha
         func = partial(func, alpha=alpha)
 
-    return _omp_wrapper(threads, func, str(table), str(phylogeny),
-                        variance_adjusted=variance_adjusted,
-                        bypass_tips=bypass_tips)
+    return func(str(table), str(phylogeny), threads=threads,
+                variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
 
 
 @_disallow_empty_tables
@@ -141,9 +140,9 @@ def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
                   'generalized_unifrac': 'generalized'}
     metric = metric_map[metric]
 
-    return _omp_wrapper(threads, unifrac.meta, tuple([str(t) for t in tables]),
+    return unifrac.meta(tuple([str(t) for t in tables]),
                         tuple([str(p) for p in phylogenies]),
-                        weights=weights,
+                        weights=weights, threads=threads,
                         consolidation=consolidation, method=metric,
                         variance_adjusted=variance_adjusted,
                         alpha=alpha, bypass_tips=bypass_tips)
@@ -187,9 +186,8 @@ def unweighted_unifrac(table: BIOMV210Format,
                        phylogeny: NewickFormat,
                        threads: int = 1,
                        bypass_tips: bool = False) -> skbio.DistanceMatrix:
-    return _omp_wrapper(threads, unifrac.unweighted, str(table),
-                        str(phylogeny), variance_adjusted=False,
-                        bypass_tips=bypass_tips)
+    return unifrac.unweighted(str(table), str(phylogeny), threads=threads,
+                              variance_adjusted=False, bypass_tips=bypass_tips)
 
 
 @_disallow_empty_tables
@@ -197,6 +195,7 @@ def unweighted_unifrac(table: BIOMV210Format,
 def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
                      threads: int = 1, bypass_tips: bool = False
                      ) -> skbio.DistanceMatrix:
-    return _omp_wrapper(threads, unifrac.weighted_unnormalized, str(table),
-                        str(phylogeny), variance_adjusted=False,
-                        bypass_tips=bypass_tips)
+    return unifrac.weighted_unnormalized(str(table), str(phylogeny),
+                                         threads=threads,
+                                         variance_adjusted=False,
+                                         bypass_tips=bypass_tips)
