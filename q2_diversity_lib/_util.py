@@ -8,6 +8,7 @@
 
 from inspect import signature
 from os import environ
+import subprocess
 
 import numpy as np
 from decorator import decorator
@@ -101,19 +102,20 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
     return wrapped_function(*bound_arguments.args, **bound_arguments.kwargs)
 
 
+def _run_external_cmd(cmd, verbose=True, env=None):
+    if verbose:
+        print("Running external command line application. This may print"
+              " messages to stdout and/or stderr.\nThe command being run is"
+              " below. This command cannot be manually re-run as it will"
+              " depend on temporary files that no longer exist.\n\nCommand:\n")
+        print(" ".join(cmd), end='\n\n')
+    return subprocess.run(cmd, check=True, env=env)
+
+
 # note: the reason this is not a decorator is because it needs to be run
 # _after_ the `_validate_requested_cpus` decorator - rather than leave that
 # up to chance, this wrapper just requires use in the action's body.
-def _omp_wrapper(threads, func, /, *args, **kwargs):
-    threads_backup = environ.pop('OMP_NUM_THREADS', None)
-    updater = lambda val: environ.update({'OMP_NUM_THREADS': val})  # noqa:E731
-    try:
-        updater(str(threads))
-        result = func(*args, **kwargs)
-    finally:
-        # we want to make sure we clean up after ourselves, just in case!
-        if threads_backup is None:
-            environ.pop('OMP_NUM_THREADS', 'this value does not matter')
-        else:
-            updater(threads_backup)
-    return result
+def _omp_cmd_wrapper(threads, cmd, verbose=True):
+    env = environ.copy()
+    env.update({'OMP_NUM_THREADS': str(threads)})
+    return _run_external_cmd(cmd, verbose=verbose, env=env)

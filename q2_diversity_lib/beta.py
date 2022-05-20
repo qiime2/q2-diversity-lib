@@ -11,7 +11,6 @@ from functools import partial
 import biom
 import skbio.diversity
 import sklearn.metrics
-import unifrac
 from skbio.stats.composition import clr
 from scipy.spatial.distance import euclidean
 from scipy.spatial.distance import jensenshannon
@@ -21,7 +20,7 @@ from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 from ._util import (_disallow_empty_tables,
                     _validate_requested_cpus,
-                    _omp_wrapper)
+                    _omp_cmd_wrapper)
 
 
 # NOTE: some phylo metrics are currently in both implemented and unimplemented
