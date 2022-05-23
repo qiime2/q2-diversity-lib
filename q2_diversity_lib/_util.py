@@ -112,9 +112,6 @@ def _run_external_cmd(cmd, verbose=True, env=None):
     return subprocess.run(cmd, check=True, env=env)
 
 
-# note: the reason this is not a decorator is because it needs to be run
-# _after_ the `_validate_requested_cpus` decorator - rather than leave that
-# up to chance, this wrapper just requires use in the action's body.
 def _omp_cmd_wrapper(threads, cmd, verbose=True):
     env = environ.copy()
     env.update({'OMP_NUM_THREADS': str(threads)})
