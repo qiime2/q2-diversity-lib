@@ -202,17 +202,43 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
 def unweighted_unifrac(table: BIOMV210Format,
                        phylogeny: NewickFormat,
                        threads: int = 1,
-                       bypass_tips: bool = False) -> skbio.DistanceMatrix:
-    return unifrac.unweighted(str(table), str(phylogeny), threads=threads,
-                              variance_adjusted=False, bypass_tips=bypass_tips)
+                       bypass_tips: bool = False) -> LSMatFormat:
+    result = LSMatFormat()
+
+    cmd = [
+        'ssu',
+        '-i', str(table),
+        '-t', str(phylogeny),
+        '-m', 'unweighted',
+        '-o', str(result),
+    ]
+
+    if bypass_tips:
+        cmd += ['-f']
+
+    _omp_cmd_wrapper(threads, cmd)
+
+    return result
 
 
 @_disallow_empty_tables
 @_validate_requested_cpus
 def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
                      threads: int = 1, bypass_tips: bool = False
-                     ) -> skbio.DistanceMatrix:
-    return unifrac.weighted_unnormalized(str(table), str(phylogeny),
-                                         threads=threads,
-                                         variance_adjusted=False,
-                                         bypass_tips=bypass_tips)
+                     ) -> LSMatFormat:
+    result = LSMatFormat()
+
+    cmd = [
+        'ssu',
+        '-i', str(table),
+        '-t', str(phylogeny),
+        '-m', 'weighted_unnormalized',
+        '-o', str(result),
+    ]
+
+    if bypass_tips:
+        cmd += ['-f']
+
+    _omp_cmd_wrapper(threads, cmd)
+
+    return result

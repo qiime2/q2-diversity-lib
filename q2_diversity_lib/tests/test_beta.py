@@ -214,35 +214,27 @@ class JaccardTests(TestPluginBase):
 class UnweightedUnifrac(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
+    def artifact(self, semantic_type, fp):
+        return Artifact.import_data(semantic_type, self.get_data_path(fp))
+
     def setUp(self):
         super().setUp()
+
+        self.fn = self.plugin.actions['unweighted_unifrac']
+
         # expected computed with skbio.diversity.beta_diversity
         self.expected = skbio.DistanceMatrix([[0.00, 0.25, 0.25],
                                              [0.25, 0.00, 0.00],
                                              [0.25, 0.00, 0.00]],
                                              ids=['S1', 'S2', 'S3'])
 
-        table_fp = self.get_data_path('two_feature_table.biom')
-        self.table_as_BIOMV210Format = BIOMV210Format(table_fp, mode='r')
-        rf_table_fp = self.get_data_path('two_feature_rf_table.biom')
-        self.rf_table_as_BIOMV210Format = BIOMV210Format(rf_table_fp, mode='r')
-        p_a_table_fp = self.get_data_path('two_feature_p_a_table.biom')
-        self.p_a_table_as_BIOMV210Format = BIOMV210Format(p_a_table_fp,
-                                                          mode='r')
-        self.table_as_artifact = Artifact.import_data(
-                    'FeatureTable[Frequency]', self.table_as_BIOMV210Format)
-
-        tree_fp = self.get_data_path('three_feature.tree')
-        self.tree_as_NewickFormat = NewickFormat(tree_fp, mode='r')
-        self.tree_as_artifact = Artifact.import_data(
-                    'Phylogeny[Rooted]', self.tree_as_NewickFormat)
-
-        self.unweighted_unifrac_thru_framework = self.plugin.actions[
-                    'unweighted_unifrac']
+        self.tbl = self.artifact('FeatureTable[Frequency]',
+                                 'two_feature_table.biom')
+        self.tre = self.artifact('Phylogeny[Rooted]', 'three_feature.tree')
 
     def test_method(self):
-        actual = unweighted_unifrac(self.table_as_BIOMV210Format,
-                                    self.tree_as_NewickFormat)
+        actual_art, = self.fn(self.tbl, self.tre)
+        actual = actual_art.view(skbio.DistanceMatrix)
         self.assertEqual(actual.ids, self.expected.ids)
         for id1 in actual.ids:
             for id2 in actual.ids:
@@ -250,31 +242,32 @@ class UnweightedUnifrac(TestPluginBase):
                                         self.expected[id1, id2])
 
     def test_accepted_types_have_consistent_behavior(self):
-        freq_table = self.table_as_BIOMV210Format
-        rel_freq_table = self.rf_table_as_BIOMV210Format
-        p_a_table = self.p_a_table_as_BIOMV210Format
-        accepted_tables = [freq_table, rel_freq_table, p_a_table]
-        for table in accepted_tables:
-            actual = unweighted_unifrac(table=table,
-                                        phylogeny=self.tree_as_NewickFormat)
+        rf_tbl = self.artifact('FeatureTable[RelativeFrequency]',
+                               'two_feature_rf_table.biom')
+        pa_tbl = self.artifact('FeatureTable[PresenceAbsence]',
+                               'two_feature_p_a_table.biom')
+
+        for table in [self.tbl, rf_tbl, pa_tbl]:
+            actual_art, = self.fn(table=table, phylogeny=self.tre)
+            actual = actual_art.view(skbio.DistanceMatrix)
             self.assertEqual(actual.ids, self.expected.ids)
             for id1 in actual.ids:
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
 
-    def test_does_it_run_through_framework(self):
-        self.unweighted_unifrac_thru_framework(self.table_as_artifact,
-                                               self.tree_as_artifact)
-        # If we get here, then it ran without error
-        self.assertTrue(True)
-
 
 class WeightedUnifrac(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
+    def artifact(self, semantic_type, fp):
+        return Artifact.import_data(semantic_type, self.get_data_path(fp))
+
     def setUp(self):
         super().setUp()
+
+        self.fn = self.plugin.actions['weighted_unifrac']
+
         # expected computed with diversity.beta_phylogenetic (weighted_unifrac)
         self.expected = skbio.DistanceMatrix(
             np.array([0.44656238, 0.23771096, 0.30489123, 0.23446002,
@@ -290,18 +283,12 @@ class WeightedUnifrac(TestPluginBase):
                  '10084.PC.355', '10084.PC.354', '10084.PC.636',
                  '10084.PC.635', '10084.PC.607', '10084.PC.634'))
 
-        table_fp = self.get_data_path('crawford.biom')
-        self.table_as_BIOMV210Format = BIOMV210Format(table_fp, mode='r')
-        rel_freq_table_fp = self.get_data_path('crawford_rf.biom')
-        self.rf_table_as_BIOMV210Format = BIOMV210Format(rel_freq_table_fp,
-                                                         mode='r')
-
-        tree_fp = self.get_data_path('crawford.nwk')
-        self.tree_as_NewickFormat = NewickFormat(tree_fp, mode='r')
+        self.tbl = self.artifact('FeatureTable[Frequency]', 'crawford.biom')
+        self.tre = self.artifact('Phylogeny[Rooted]', 'crawford.nwk')
 
     def test_method(self):
-        actual = weighted_unifrac(
-            self.table_as_BIOMV210Format, self.tree_as_NewickFormat)
+        actual_art, = self.fn(self.tbl, self.tre)
+        actual = actual_art.view(skbio.DistanceMatrix)
         self.assertEqual(actual.ids, self.expected.ids)
         for id1 in actual.ids:
             for id2 in actual.ids:
@@ -309,12 +296,12 @@ class WeightedUnifrac(TestPluginBase):
                                         self.expected[id1, id2])
 
     def test_accepted_types_have_consistent_behavior(self):
-        freq_table = self.table_as_BIOMV210Format
-        rel_freq_table = self.rf_table_as_BIOMV210Format
-        accepted_tables = [freq_table, rel_freq_table]
-        for table in accepted_tables:
-            actual = weighted_unifrac(
-                table=table, phylogeny=self.tree_as_NewickFormat)
+        tbl_rf = self.artifact('FeatureTable[RelativeFrequency]',
+                               'crawford_rf.biom')
+
+        for table in [self.tbl, tbl_rf]:
+            actual_art, = self.fn(table=table, phylogeny=self.tre)
+            actual = actual_art.view(skbio.DistanceMatrix)
             self.assertEqual(actual.ids, self.expected.ids)
             for id1 in actual.ids:
                 for id2 in actual.ids:
