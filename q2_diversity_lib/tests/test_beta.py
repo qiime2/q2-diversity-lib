@@ -12,88 +12,9 @@ import skbio
 import pkg_resources
 
 from qiime2.plugin.testing import TestPluginBase
-from q2_types.feature_table import BIOMV210Format
-from q2_types.tree import NewickFormat
 from qiime2 import Artifact
 
-from ..beta import (bray_curtis, jaccard, unweighted_unifrac,
-                    weighted_unifrac, METRICS)
-
-
-nonphylogenetic_measures = [bray_curtis, jaccard]
-phylogenetic_measures = [unweighted_unifrac, weighted_unifrac]
-
-
-class SmokeTests(TestPluginBase):
-    package = 'q2_diversity_lib.tests'
-
-    def setUp(self):
-        super().setUp()
-        valid_table_fp = self.get_data_path('two_feature_table.biom')
-        self.valid_table_as_BIOMV210Format = \
-            BIOMV210Format(valid_table_fp, mode='r')
-        # empty table fp generated from self.empty_table with biom v2.1.7
-        self.empty_table = biom.Table(np.array([]), [], [])
-        empty_table_fp = self.get_data_path('empty_table.biom')
-        self.empty_table_as_BIOMV210Format = \
-            BIOMV210Format(empty_table_fp, mode='r')
-
-        empty_tree_fp = self.get_data_path('empty.tree')
-        self.empty_tree_as_NewickFormat = NewickFormat(empty_tree_fp, mode='r')
-        root_only_tree_fp = self.get_data_path('root_only.tree')
-        self.root_only_tree_as_NewickFormat = NewickFormat(root_only_tree_fp,
-                                                           mode='r')
-        missing_tip_tree_fp = self.get_data_path('missing_tip.tree')
-        self.missing_tip_tree_as_NewickFormat = \
-            NewickFormat(missing_tip_tree_fp, mode='r')
-        two_feature_tree_fp = self.get_data_path('two_feature.tree')
-        self.two_feature_tree_as_NewickFormat = \
-            NewickFormat(two_feature_tree_fp, mode='r')
-        extra_tip_tree_fp = self.get_data_path('extra_tip.tree')
-        self.extra_tip_tree_as_NewickFormat = NewickFormat(extra_tip_tree_fp,
-                                                           mode='r')
-        valid_tree_fp = self.get_data_path('three_feature.tree')
-        self.valid_tree_as_NewickFormat = NewickFormat(valid_tree_fp, mode='r')
-
-    def test_nonphylogenetic_measures_passed_empty_table(self):
-        for measure in nonphylogenetic_measures:
-            with self.assertRaisesRegex(ValueError, "empty"):
-                measure(table=self.empty_table)
-
-    def test_phylogenetic_measures_passed_empty_table(self):
-        for measure in phylogenetic_measures:
-            with self.assertRaisesRegex(ValueError, "empty"):
-                measure(table=self.empty_table_as_BIOMV210Format,
-                        phylogeny=self.valid_tree_as_NewickFormat)
-
-    def test_phylogenetic_measures_passed_empty_tree(self):
-        for measure in phylogenetic_measures:
-            with self.assertRaisesRegex(ValueError, "newick"):
-                measure(table=self.valid_table_as_BIOMV210Format,
-                        phylogeny=self.empty_tree_as_NewickFormat)
-
-    def test_phylogenetic_measures_passed_root_only_tree(self):
-        for measure in phylogenetic_measures:
-            with self.assertRaisesRegex(ValueError,
-                                        "table.*not.*completely represented"):
-                measure(table=self.valid_table_as_BIOMV210Format,
-                        phylogeny=self.root_only_tree_as_NewickFormat)
-
-    def test_phylogenetic_measures_passed_tree_missing_tip(self):
-        for measure in phylogenetic_measures:
-            with self.assertRaisesRegex(ValueError,
-                                        "table.*not.*completely represented"):
-                measure(table=self.valid_table_as_BIOMV210Format,
-                        phylogeny=self.missing_tip_tree_as_NewickFormat)
-
-    def test_phylogenetic_measure_passed_tree_w_extra_tip(self):
-        for measure in phylogenetic_measures:
-            matched_tree_output = measure(
-                self.valid_table_as_BIOMV210Format,
-                self.two_feature_tree_as_NewickFormat)
-            extra_tip_tree_output = measure(self.valid_table_as_BIOMV210Format,
-                                            self.valid_tree_as_NewickFormat)
-            self.assertEqual(matched_tree_output, extra_tip_tree_output)
+from ..beta import bray_curtis, jaccard, METRICS
 
 
 # ----------------------------Non-Phylogenetic---------------------------------
