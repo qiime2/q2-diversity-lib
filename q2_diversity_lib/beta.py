@@ -134,6 +134,8 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
     return result
 
 
+# Note, this method doesn't have a corresponding cli invocation, so we'll
+# just rely on unifrac doing the right thing with `threads` here.
 @_disallow_empty_tables
 @_validate_requested_cpus
 def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
