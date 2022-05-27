@@ -7,6 +7,8 @@
 # ----------------------------------------------------------------------------
 
 from inspect import signature
+from os import environ
+import subprocess
 
 import numpy as np
 from decorator import decorator
@@ -98,3 +100,19 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
                          "available to the system.")
 
     return wrapped_function(*bound_arguments.args, **bound_arguments.kwargs)
+
+
+def _run_external_cmd(cmd, verbose=True, env=None):
+    if verbose:
+        print("Running external command line application. This may print"
+              " messages to stdout and/or stderr.\nThe command being run is"
+              " below. This command cannot be manually re-run as it will"
+              " depend on temporary files that no longer exist.\n\nCommand:\n")
+        print(" ".join(cmd), end='\n\n')
+    return subprocess.run(cmd, check=True, env=env)
+
+
+def _omp_cmd_wrapper(threads, cmd, verbose=True):
+    env = environ.copy()
+    env.update({'OMP_NUM_THREADS': str(threads)})
+    return _run_external_cmd(cmd, verbose=verbose, env=env)
