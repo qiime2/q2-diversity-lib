@@ -5,6 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+import os
+
 import numpy as np
 import numpy.testing as npt
 import biom
@@ -162,6 +164,11 @@ class UnweightedUnifrac(TestPluginBase):
                 npt.assert_almost_equal(actual[id1, id2],
                                         self.expected[id1, id2])
 
+    def test_method_bypass_tips(self):
+        actual_art, = self.fn(self.tbl, self.tre, bypass_tips=True)
+        actual = actual_art.view(skbio.DistanceMatrix)
+        self.assertEqual(actual.ids, self.expected.ids)
+
     def test_accepted_types_have_consistent_behavior(self):
         rf_tbl = self.artifact('FeatureTable[RelativeFrequency]',
                                'two_feature_rf_table.biom')
@@ -216,6 +223,11 @@ class WeightedUnifrac(TestPluginBase):
                 npt.assert_almost_equal(actual[id1, id2],
                                         self.expected[id1, id2])
 
+    def test_method_bypass_tips(self):
+        actual_art, = self.fn(self.tbl, self.tre, bypass_tips=True)
+        actual = actual_art.view(skbio.DistanceMatrix)
+        self.assertEqual(actual.ids, self.expected.ids)
+
     def test_accepted_types_have_consistent_behavior(self):
         tbl_rf = self.artifact('FeatureTable[RelativeFrequency]',
                                'crawford_rf.biom')
@@ -235,37 +247,43 @@ class BetaPhylogeneticMetaPassthroughTests(TestPluginBase):
 
     def setUp(self):
         super().setUp()
-        self.method = self.plugin.actions['beta_phylogenetic_meta_passthrough']
-        empty_table = biom.Table(np.array([]), [], [])
-        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
-                                                empty_table)
+        self.fn = self.plugin.actions['beta_phylogenetic_meta_passthrough']
+
+        self.empty_tbl = Artifact.import_data(
+            'FeatureTable[Frequency]', biom.Table(np.array([]), [], []))
 
         # checking parity with the unifrac.meta tests
-        table1 = pkg_resources.resource_filename('unifrac.tests',
-                                                 'data/e1.biom')
-        table2 = pkg_resources.resource_filename('unifrac.tests',
-                                                 'data/e2.biom')
-        self.tables = [Artifact.import_data('FeatureTable[Frequency]', table1),
-                       Artifact.import_data('FeatureTable[Frequency]', table2)]
+        def unifrac_data(fn):
+            path = os.path.join('data', fn)
+            return pkg_resources.resource_filename('unifrac.tests', path)
 
-        tree1 = pkg_resources.resource_filename('unifrac.tests',
-                                                'data/t1.newick')
-        tree2 = pkg_resources.resource_filename('unifrac.tests',
-                                                'data/t2.newick')
-        self.trees = [Artifact.import_data('Phylogeny[Rooted]', tree1),
-                      Artifact.import_data('Phylogeny[Rooted]', tree2)]
+        self.tables = [
+            Artifact.import_data('FeatureTable[Frequency]',
+                                 unifrac_data('e1.biom')),
+            Artifact.import_data('FeatureTable[Frequency]',
+                                 unifrac_data('e2.biom')),
+        ]
+
+        self.trees = [
+            Artifact.import_data('Phylogeny[Rooted]',
+                                 unifrac_data('t1.newick')),
+            Artifact.import_data('Phylogeny[Rooted]',
+                                 unifrac_data('t2.newick')),
+        ]
 
     def test_method(self):
         for metric in METRICS['PHYLO']['UNIMPL']:
-            self.method(tables=self.tables, phylogenies=self.trees,
-                        metric=metric)
-        self.assertTrue(True)
+            obs_art, = self.fn(tables=self.tables, phylogenies=self.trees,
+                               metric=metric)
+            obs = obs_art.view(skbio.DistanceMatrix)
+            self.assertEqual(('A', 'B', 'C'), obs.ids)
+            self.assertEqual((3, 3), obs.shape)
 
     def test_passed_bad_metric(self):
         with self.assertRaisesRegex(TypeError,
                                     'imaginary_metric.*incompatible'):
-            self.method(tables=self.tables, phylogenies=self.trees,
-                        metric='imaginary_metric')
+            self.fn(tables=self.tables, phylogenies=self.trees,
+                    metric='imaginary_metric')
 
 
 class BetaPassthroughTests(TestPluginBase):
@@ -365,44 +383,56 @@ class BetaPassthroughTests(TestPluginBase):
 class BetaPhylogeneticPassthroughTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
+    def artifact(self, semantic_type, fn):
+        return Artifact.import_data(semantic_type, self.get_data_path(fn))
+
     def setUp(self):
         super().setUp()
-        self.method = self.plugin.actions['beta_phylogenetic_passthrough']
-        empty_table = biom.Table(np.array([]), [], [])
-        self.empty_table = Artifact.import_data('FeatureTable[Frequency]',
-                                                empty_table)
-        crawford_tbl = self.get_data_path('crawford.biom')
-        self.crawford_tbl = Artifact.import_data('FeatureTable[Frequency]',
-                                                 crawford_tbl)
-        crawford_tree = self.get_data_path('crawford.nwk')
-        self.crawford_tree = Artifact.import_data('Phylogeny[Rooted]',
-                                                  crawford_tree)
+
+        self.fn = self.plugin.actions['beta_phylogenetic_passthrough']
+
+        self.tbl = self.artifact('FeatureTable[Frequency]', 'crawford.biom')
+        self.tre = self.artifact('Phylogeny[Rooted]', 'crawford.nwk')
 
     def test_method(self):
         for metric in METRICS['PHYLO']['UNIMPL']:
-            self.method(table=self.crawford_tbl,
-                        phylogeny=self.crawford_tree, metric=metric)
-        # If we get here, then our methods ran without error
-        self.assertTrue(True)
+            obs_art, = self.fn(table=self.tbl, phylogeny=self.tre,
+                               metric=metric)
+            obs = obs_art.view(skbio.DistanceMatrix)
+            self.assertEqual(9, len(obs.ids))
+            self.assertEqual((9, 9), obs.shape)
+
+        # variance adjusted
+        for metric in METRICS['PHYLO']['UNIMPL']:
+            obs_art, = self.fn(table=self.tbl, phylogeny=self.tre,
+                               metric=metric, variance_adjusted=True)
+            obs = obs_art.view(skbio.DistanceMatrix)
+            self.assertEqual(9, len(obs.ids))
+            self.assertEqual((9, 9), obs.shape)
+
+        # bypass tips
+        for metric in METRICS['PHYLO']['UNIMPL']:
+            obs_art, = self.fn(table=self.tbl, phylogeny=self.tre,
+                               metric=metric, bypass_tips=True)
+            obs = obs_art.view(skbio.DistanceMatrix)
+            self.assertEqual(9, len(obs.ids))
+            self.assertEqual((9, 9), obs.shape)
 
     def test_passed_empty_table(self):
+        tbl = Artifact.import_data(
+            'FeatureTable[Frequency]', biom.Table(np.array([]), [], []))
+
         for metric in METRICS['PHYLO']['UNIMPL']:
             with self.assertRaisesRegex(ValueError, 'empty'):
-                self.method(table=self.empty_table,
-                            phylogeny=self.crawford_tree, metric=metric)
+                self.fn(table=tbl, phylogeny=self.tre, metric=metric)
 
     def test_passed_bad_metric(self):
-        with self.assertRaisesRegex(TypeError,
-                                    'imaginary_metric.*incompatible'):
-            self.method(table=self.crawford_tbl,
-                        phylogeny=self.crawford_tree,
-                        metric='imaginary_metric')
+        with self.assertRaisesRegex(TypeError, 'imaginary.*incompatible'):
+            self.fn(table=self.tbl, phylogeny=self.tre, metric='imaginary')
 
     def test_beta_phylogenetic_alpha_on_non_generalized(self):
         with self.assertRaisesRegex(ValueError, 'The alpha parameter is only '
                                     'allowed when the selected metric is '
                                     '\'generalized_unifrac\''):
-            self.method(table=self.crawford_tbl,
-                        phylogeny=self.crawford_tree,
-                        metric='unweighted_unifrac',
-                        alpha=0.11)
+            self.fn(table=self.tbl, phylogeny=self.tre,
+                    metric='unweighted_unifrac', alpha=0.11)
