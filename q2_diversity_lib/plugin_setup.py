@@ -56,7 +56,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters=None,
+    parameters={'threads': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': "The feature table containing the samples for which Faith's "
@@ -67,7 +67,7 @@ plugin.methods.register_function(
                      "This tree can contain tip ids that are not present in "
                      "the table, but all feature ids in the table must be "
                      "present in this tree."},
-    parameter_descriptions=None,
+    parameter_descriptions={'threads': threads_description},
     output_descriptions={'vector': "Vector containing per-sample values for "
                                    "Faith's Phylogenetic Diversity."},
     name="Faith's Phylogenetic Diversity",

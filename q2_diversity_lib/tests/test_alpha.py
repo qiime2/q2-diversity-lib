@@ -6,17 +6,17 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from subprocess import CalledProcessError
+
 import numpy as np
 import pandas as pd
 import pandas.testing as pdt
 import biom
 
 from qiime2.plugin.testing import TestPluginBase
-from q2_types.feature_table import BIOMV210Format
-from q2_types.tree import NewickFormat
 from qiime2 import Artifact
 
-from ..alpha import (faith_pd, pielou_evenness, observed_features,
+from ..alpha import (pielou_evenness, observed_features,
                      shannon_entropy, METRICS)
 
 
@@ -39,77 +39,53 @@ class SmokeTests(TestPluginBase):
 class FaithPDTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
+    def artifact(self, semantic_type, fp):
+        return Artifact.import_data(semantic_type, self.get_data_path(fp))
+
+    @staticmethod
+    def assert_vec_equal(actual_art, expected):
+        actual = actual_art.view(pd.Series)
+        pdt.assert_series_equal(actual, expected)
+
     def setUp(self):
         super().setUp()
-        empty_table_fp = self.get_data_path('empty_table.biom')
-        self.empty_table_as_BIOMV210Format = \
-            BIOMV210Format(empty_table_fp, mode='r')
-        input_table_fp = self.get_data_path('faith_test_table.biom')
-        self.input_table_as_BIOMV210Format = \
-            BIOMV210Format(input_table_fp, mode='r')
-        rf_table_fp = self.get_data_path('faith_test_table_rf.biom')
-        self.rf_table_as_BIOMV210Format = BIOMV210Format(rf_table_fp, mode='r')
-        pa_table_fp = self.get_data_path('faith_test_table_pa.biom')
-        self.pa_table_as_BIOMV210Format = BIOMV210Format(pa_table_fp, mode='r')
-
-        empty_tree_fp = self.get_data_path('empty.tree')
-        self.empty_tree_as_NewickFormat = NewickFormat(empty_tree_fp, mode='r')
-        input_tree_fp = self.get_data_path('faith_test.tree')
-        self.input_tree_as_NewickFormat = NewickFormat(input_tree_fp, mode='r')
-        root_only_tree_fp = self.get_data_path('root_only.tree')
-        self.root_only_tree_as_NewickFormat = \
-            NewickFormat(root_only_tree_fp, mode='r')
-        missing_tip_tree_fp = self.get_data_path('missing_tip.tree')
-        self.missing_tip_tree_as_NewickFormat = \
-            NewickFormat(missing_tip_tree_fp, mode='r')
-
+        self.fn = self.plugin.actions['faith_pd']
+        self.tbl = self.artifact('FeatureTable[Frequency]',
+                                 'faith_test_table.biom')
+        self.tre = self.artifact('Phylogeny[Rooted]', 'faith_test.tree')
         self.expected = pd.Series({'S1': 0.5, 'S2': 0.7, 'S3': 1.0,
                                    'S4': 100.5, 'S5': 101},
                                   name='faith_pd')
 
     def test_receives_empty_table(self):
-        # empty table generated from self.empty_table with biom v2.1.7
-        empty_table = self.empty_table_as_BIOMV210Format
+        table = self.artifact('FeatureTable[Frequency]', 'empty_table.biom')
         with self.assertRaisesRegex(ValueError, 'empty'):
-            faith_pd(table=empty_table,
-                     phylogeny=self.input_tree_as_NewickFormat)
+            self.fn(table=table, phylogeny=self.tre)
 
     def test_method(self):
-        actual = faith_pd(table=self.input_table_as_BIOMV210Format,
-                          phylogeny=self.input_tree_as_NewickFormat)
-        pdt.assert_series_equal(actual, self.expected)
+        actual_art, = self.fn(table=self.tbl, phylogeny=self.tre)
+        self.assert_vec_equal(actual_art, self.expected)
 
     def test_accepted_types_have_consistent_behavior(self):
-        freq_table = self.input_table_as_BIOMV210Format
-        rel_freq_table = self.rf_table_as_BIOMV210Format
-        p_a_table = self.pa_table_as_BIOMV210Format
-        accepted_tables = [freq_table, rel_freq_table, p_a_table]
-        for table in accepted_tables:
-            actual = faith_pd(table=table,
-                              phylogeny=self.input_tree_as_NewickFormat)
-            pdt.assert_series_equal(actual, self.expected)
-
-    def test_passed_emptytree(self):
-        # NOTE: different regular expressions are used here and in
-        # test_beta.test_phylogenetic_measures_passed_emptytree() because
-        # Unifrac reports different error messages when an empty tree is passed
-        # to faith_pd than when the same is passed to the Unifrac methods.
-        with self.assertRaisesRegex(ValueError,
-                                    'table.*not.*completely represented'):
-            faith_pd(table=self.input_table_as_BIOMV210Format,
-                     phylogeny=self.empty_tree_as_NewickFormat)
-
-    def test_passed_rootonlytree(self):
-        with self.assertRaisesRegex(ValueError,
-                                    'table.*not.*completely represented'):
-            faith_pd(table=self.input_table_as_BIOMV210Format,
-                     phylogeny=self.root_only_tree_as_NewickFormat)
+        rf_tbl = self.artifact('FeatureTable[RelativeFrequency]',
+                               'faith_test_table_rf.biom')
+        pa_tbl = self.artifact('FeatureTable[PresenceAbsence]',
+                               'faith_test_table_pa.biom')
+        for table in [self.tbl, rf_tbl, pa_tbl]:
+            actual_art, = self.fn(table=table, phylogeny=self.tre)
+            self.assert_vec_equal(actual_art, self.expected)
 
     def test_passed_tree_missing_tip(self):
-        with self.assertRaisesRegex(ValueError,
-                                    'table.*not.*completely represented'):
-            faith_pd(table=self.input_table_as_BIOMV210Format,
-                     phylogeny=self.missing_tip_tree_as_NewickFormat)
+        tree = self.artifact('Phylogeny[Rooted]', 'missing_tip.tree')
+        with self.assertRaises(CalledProcessError):
+            obs = self.fn(table=self.tbl, phylogeny=tree)
+            self.assertTrue('not a subset of the tree tips' in obs.stderr)
+
+    def test_passed_rootonlytree(self):
+        tree = self.artifact('Phylogeny[Rooted]', 'root_only.tree')
+        with self.assertRaises(CalledProcessError):
+            obs = self.fn(table=self.tbl, phylogeny=tree)
+            self.assertTrue('not a subset of the tree tips' in obs.stderr)
 
 
 class ObservedFeaturesTests(TestPluginBase):
