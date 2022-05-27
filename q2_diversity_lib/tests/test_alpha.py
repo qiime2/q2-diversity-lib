@@ -81,6 +81,12 @@ class FaithPDTests(TestPluginBase):
             obs = self.fn(table=self.tbl, phylogeny=tree)
             self.assertTrue('not a subset of the tree tips' in obs.stderr)
 
+    def test_passed_rootonlytree(self):
+        tree = self.artifact('Phylogeny[Rooted]', 'root_only.tree')
+        with self.assertRaises(CalledProcessError):
+            obs = self.fn(table=self.tbl, phylogeny=tree)
+            self.assertTrue('not a subset of the tree tips' in obs.stderr)
+
 
 class ObservedFeaturesTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
