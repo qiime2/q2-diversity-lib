@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 import os
+from subprocess import CalledProcessError
 
 import numpy as np
 import numpy.testing as npt
@@ -184,6 +185,26 @@ class UnweightedUnifrac(TestPluginBase):
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
 
+    def test_missing_tips_tree(self):
+        tre = self.artifact('Phylogeny[Rooted]', 'root_only.tree')
+        with self.assertRaises(CalledProcessError):
+            obs = self.fn(self.tbl, tre)
+            self.assertTrue('not a subset of the tree tips', obs.stderr)
+
+    def test_extra_tip_tree(self):
+        tbl = self.artifact('FeatureTable[Frequency]',
+                            'two_feature_table.biom')
+
+        tre_2 = self.artifact('Phylogeny[Rooted]', 'two_feature.tree')
+        obs_2_art, = self.fn(tbl, tre_2)
+        obs_2 = obs_2_art.view(skbio.DistanceMatrix)
+
+        tre_3 = self.artifact('Phylogeny[Rooted]', 'three_feature.tree')
+        obs_3_art, = self.fn(tbl, tre_3)
+        obs_3 = obs_3_art.view(skbio.DistanceMatrix)
+
+        self.assertEqual(obs_2, obs_3)
+
 
 class WeightedUnifrac(TestPluginBase):
     package = 'q2_diversity_lib.tests'
@@ -240,6 +261,26 @@ class WeightedUnifrac(TestPluginBase):
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
+
+    def test_missing_tips_tree(self):
+        tre = self.artifact('Phylogeny[Rooted]', 'root_only.tree')
+        with self.assertRaises(CalledProcessError):
+            obs = self.fn(self.tbl, tre)
+            self.assertTrue('not a subset of the tree tips', obs.stderr)
+
+    def test_extra_tip_tree(self):
+        tbl = self.artifact('FeatureTable[Frequency]',
+                            'two_feature_table.biom')
+
+        tre_2 = self.artifact('Phylogeny[Rooted]', 'two_feature.tree')
+        obs_2_art, = self.fn(tbl, tre_2)
+        obs_2 = obs_2_art.view(skbio.DistanceMatrix)
+
+        tre_3 = self.artifact('Phylogeny[Rooted]', 'three_feature.tree')
+        obs_3_art, = self.fn(tbl, tre_3)
+        obs_3 = obs_3_art.view(skbio.DistanceMatrix)
+
+        self.assertEqual(obs_2, obs_3)
 
 
 class BetaPhylogeneticMetaPassthroughTests(TestPluginBase):
