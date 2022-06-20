@@ -30,8 +30,7 @@ requirements:
     # TODO: fix this
     - scikit-bio
     - scipy
-    # TODO: fix this
-    - unifrac
+    - unifrac {{ unifrac }}
     # - unifrac-binaries {{ unifrac_binaries }}
 
 test:
