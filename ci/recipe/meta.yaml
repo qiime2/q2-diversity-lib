@@ -18,11 +18,11 @@ requirements:
 
   run:
     - python {{ python }}
-    - biom-format {{ biom_format }}
+    # TODO: fix this
+    - biom-format
     - decorator
     - numpy
-    # TODO: fix this
-    - pandas
+    - pandas {{ pandas }}
     - psutil
     - qiime2 {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
