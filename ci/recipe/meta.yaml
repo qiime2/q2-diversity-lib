@@ -22,7 +22,8 @@ requirements:
     - biom-format
     - decorator
     - numpy
-    - pandas {{ pandas }}
+    # TODO: fix this
+    - pandas
     - psutil
     - qiime2 {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
