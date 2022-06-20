@@ -27,7 +27,8 @@ requirements:
     - psutil
     - qiime2 {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
-    - scikit-bio {{ scikit_bio }}
+    # TODO: fix this
+    - scikit-bio
     - scipy
     - unifrac {{ unifrac }}
     - unifrac-binaries {{ unifrac_binaries }}
