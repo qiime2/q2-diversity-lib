@@ -18,20 +18,17 @@ requirements:
 
   run:
     - python {{ python }}
-    # TODO: fix this
-    - biom-format
+    - biom-format {{ biom_format }}
     - decorator
     - numpy
-    # TODO: fix this
-    - pandas
+    - pandas {{ pandas }}
     - psutil
     - qiime2 {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
-    # TODO: fix this
-    - scikit-bio
+    - scikit-bio {{ scikit_bio }}
     - scipy
     - unifrac {{ unifrac }}
-    # - unifrac-binaries {{ unifrac_binaries }}
+    - unifrac-binaries {{ unifrac_binaries }}
 
 test:
   requires:
