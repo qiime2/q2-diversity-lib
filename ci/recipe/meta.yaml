@@ -28,6 +28,7 @@ requirements:
     - scikit-bio {{ scikit_bio }}
     - scipy
     - unifrac {{ unifrac }}
+    - unifrac-binaries {{ unifrac_binaries }}
 
 test:
   requires:
