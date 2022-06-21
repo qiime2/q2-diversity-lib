@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2018-2021, QIIME 2 development team.
+# Copyright (c) 2018-2022, QIIME 2 development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -56,7 +56,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters=None,
+    parameters={'threads': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': "The feature table containing the samples for which Faith's "
@@ -67,14 +67,15 @@ plugin.methods.register_function(
                      "This tree can contain tip ids that are not present in "
                      "the table, but all feature ids in the table must be "
                      "present in this tree."},
-    parameter_descriptions=None,
+    parameter_descriptions={'threads': threads_description},
     output_descriptions={'vector': "Vector containing per-sample values for "
                                    "Faith's Phylogenetic Diversity."},
     name="Faith's Phylogenetic Diversity",
     description="Computes Faith's Phylogenetic Diversity for all samples in "
                 "a feature table.",
     examples={'basic': examples.faith_pd_example},
-    citations=[citations['faith1992conservation']]
+    citations=[citations['faith1992conservation'],
+               citations['armstrong2021faithspd']]
 )
 
 plugin.methods.register_function(
@@ -406,7 +407,8 @@ plugin.methods.register_function(
         citations['lozupone2011unifrac'],
         citations['mcdonald2018unifrac'],
         citations['chang2011variance'],
-        citations['chen2012genUnifrac']
+        citations['chen2012genUnifrac'],
+        citations['sfiligoi2022unifrac']
     ]
 )
 
