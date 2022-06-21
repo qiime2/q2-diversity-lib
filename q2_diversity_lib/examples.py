@@ -330,14 +330,14 @@ def beta_passthrough_n_jobs_example(use):
 
 def beta_passthrough_auto_jobs_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
+    use.comment("A default pseudocount of 1 is added to feature counts. "
+                "Pseudocount is ignored for non-compositional metrics.")
     result, = use.action(
         use.UsageAction(plugin_id='diversity_lib',
                         action_id='beta_passthrough'),
         use.UsageInputs(table=ft, metric='aitchison', n_jobs='auto'),
         use.UsageOutputNames(distance_matrix='aitchison_dm')
     )
-    use.comment("Here, a default pseudocount of 1 is added to feature counts. "
-                "Pseudocount is ignored for non-compositional metrics.")
     result.assert_output_type('DistanceMatrix')
 
 
