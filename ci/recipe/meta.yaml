@@ -18,18 +18,17 @@ requirements:
 
   run:
     - python {{ python }}
-    - biom-format >=2.1.5,<2.2.0
+    - biom-format {{ biom_format }}
     - decorator
-    # Inherit global hard pin
-    - hdf5 {{ hdf5 }}
     - numpy
-    - pandas
+    - pandas {{ pandas }}
     - psutil
     - qiime2 {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
-    - scikit-bio
-    - scipy
-    - unifrac >=0.20.0
+    - scikit-bio {{ scikit_bio }}
+    - scipy {{ scipy }}
+    - unifrac {{ unifrac }}
+    - unifrac-binaries {{ unifrac_binaries }}
 
 test:
   requires:

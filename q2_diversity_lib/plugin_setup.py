@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2018-2021, QIIME 2 development team.
+# Copyright (c) 2018-2022, QIIME 2 development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -15,7 +15,7 @@ from q2_types.sample_data import AlphaDiversity, SampleData
 from q2_types.distance_matrix import DistanceMatrix
 from unifrac._meta import CONSOLIDATIONS
 
-from . import alpha, beta, __version__
+from . import alpha, beta, __version__, examples
 
 citations = Citations.load('citations.bib', package='q2_diversity_lib')
 plugin = Plugin(
@@ -56,7 +56,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters=None,
+    parameters={'threads': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': "The feature table containing the samples for which Faith's "
@@ -67,13 +67,15 @@ plugin.methods.register_function(
                      "This tree can contain tip ids that are not present in "
                      "the table, but all feature ids in the table must be "
                      "present in this tree."},
-    parameter_descriptions=None,
+    parameter_descriptions={'threads': threads_description},
     output_descriptions={'vector': "Vector containing per-sample values for "
                                    "Faith's Phylogenetic Diversity."},
     name="Faith's Phylogenetic Diversity",
     description="Computes Faith's Phylogenetic Diversity for all samples in "
                 "a feature table.",
-    citations=[citations['faith1992conservation']]
+    examples={'basic': examples.faith_pd_example},
+    citations=[citations['faith1992conservation'],
+               citations['armstrong2021faithspd']]
 )
 
 plugin.methods.register_function(
@@ -91,7 +93,8 @@ plugin.methods.register_function(
                                    "observed features."},
     name="Observed Features",
     description="Compute the number of observed features for each sample in a "
-                "feature table"
+                "feature table",
+    examples={'basic': examples.observed_features_example}
 )
 
 plugin.methods.register_function(
@@ -110,6 +113,8 @@ plugin.methods.register_function(
     name="Pielou's Evenness",
     description="Compute Pielou's Evenness for each sample in a "
                 "feature table",
+    examples={'basic': examples.pielou_evenness_example,
+              'dropping undefined samples': examples.pielou_drop_example},
     citations=[citations['pielou1966measurement']]
 )
 
@@ -130,6 +135,8 @@ plugin.methods.register_function(
     name="Shannon's Entropy",
     description="Compute Shannon's Entropy for each sample in a "
                 "feature table",
+    examples={'basic': examples.shannon_entropy_example,
+              'dropping undefined samples': examples.shannon_drop_example},
     citations=[citations['shannon1948communication']]
 )
 
@@ -154,6 +161,12 @@ plugin.methods.register_function(
                 "identical. Please consider the impact on your results if "
                 "you use Bray-Curtis with count data that has not been "
                 "adjusted (normalized).",
+    examples={"run on one core (by default)": examples.bray_curtis_example,
+              "to run on n cores, replace 1 here with your preferred integer":
+              examples.bray_curtis_n_jobs_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.bray_curtis_auto_jobs_example,
+              },
     citations=[citations['sorensen1948method']])
 
 # TODO: Augment citations as needed
@@ -175,6 +188,12 @@ plugin.methods.register_function(
                 "presence/absence data. Data of type "
                 "FeatureTable[Frequency | Relative Frequency] is reduced"
                 "to presence/absence prior to calculation.",
+    examples={"run on one core (by default)": examples.jaccard_example,
+              "to run on n cores, replace 1 here with your preferred integer":
+              examples.jaccard_n_jobs_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.jaccard_auto_jobs_example,
+              },
     citations=[citations['jaccard1908nouvelles']])
 
 
@@ -207,6 +226,14 @@ plugin.methods.register_function(
     name="Unweighted Unifrac",
     description="Compute Unweighted Unifrac for each sample in a "
                 "feature table",
+    examples={"run on one core (by default)": examples.u_u_example,
+              "to run on n cores, replace 1 here with your preferred integer":
+              examples.u_u_n_threads_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.u_u_auto_threads_example,
+              "use bypass_tips to trade specificity for reduced compute time":
+              examples.u_u_bypass_tips_example,
+              },
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
@@ -243,6 +270,14 @@ plugin.methods.register_function(
     name="Weighted Unifrac",
     description="Compute Weighted Unifrac for each sample in a "
                 "feature table",
+    examples={"run on one core (by default)": examples.w_u_example,
+              "to run on n cores, replace 1 here with your preferred integer":
+              examples.w_u_n_threads_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.w_u_auto_threads_example,
+              "use bypass_tips to trade specificity for reduced compute time":
+              examples.w_u_bypass_tips_example,
+              },
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
@@ -266,7 +301,8 @@ plugin.methods.register_function(
     name="Alpha Passthrough (non-phylogenetic)",
     description="Computes a vector of values (one value for each samples in a "
                 "feature table) using the scikit-bio implementation of the "
-                "selected alpha diversity metric."
+                "selected alpha diversity metric.",
+    examples={'basic': examples.alpha_passthrough_example},
 )
 
 
@@ -293,6 +329,16 @@ plugin.methods.register_function(
     description="Computes a distance matrix for all pairs of samples in a "
                 "feature table using the scikit-bio implementation of the "
                 "selected beta diversity metric.",
+    examples={"run on one core (by default)":
+              examples.beta_passthrough_example,
+              "to run on n cores, replace 1 here with your preferred integer":
+              examples.beta_passthrough_n_jobs_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.beta_passthrough_auto_jobs_example,
+              "use 'pseudocount' to manually set a pseudocount for " +
+              "compositional metrics":
+              examples.beta_passthrough_pseudocount_example,
+              },
 )
 
 
@@ -339,6 +385,21 @@ plugin.methods.register_function(
     description="Computes a distance matrix for all pairs of samples in a "
                 "feature table using the unifrac implementation of the "
                 "selected beta diversity metric.",
+    examples={"run on one core (by default)":
+              examples.beta_phylo_passthrough_example,
+              "to run on n cores, replace 1 here with your preferred integer":
+              examples.beta_phylo_passthrough_n_threads_example,
+              "use 'auto' to run on all of host system's available CPU cores":
+              examples.beta_phylo_passthrough_auto_threads_example,
+              "use bypass_tips to trade specificity for reduced compute time":
+              examples.beta_phylo_passthrough_bypass_tips_example,
+              "variance adjustment":
+              examples.beta_phylo_passthrough_variance_adjusted_example,
+              "minimal generalized unifrac":
+              examples.beta_phylo_passthrough_min_generalized_unifrac_example,
+              "generalized unifrac":
+              examples.beta_phylo_passthrough_generalized_unifrac_example,
+              },
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],
@@ -346,7 +407,8 @@ plugin.methods.register_function(
         citations['lozupone2011unifrac'],
         citations['mcdonald2018unifrac'],
         citations['chang2011variance'],
-        citations['chen2012genUnifrac']
+        citations['chen2012genUnifrac'],
+        citations['sfiligoi2022unifrac']
     ]
 )
 
@@ -402,6 +464,12 @@ plugin.methods.register_function(
     description="Computes a distance matrix for all pairs of samples in the "
                 "set of feature table and phylogeny pairs, using the unifrac "
                 "implementation of the selected beta diversity metric.",
+    examples={
+        "Basic meta unifrac": examples.beta_phylo_meta_passthrough_example,
+        "meta with weights": examples.beta_phylo_meta_weights_example,
+        "changing the consolidation method":
+        examples.beta_phylo_meta_consolidation_example,
+    },
     citations=[
         citations['lozupone2005unifrac'],
         citations['lozupone2007unifrac'],

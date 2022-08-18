@@ -6,7 +6,11 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from ._version import get_versions
+from qiime2.plugin.testing import TestPluginBase
 
-__version__ = get_versions()['version']
-del get_versions
+
+class UsageExampleTests(TestPluginBase):
+    package = 'q2_diversity_lib.tests'
+
+    def test_usage_examples(self):
+        self.execute_examples()
