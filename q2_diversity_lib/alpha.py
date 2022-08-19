@@ -13,7 +13,7 @@ import biom
 from q2_types.feature_table import BIOMV210Format
 from q2_types.sample_data import AlphaDiversityFormat
 from q2_types.tree import NewickFormat
-from ._util import (_drop_undefined_samples,
+from ._util import (_drop_undefined_samples, _partition,
                     _disallow_empty_tables,
                     _validate_requested_cpus,
                     _omp_cmd_wrapper)
@@ -58,25 +58,24 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
 @_disallow_empty_tables
 def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa(inplace=False)
-    counts = presence_absence_table.matrix_data.toarray().astype(int).T
-    sample_ids = presence_absence_table.ids(axis='sample')
-    result = skbio.diversity.alpha_diversity(metric='observed_otus',
-                                             counts=counts, ids=sample_ids)
-    result.name = 'observed_features'
-    return result
+    return pd.Series(presence_absence_table.sum('sample').astype(int),
+                     index=table.ids(), name='observed_features')
 
 
 @_disallow_empty_tables
 def pielou_evenness(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
-    counts = table.matrix_data.toarray().T
-    sample_ids = table.ids(axis='sample')
     if drop_undefined_samples:
-        counts, sample_ids = _drop_undefined_samples(
-                counts, sample_ids, minimum_nonzero_elements=2)
+        table = _drop_undefined_samples(table, minimum_nonzero_elements=2)
 
-    result = skbio.diversity.alpha_diversity(metric='pielou_e', counts=counts,
-                                             ids=sample_ids)
+    results = []
+    for partition in _partition(table):
+        counts = partition.matrix_data.T.toarray()
+        sample_ids = partition.ids(axis='sample')
+        results.append(skbio.diversity.alpha_diversity(metric='pielou_e',
+                                                       counts=counts,
+                                                       ids=sample_ids))
+    result = pd.concat(results)
     result.name = 'pielou_evenness'
     return result
 
@@ -84,25 +83,31 @@ def pielou_evenness(table: biom.Table,
 @_disallow_empty_tables
 def shannon_entropy(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
-    counts = table.matrix_data.toarray().T
-    sample_ids = table.ids(axis='sample')
     if drop_undefined_samples:
-        counts, sample_ids = _drop_undefined_samples(
-                counts, sample_ids, minimum_nonzero_elements=1)
-    result = skbio.diversity.alpha_diversity(metric='shannon', counts=counts,
-                                             ids=sample_ids)
+        table = _drop_undefined_samples(table, minimum_nonzero_elements=1)
+
+    results = []
+    for partition in _partition(table):
+        counts = partition.matrix_data.T.toarray()
+        sample_ids = partition.ids(axis='sample')
+        results.append(skbio.diversity.alpha_diversity(metric='shannon',
+                                                       counts=counts,
+                                                       ids=sample_ids))
+    result = pd.concat(results)
     result.name = 'shannon_entropy'
     return result
 
 
 @_disallow_empty_tables
 def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
-    # Note: some metrics require ints, but biom.Table seems to default to float
-    # (e.g. ace, lladser_pe, michaelis_menten_fit)
-    counts = table.matrix_data.astype(int).toarray().T
-    sample_ids = table.ids(axis='sample')
+    results = []
+    for partition in _partition(table):
+        counts = partition.matrix_data.astype(int).T.toarray()
+        sample_ids = partition.ids(axis='sample')
 
-    result = skbio.diversity.alpha_diversity(metric=metric, counts=counts,
-                                             ids=sample_ids)
+        results.append(skbio.diversity.alpha_diversity(metric=metric,
+                                                       counts=counts,
+                                                       ids=sample_ids))
+    result = pd.concat(results)
     result.name = metric
     return result
