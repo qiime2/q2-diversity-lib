@@ -20,7 +20,8 @@ requirements:
     - python {{ python }}
     - biom-format {{ biom_format }}
     - decorator
-    - hdf5 {{ hdf5 }}
+    # testing out a build pin to see if this is ignored by conda
+    - hdf5=1.10.6 nompi_h6a2412b_1114
     - h5py {{ h5py }}
     - numpy
     - pandas {{ pandas }}
