@@ -22,7 +22,7 @@ requirements:
     - decorator
     - hdf5 {{ hdf5 }}
     - h5py {{ h5py }}
-    - numpy <1.24.0
+    - numpy {{ numpy }}
     - pandas {{ pandas }}
     - psutil
     - qiime2 {{ qiime2_epoch }}.*
