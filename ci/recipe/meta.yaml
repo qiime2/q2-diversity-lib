@@ -42,6 +42,9 @@ test:
     - q2_diversity_lib
     - qiime2.plugins.diversity_lib
 
+  commands:
+    - py.test --pyargs q2_diversity_lib
+
 about:
   home: https://qiime2.org
   license: BSD-3-Clause
