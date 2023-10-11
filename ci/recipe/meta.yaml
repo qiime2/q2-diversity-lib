@@ -29,6 +29,7 @@ requirements:
     - q2-types {{ qiime2_epoch }}.*
     - scikit-bio {{ scikit_bio }}
     - scipy {{ scipy }}
+    - sklearn {{ sklearn }}
     - unifrac {{ unifrac }}
     - unifrac-binaries {{ unifrac_binaries }}
 
