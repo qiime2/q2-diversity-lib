@@ -28,8 +28,8 @@ requirements:
     - qiime2 {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
     - scikit-bio {{ scikit_bio }}
+    - scikit-learn {{ scikit-learn }}
     - scipy {{ scipy }}
-    - sklearn {{ sklearn }}
     - unifrac {{ unifrac }}
     - unifrac-binaries {{ unifrac_binaries }}
 
