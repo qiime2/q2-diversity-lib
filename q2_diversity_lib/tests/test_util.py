@@ -17,7 +17,7 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 
-from .._util import (_disallow_empty_tables, _validate_requested_cpus,
+from .._util import (_validate_requested_cpus,
                      _partition, _validate_tables)
 
 

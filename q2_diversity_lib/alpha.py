@@ -13,13 +13,10 @@ import unifrac
 import numpy as np
 
 from q2_types.feature_table import BIOMV210Format
-from q2_types.sample_data import AlphaDiversityFormat
 from q2_types.tree import NewickFormat
 
-from ._util import (_drop_undefined_samples, _partition,
-                    _disallow_empty_tables, _validate_tables,
-                    _validate_requested_cpus,
-                    _omp_cmd_wrapper)
+from ._util import (_validate_tables,
+                    _validate_requested_cpus)
 
 
 METRICS = {
@@ -48,7 +45,6 @@ METRICS = {
 
 # --------------------- Phylogenetic -----------------------------------------
 @_validate_tables
-@_disallow_empty_tables
 @_validate_requested_cpus
 def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
     table_str = str(table)
@@ -59,6 +55,7 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
 
 
 # --------------------- Non-Phylogenetic -------------------------------------
+@_validate_tables
 def _skbio_alpha_diversity_from_1d(v, metric):
     # alpha_diversity expects a 2d structure
     v = np.reshape(v, (1, len(v)))
@@ -115,7 +112,7 @@ def shannon_entropy(table: biom.Table,
 @_validate_tables
 def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
     results = []
-    
+
     for v in table.iter_data(dense=True):
         results.append(_skbio_alpha_diversity_from_1d(v.astype(int), metric))
     results = pd.Series(results, index=table.ids(), name=metric)

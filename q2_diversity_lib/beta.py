@@ -19,8 +19,7 @@ from q2_types.distance_matrix import LSMatFormat
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 
-from ._util import (_disallow_empty_tables,
-                    _validate_tables,
+from ._util import (_validate_tables,
                     _validate_requested_cpus,
                     _omp_cmd_wrapper)
 
@@ -137,7 +136,6 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
 
 
 @_validate_tables
-@_disallow_empty_tables
 @_validate_requested_cpus
 def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
                                        phylogenies: NewickFormat,
