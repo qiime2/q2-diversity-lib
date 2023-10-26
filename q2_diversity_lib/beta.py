@@ -1,12 +1,10 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2018-2022, QIIME 2 development team.
+# Copyright (c) 2018-2023, QIIME 2 development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-
-from functools import partial
 
 import biom
 import skbio.diversity
@@ -17,10 +15,14 @@ from scipy.spatial.distance import euclidean
 from scipy.spatial.distance import jensenshannon
 import numpy as np
 
+from q2_types.distance_matrix import LSMatFormat
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from ._util import (_validate_tables,
-                    _validate_requested_cpus)
+
+from ._util import (_disallow_empty_tables,
+                    _validate_tables,
+                    _validate_requested_cpus,
+                    _omp_cmd_wrapper)
 
 
 # NOTE: some phylo metrics are currently in both implemented and unimplemented
@@ -95,29 +97,47 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
                                   variance_adjusted: bool = False,
                                   alpha: float = None,
                                   bypass_tips: bool = False
-                                  ) -> skbio.DistanceMatrix:
-    unifrac_functions = {
-            'unweighted_unifrac': unifrac.unweighted,
-            'weighted_unifrac': unifrac.weighted_unnormalized,
-            'weighted_normalized_unifrac': unifrac.weighted_normalized,
-            'generalized_unifrac': unifrac.generalized}
-    func = unifrac_functions[metric]
-
+                                  ) -> LSMatFormat:
     # Ideally we remove this when we can support optional type-mapped params.
     if alpha is not None and metric != 'generalized_unifrac':
         raise ValueError("The alpha parameter is only allowed when the "
                          "selected metric is 'generalized_unifrac'")
 
+    method = {
+        'unweighted_unifrac': 'unweighted',
+        'weighted_unifrac': 'weighted_unnormalized',
+        'weighted_normalized_unifrac': 'weighted_normalized',
+        'generalized_unifrac': 'generalized',
+    }[metric]
+
+    result = LSMatFormat()
+
+    cmd = [
+        'ssu',
+        '-i', str(table),
+        '-t', str(phylogeny),
+        '-m', method,
+        '-o', str(result),
+    ]
+
     # handle unimplemented unifracs
     if metric == 'generalized_unifrac':
         alpha = 1.0 if alpha is None else alpha
-        func = partial(func, alpha=alpha)
+        cmd += ['-a', str(alpha)]
 
-    return func(str(table), str(phylogeny), threads=threads,
-                variance_adjusted=variance_adjusted, bypass_tips=bypass_tips)
+    if variance_adjusted:
+        cmd += ['--vaw']
+
+    if bypass_tips:
+        cmd += ['-f']
+
+    _omp_cmd_wrapper(threads, cmd)
+
+    return result
 
 
 @_validate_tables
+@_disallow_empty_tables
 @_validate_requested_cpus
 def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
                                        phylogenies: NewickFormat,
@@ -185,17 +205,43 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
 def unweighted_unifrac(table: BIOMV210Format,
                        phylogeny: NewickFormat,
                        threads: int = 1,
-                       bypass_tips: bool = False) -> skbio.DistanceMatrix:
-    return unifrac.unweighted(str(table), str(phylogeny), threads=threads,
-                              variance_adjusted=False, bypass_tips=bypass_tips)
+                       bypass_tips: bool = False) -> LSMatFormat:
+    result = LSMatFormat()
+
+    cmd = [
+        'ssu',
+        '-i', str(table),
+        '-t', str(phylogeny),
+        '-m', 'unweighted',
+        '-o', str(result),
+    ]
+
+    if bypass_tips:
+        cmd += ['-f']
+
+    _omp_cmd_wrapper(threads, cmd)
+
+    return result
 
 
 @_validate_tables
 @_validate_requested_cpus
 def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
                      threads: int = 1, bypass_tips: bool = False
-                     ) -> skbio.DistanceMatrix:
-    return unifrac.weighted_unnormalized(str(table), str(phylogeny),
-                                         threads=threads,
-                                         variance_adjusted=False,
-                                         bypass_tips=bypass_tips)
+                     ) -> LSMatFormat:
+    result = LSMatFormat()
+
+    cmd = [
+        'ssu',
+        '-i', str(table),
+        '-t', str(phylogeny),
+        '-m', 'weighted_unnormalized',
+        '-o', str(result),
+    ]
+
+    if bypass_tips:
+        cmd += ['-f']
+
+    _omp_cmd_wrapper(threads, cmd)
+
+    return result

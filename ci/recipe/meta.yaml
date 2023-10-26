@@ -18,16 +18,20 @@ requirements:
 
   run:
     - python {{ python }}
-    - biom-format >=2.1.5,<2.2.0
+    - biom-format {{ biom_format }}
     - decorator
-    - numpy
-    - pandas
+    - hdf5 {{ hdf5 }}
+    - h5py {{ h5py }}
+    - numpy {{ numpy }}
+    - pandas {{ pandas }}
     - psutil
     - qiime2 {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
-    - scikit-bio
-    - scipy
+    - scikit-bio {{ scikit_bio }}
+    - scikit-learn {{ scikit_learn }}
+    - scipy {{ scipy }}
     - unifrac {{ unifrac }}
+    - unifrac-binaries {{ unifrac_binaries }}
 
 test:
   requires:
@@ -38,6 +42,9 @@ test:
   imports:
     - q2_diversity_lib
     - qiime2.plugins.diversity_lib
+
+  commands:
+    - py.test --pyargs q2_diversity_lib
 
 about:
   home: https://qiime2.org
