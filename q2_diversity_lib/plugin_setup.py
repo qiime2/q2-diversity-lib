@@ -145,7 +145,7 @@ plugin.methods.register_function(
 # TODO: Augment citations as needed
 plugin.methods.register_function(
     function=beta.bray_curtis,
-    inputs={'table': FeatureTable[Frequency| RelativeFrequency]},
+    inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
