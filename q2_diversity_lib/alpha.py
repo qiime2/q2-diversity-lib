@@ -45,7 +45,6 @@ METRICS = {
 
 # --------------------- Phylogenetic -----------------------------------------
 @_validate_tables
-@_validate_requested_cpus
 def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
     table_str = str(table)
     tree_str = str(phylogeny)
