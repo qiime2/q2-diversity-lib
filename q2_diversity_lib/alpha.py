@@ -56,7 +56,6 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
 
 
 # --------------------- Non-Phylogenetic -------------------------------------
-@_validate_tables
 def _skbio_alpha_diversity_from_1d(v, metric):
     # alpha_diversity expects a 2d structure
     v = np.reshape(v, (1, len(v)))
