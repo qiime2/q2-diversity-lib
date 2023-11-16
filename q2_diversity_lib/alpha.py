@@ -45,12 +45,13 @@ METRICS = {
 
 # --------------------- Phylogenetic -----------------------------------------
 @_validate_tables
-def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat) -> pd.Series:
-    table_str = str(table)
-    tree_str = str(phylogeny)
-    result = unifrac.faith_pd(table_str, tree_str)
-    result.name = 'faith_pd'
-    return result
+@_validate_requested_cpus
+def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
+             threads: int = 1) -> AlphaDiversityFormat:
+    vec = AlphaDiversityFormat()
+    cmd = ['faithpd', '-i', str(table), '-t', str(phylogeny), '-o', str(vec)]
+    _omp_cmd_wrapper(threads, cmd)
+    return vec
 
 
 # --------------------- Non-Phylogenetic -------------------------------------
