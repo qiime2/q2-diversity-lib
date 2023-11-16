@@ -9,14 +9,15 @@
 import pandas as pd
 import skbio.diversity
 import biom
-import unifrac
 import numpy as np
 
 from q2_types.feature_table import BIOMV210Format
+from q2_types.sample_data import AlphaDiversityFormat
 from q2_types.tree import NewickFormat
 
 from ._util import (_validate_tables,
-                    _validate_requested_cpus)
+                    _validate_requested_cpus,
+                    _omp_cmd_wrapper)
 
 
 METRICS = {
