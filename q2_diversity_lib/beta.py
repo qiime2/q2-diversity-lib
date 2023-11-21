@@ -18,7 +18,8 @@ import numpy as np
 from q2_types.distance_matrix import LSMatFormat
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
-from ._util import (_disallow_empty_tables,
+
+from ._util import (_validate_tables,
                     _validate_requested_cpus,
                     _omp_cmd_wrapper)
 
@@ -51,7 +52,7 @@ METRICS = {
 
 
 # -------------------- Method Dispatch -----------------------
-@_disallow_empty_tables
+@_validate_tables
 @_validate_requested_cpus
 def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
                      n_jobs: int = 1) -> skbio.DistanceMatrix:
@@ -82,11 +83,11 @@ def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
         pass
 
     return skbio.diversity.beta_diversity(
-            metric=metric, counts=counts, ids=sample_ids, validate=True,
+            metric=metric, counts=counts, ids=sample_ids, validate=False,
             pairwise_func=sklearn.metrics.pairwise_distances, n_jobs=n_jobs)
 
 
-@_disallow_empty_tables
+@_validate_tables
 @_validate_requested_cpus
 def beta_phylogenetic_passthrough(table: BIOMV210Format,
                                   phylogeny: NewickFormat,
@@ -134,9 +135,7 @@ def beta_phylogenetic_passthrough(table: BIOMV210Format,
     return result
 
 
-# Note, this method doesn't have a corresponding cli invocation, so we'll
-# just rely on unifrac doing the right thing with `threads` here.
-@_disallow_empty_tables
+@_validate_tables
 @_validate_requested_cpus
 def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
                                        phylogenies: NewickFormat,
@@ -168,7 +167,7 @@ def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
 
 
 # --------------------Non-Phylogenetic-----------------------
-@_disallow_empty_tables
+@_validate_tables
 @_validate_requested_cpus
 def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     counts = table.matrix_data.toarray().T
@@ -177,13 +176,13 @@ def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
         metric='braycurtis',
         counts=counts,
         ids=sample_ids,
-        validate=True,
+        validate=False,
         pairwise_func=sklearn.metrics.pairwise_distances,
         n_jobs=n_jobs
     )
 
 
-@_disallow_empty_tables
+@_validate_tables
 @_validate_requested_cpus
 def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
     counts = table.matrix_data.toarray().T
@@ -192,14 +191,14 @@ def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
         metric='jaccard',
         counts=counts,
         ids=sample_ids,
-        validate=True,
+        validate=False,
         pairwise_func=sklearn.metrics.pairwise_distances,
         n_jobs=n_jobs
     )
 
 
 # ------------------------Phylogenetic-----------------------
-@_disallow_empty_tables
+@_validate_tables
 @_validate_requested_cpus
 def unweighted_unifrac(table: BIOMV210Format,
                        phylogeny: NewickFormat,
@@ -223,7 +222,7 @@ def unweighted_unifrac(table: BIOMV210Format,
     return result
 
 
-@_disallow_empty_tables
+@_validate_tables
 @_validate_requested_cpus
 def weighted_unifrac(table: BIOMV210Format, phylogeny: NewickFormat,
                      threads: int = 1, bypass_tips: bool = False

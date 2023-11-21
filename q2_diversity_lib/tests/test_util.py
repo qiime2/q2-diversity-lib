@@ -17,8 +17,8 @@ from qiime2.plugin.testing import TestPluginBase
 from q2_types.feature_table import BIOMV210Format
 from q2_types.tree import NewickFormat
 
-from .._util import (_disallow_empty_tables, _validate_requested_cpus,
-                     _partition)
+from .._util import (_validate_requested_cpus,
+                     _partition, _validate_tables)
 
 
 class PartitionTests(TestPluginBase):
@@ -44,7 +44,7 @@ class PartitionTests(TestPluginBase):
         self.assertEqual(tab, partitions[0])
 
 
-class DisallowEmptyTablesTests(TestPluginBase):
+class ValidateTablesTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
 
     def setUp(self):
@@ -66,16 +66,33 @@ class DisallowEmptyTablesTests(TestPluginBase):
                                    self.invalid_view_type]
         self.has_empty_table_list = [self.empty_table_as_BIOMV210Format,
                                      self.valid_table_as_BIOMV210Format]
+        self.has_nan = biom.Table(np.array([[np.nan, 0, 1],
+                                            [2, 3, 4]]),
+                                  ['a', 'b'],
+                                  ['x', 'y', 'z'])
+        self.has_neg = biom.Table(np.array([[-1, 0, 1],
+                                            [2, 3, 4]]),
+                                  ['a', 'b'],
+                                  ['x', 'y', 'z'])
 
-        @_disallow_empty_tables
+        @_validate_tables
         def f1(table: biom.Table):
             pass
         self.function_with_table_param = f1
 
-        @_disallow_empty_tables
+        @_validate_tables
         def f2():
             pass
         self.function_without_table_param = f2
+
+    def test_pass_table_with_nan(self):
+        with self.assertRaisesRegex(ValueError, "table.*contains NaN"):
+            self.function_with_table_param(self.has_nan)
+
+    def test_pass_table_with_negative_values(self):
+        with self.assertRaisesRegex(ValueError,
+                                    "table.*contains negative values"):
+            self.function_with_table_param(self.has_neg)
 
     def test_pass_empty_table_positionally(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
@@ -97,12 +114,12 @@ class DisallowEmptyTablesTests(TestPluginBase):
 
     def test_decorated_lambda_with_table_param(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            decorated_lambda = _disallow_empty_tables(lambda table: None)
+            decorated_lambda = _validate_tables(lambda table: None)
             decorated_lambda(self.empty_table_as_BIOMV210Format)
 
     def test_decorated_lambda_with_table_param_list(self):
         with self.assertRaisesRegex(ValueError, "table.*is empty"):
-            decorated_lambda = _disallow_empty_tables(lambda table: None)
+            decorated_lambda = _validate_tables(lambda table: None)
             decorated_lambda(self.has_empty_table_list)
 
     def test_wrapped_function_has_no_table_param(self):

@@ -40,7 +40,7 @@ def _partition(table, block_size=100):
 
 
 @decorator
-def _disallow_empty_tables(wrapped_function, *args, **kwargs):
+def _validate_tables(wrapped_function, *args, **kwargs):
     bound_arguments = signature(wrapped_function).bind(*args, **kwargs)
     table = bound_arguments.arguments.get('table')
     if table is None:
@@ -65,6 +65,12 @@ def _disallow_empty_tables(wrapped_function, *args, **kwargs):
 
         if tab_obj.is_empty():
             raise ValueError("The provided table is empty")
+
+        if np.isnan(tab_obj.matrix_data.data).sum() > 0:
+            raise ValueError("The provided table contains NaN")
+
+        if (tab_obj.matrix_data.data < 0).sum() > 0:
+            raise ValueError("The provided table contains negative values")
 
     return wrapped_function(*args, **kwargs)
 
