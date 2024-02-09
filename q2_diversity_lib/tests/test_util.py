@@ -234,13 +234,13 @@ class ValidateRequestedCPUsTests(TestPluginBase):
         self.assertEqual(self.function_w_n_jobs_param(), 3)
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
-    def test_auto_passed_to_cpu_request(self, mock_process):
+    def test_zero_passed_to_cpu_request(self, mock_process):
         mock_process = psutil.Process()
         mock_process.cpu_affinity = mock.MagicMock(return_value=[0, 1, 2])
-        self.assertEqual(self.function_w_n_jobs_param('auto'), 3)
-        self.assertEqual(self.function_w_n_jobs_param(n_jobs='auto'), 3)
-        self.assertEqual(self.function_w_threads_param('auto'), 3)
-        self.assertEqual(self.function_w_threads_param(threads='auto'), 3)
+        self.assertEqual(self.function_w_n_jobs_param(0), 3)
+        self.assertEqual(self.function_w_n_jobs_param(n_jobs=0), 3)
+        self.assertEqual(self.function_w_threads_param(0), 3)
+        self.assertEqual(self.function_w_threads_param(threads=0), 3)
 
     @mock.patch("q2_diversity_lib._util.psutil.Process")
     def test_cpu_request_through_framework(self, mock_process):

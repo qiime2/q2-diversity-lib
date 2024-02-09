@@ -104,7 +104,7 @@ def _validate_requested_cpus(wrapped_function, *args, **kwargs):
 
     cpus_requested = b_a_arguments[param_name]
 
-    if cpus_requested == 'auto':
+    if cpus_requested == 0:
         # mutate bound_arguments.arguments 'auto' to the requested # of cpus...
         b_a_arguments[param_name] = cpus_available
         # ...and update cpus requested to prevent TypeError
