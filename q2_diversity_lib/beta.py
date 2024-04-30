@@ -37,7 +37,7 @@ METRICS = {
         'IMPL': {'braycurtis', 'jaccard'},
         'UNIMPL': {'cityblock', 'euclidean', 'seuclidean', 'sqeuclidean',
                    'cosine', 'correlation', 'hamming', 'chebyshev', 'canberra',
-                   'yule', 'matching', 'dice', 'kulsinski',
+                   'yule', 'matching', 'dice',
                    'rogerstanimoto', 'russellrao', 'sokalmichener',
                    'sokalsneath', 'minkowski', 'aitchison', 'canberra_adkins',
                    'jensenshannon'}
