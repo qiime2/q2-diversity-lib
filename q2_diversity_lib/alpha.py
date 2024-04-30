@@ -9,12 +9,13 @@
 import pandas as pd
 import skbio.diversity
 import biom
+import numpy as np
 
 from q2_types.feature_table import BIOMV210Format
 from q2_types.sample_data import AlphaDiversityFormat
 from q2_types.tree import NewickFormat
-from ._util import (_drop_undefined_samples, _partition,
-                    _disallow_empty_tables,
+
+from ._util import (_validate_tables,
                     _validate_requested_cpus,
                     _omp_cmd_wrapper)
 
@@ -44,7 +45,7 @@ METRICS = {
 
 
 # --------------------- Phylogenetic -----------------------------------------
-@_disallow_empty_tables
+@_validate_tables
 @_validate_requested_cpus
 def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
              threads: int = 1) -> AlphaDiversityFormat:
@@ -55,59 +56,64 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
 
 
 # --------------------- Non-Phylogenetic -------------------------------------
-@_disallow_empty_tables
+def _skbio_alpha_diversity_from_1d(v, metric):
+    # alpha_diversity expects a 2d structure
+    v = np.reshape(v, (1, len(v)))
+    result = skbio.diversity.alpha_diversity(metric=metric,
+                                             counts=v,
+                                             ids=['placeholder', ],
+                                             validate=False)
+    return result.iloc[0]
+
+
+@_validate_tables
 def observed_features(table: biom.Table) -> pd.Series:
     presence_absence_table = table.pa(inplace=False)
-    return pd.Series(presence_absence_table.sum('sample').astype(int),
-                     index=table.ids(), name='observed_features')
+    results = []
+    for v in presence_absence_table.iter_data(dense=True):
+        results.append(_skbio_alpha_diversity_from_1d(v.astype(int),
+                                                      'observed_otus'))
+    results = pd.Series(results, index=table.ids(), name='observed_features')
+    return results
 
 
-@_disallow_empty_tables
+@_validate_tables
 def pielou_evenness(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
     if drop_undefined_samples:
-        table = _drop_undefined_samples(table, minimum_nonzero_elements=2)
+        def transform_(v, i, m):
+            if (v > 0).sum() < 2:
+                return np.zeros(len(v))
+            else:
+                return v
+
+        table = table.transform(transform_, inplace=False).remove_empty()
 
     results = []
-    for partition in _partition(table):
-        counts = partition.matrix_data.T.toarray()
-        sample_ids = partition.ids(axis='sample')
-        results.append(skbio.diversity.alpha_diversity(metric='pielou_e',
-                                                       counts=counts,
-                                                       ids=sample_ids))
-    result = pd.concat(results)
-    result.name = 'pielou_evenness'
-    return result
+    for v in table.iter_data(dense=True):
+        results.append(_skbio_alpha_diversity_from_1d(v, 'pielou_e'))
+    results = pd.Series(results, index=table.ids(), name='pielou_evenness')
+    return results
 
 
-@_disallow_empty_tables
+@_validate_tables
 def shannon_entropy(table: biom.Table,
                     drop_undefined_samples: bool = False) -> pd.Series:
     if drop_undefined_samples:
-        table = _drop_undefined_samples(table, minimum_nonzero_elements=1)
+        table = table.remove_empty(inplace=False)
 
     results = []
-    for partition in _partition(table):
-        counts = partition.matrix_data.T.toarray()
-        sample_ids = partition.ids(axis='sample')
-        results.append(skbio.diversity.alpha_diversity(metric='shannon',
-                                                       counts=counts,
-                                                       ids=sample_ids))
-    result = pd.concat(results)
-    result.name = 'shannon_entropy'
-    return result
+    for v in table.iter_data(dense=True):
+        results.append(_skbio_alpha_diversity_from_1d(v, 'shannon'))
+    results = pd.Series(results, index=table.ids(), name='shannon_entropy')
+    return results
 
 
-@_disallow_empty_tables
+@_validate_tables
 def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
     results = []
-    for partition in _partition(table):
-        counts = partition.matrix_data.astype(int).T.toarray()
-        sample_ids = partition.ids(axis='sample')
 
-        results.append(skbio.diversity.alpha_diversity(metric=metric,
-                                                       counts=counts,
-                                                       ids=sample_ids))
-    result = pd.concat(results)
-    result.name = metric
-    return result
+    for v in table.iter_data(dense=True):
+        results.append(_skbio_alpha_diversity_from_1d(v.astype(int), metric))
+    results = pd.Series(results, index=table.ids(), name=metric)
+    return results

@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from qiime2.plugin import (Plugin, Citations, Bool, Int, Range, Choices, Str,
-                           Float, List)
+                           Float, List, Threads)
 from q2_types.feature_table import (FeatureTable, Frequency, RelativeFrequency,
                                     PresenceAbsence)
 from q2_types.tree import Phylogeny, Rooted
@@ -56,7 +56,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'threads': Int % Range(1, None) | Str % Choices(['auto'])},
+    parameters={'threads': Threads},
     outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={
         'table': "The feature table containing the samples for which Faith's "
@@ -145,8 +145,8 @@ plugin.methods.register_function(
 # TODO: Augment citations as needed
 plugin.methods.register_function(
     function=beta.bray_curtis,
-    inputs={'table': FeatureTable[Frequency]},
-    parameters={'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
+    inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
+    parameters={'n_jobs': Threads},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
         'table': "The feature table containing the samples for which "
@@ -174,7 +174,7 @@ plugin.methods.register_function(
     function=beta.jaccard,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence]},
-    parameters={'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
+    parameters={'n_jobs': Threads},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
         'table': "The feature table containing the samples for which "
@@ -202,7 +202,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency | RelativeFrequency
             | PresenceAbsence],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'threads': Int % Range(1, None) | Str % Choices(['auto']),
+    parameters={'threads': Threads,
                 'bypass_tips': Bool},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
@@ -246,7 +246,7 @@ plugin.methods.register_function(
     function=beta.weighted_unifrac,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency],
             'phylogeny': Phylogeny[Rooted]},
-    parameters={'threads': Int % Range(1, None) | Str % Choices(['auto']),
+    parameters={'threads': Threads,
                 'bypass_tips': Bool},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
@@ -310,8 +310,7 @@ plugin.methods.register_function(
     function=beta.beta_passthrough,
     inputs={'table': FeatureTable[Frequency]},
     parameters={'metric': Str % Choices(beta.METRICS['NONPHYLO']['UNIMPL']),
-                'pseudocount': Int % Range(1, None),
-                'n_jobs': Int % Range(1, None) | Str % Choices(['auto'])},
+                'pseudocount': Int % Range(1, None), 'n_jobs': Threads},
     outputs=[('distance_matrix', DistanceMatrix)],
     input_descriptions={
         'table': 'The feature table containing the samples over which beta '
@@ -347,7 +346,7 @@ plugin.methods.register_function(
     inputs={'table': FeatureTable[Frequency],
             'phylogeny': Phylogeny[Rooted]},
     parameters={'metric': Str % Choices(beta.METRICS['PHYLO']['UNIMPL']),
-                'threads': Int % Range(1, None) | Str % Choices(['auto']),
+                'threads': Threads,
                 'variance_adjusted': Bool,
                 'alpha': Float % Range(0, 1, inclusive_end=True),
                 'bypass_tips': Bool},
@@ -412,13 +411,12 @@ plugin.methods.register_function(
     ]
 )
 
-
 plugin.methods.register_function(
     function=beta.beta_phylogenetic_meta_passthrough,
     inputs={'tables': List[FeatureTable[Frequency]],
             'phylogenies': List[Phylogeny[Rooted]]},
     parameters={'metric': Str % Choices(beta.METRICS['PHYLO']['UNIMPL']),
-                'threads': Int % Range(1, None) | Str % Choices(['auto']),
+                'threads': Threads,
                 'variance_adjusted': Bool,
                 'alpha': Float % Range(0, 1, inclusive_end=True),
                 'bypass_tips': Bool,

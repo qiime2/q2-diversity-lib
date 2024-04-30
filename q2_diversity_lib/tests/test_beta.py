@@ -92,6 +92,33 @@ class BrayCurtisTests(TestPluginBase):
                     npt.assert_almost_equal(actual[id1, id2],
                                             self.expected[id1, id2])
 
+    def test_bray_curtis_relative_frequency(self):
+        input_table = biom.Table(
+            np.array([
+                [0.3, 0, 0.77, 0.5],
+                [0.1, 0, 0.15, 0.25],
+                [0.6, 1, 0.08, 0.25]
+            ]),
+            ['A', 'B', 'C'],
+            ['S1', 'S2', 'S3', 'S4']
+        )
+        expected = skbio.DistanceMatrix(
+            [
+                [0.0000000, 0.4, 0.52, 0.35],
+                [0.4, 0.0000000, 0.92, 0.75],
+                [0.52, 0.92, 0.0000000, 0.27],
+                [0.35, 0.75, 0.27, 0.0000000]
+            ],
+            ids=['S1', 'S2', 'S3', 'S4']
+        )
+        actual = bray_curtis(table=input_table, n_jobs=1)
+        self.assertEqual(actual.ids, self.expected.ids)
+        for id1 in actual.ids:
+            for id2 in actual.ids:
+                npt.assert_almost_equal(
+                    actual[id1, id2], expected[id1, id2]
+                )
+
 
 class JaccardTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
@@ -403,7 +430,7 @@ class BetaPassthroughTests(TestPluginBase):
                        ['S1', 'S2'])
         t = Artifact.import_data('FeatureTable[Frequency]', t)
 
-        with self.assertRaisesRegex(ValueError, 'cannot.*negative values'):
+        with self.assertRaisesRegex(ValueError, '.*negative values'):
             self.method(table=t, metric='canberra_adkins')
 
     def test_jensenshannon(self):
