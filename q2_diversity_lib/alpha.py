@@ -8,14 +8,15 @@
 
 import pandas as pd
 import numpy as np
+import functools
 
 import skbio.diversity
 from skbio.diversity._util import _validate_counts_vector
+import skbio.diversity.alpha
 
 from scipy.special import gammaln
 
 import biom
-import numpy as np
 
 from q2_types.feature_table import BIOMV210Format
 from q2_types.sample_data import AlphaDiversityFormat
@@ -69,6 +70,7 @@ def _skbio_alpha_diversity_from_1d(v, metric):
                                              counts=v,
                                              ids=['placeholder', ],
                                              validate=False)
+    print(result.iloc[0])
     return result.iloc[0]
 
 
@@ -97,17 +99,12 @@ def pielou_evenness(table: biom.Table,
 
     results = []
     for v in table.iter_data(dense=True):
-        results.append(_skbio_alpha_diversity_from_1d(v, 'pielou_e'))
+        # using in-house metrics temporarily
+        # results.append(_skbio_alpha_diversity_from_1d(v, 'pielou_e'))
+        v = np.reshape(v, (1, len(v)))
+        results.extend([_p_evenness(c)for c in v])
     results = pd.Series(results, index=table.ids(), name='pielou_evenness')
     return results
-# legacy code
-    for partition in _partition(table):
-        counts = partition.matrix_data.T.toarray()
-        sample_ids = partition.ids(axis='sample')
-        results = [_p_evenness(c, sample_ids)for c in counts]
-    result = pd.Series(results, index=sample_ids)
-    result.name = 'pielou_evenness'
-    return result
 
 
 @_validate_tables
@@ -118,29 +115,35 @@ def shannon_entropy(table: biom.Table,
 
     results = []
     for v in table.iter_data(dense=True):
-        results.append(_skbio_alpha_diversity_from_1d(v, 'shannon'))
+        # using in-house metrics temporarily
+        # results.append(_skbio_alpha_diversity_from_1d(v, 'shannon'))
+        v = np.reshape(v, (1, len(v)))
+        results.extend([_shannon(c)for c in v])
     results = pd.Series(results, index=table.ids(), name='shannon_entropy')
     return results
-#LEGACY
-    for partition in _partition(table):
-        counts = partition.matrix_data.T.toarray()
-        sample_ids = partition.ids(axis='sample')
-        # TODO replace with internal shannons method
-        results = [_shannon(c, sample_ids)for c in counts]
-    result = pd.Series(results, index=sample_ids)
-    result.name = 'shannon_entropy'
-    return result
 
 
 @_validate_tables
 def alpha_passthrough(table: biom.Table, metric: str) -> pd.Series:
     results = []
+    method_map = {"berger_parker_d": _berger_parker,
+                  "brillouin_d": _brillouin_d,
+                  "simpson": _simpsons_dominance,
+                  "esty_ci": _esty_ci,
+                  "goods_coverage": _goods_coverage,
+                  "margalef": _margalef,
+                  "mcintosh_d": _mcintosh_d,
+                  "strong": _strong}
 
-    for v in table.iter_data(dense=True):
-        results.append(_skbio_alpha_diversity_from_1d(v.astype(int), metric))
-        # TODO write if statements for hard coding the following metrics:
-        # berger-parker,brillion, simpsons D, etsy, goods, margalef's, mcIntosh,
-        # strongs
+    if metric in method_map:
+        metric = functools.partial(method_map[metric])
+        for v in table.iter_data(dense=True):
+            v = np.reshape(v, (1, len(v)))
+            results.extend([metric(c)for c in v])
+    else:
+        for v in table.iter_data(dense=True):
+            results.append(_skbio_alpha_diversity_from_1d(v.astype(int),
+                                                          metric))
     results = pd.Series(results, index=table.ids(), name=metric)
     return results
 
@@ -160,15 +163,14 @@ def _brillouin_d(counts):
 
 def _simpsons_dominance(counts):
     counts = _validate_counts_vector(counts)
-    freqs = counts / counts.sum()
-    return (freqs * freqs).sum()
+    return 1 - skbio.diversity.alpha.dominance(counts)
 
 
-def _etsy_ci(counts):
+def _esty_ci(counts):
     counts = _validate_counts_vector(counts)
 
-    f1 = _singles(counts)
-    f2 = _doubles(counts)
+    f1 = skbio.diversity.alpha.singles(counts)
+    f2 = skbio.diversity.alpha.doubles(counts)
     n = counts.sum()
     z = 1.959963985
     W = (f1 * (n - f1) + 2 * n * f2) / (n ** 3)
@@ -178,7 +180,7 @@ def _etsy_ci(counts):
 
 def _goods_coverage(counts):
     counts = _validate_counts_vector(counts)
-    f1 = _singles(counts)
+    f1 = skbio.diversity.alpha.singles(counts)
     N = counts.sum()
     return 1 - (f1 / N)
 
@@ -206,17 +208,7 @@ def _strong(counts):
     return (sorted_sum / n - (i / s)).max()
 
 
-def _singles(counts):
-    counts = _validate_counts_vector(counts)
-    return (counts == 1).sum()
-
-
-def _doubles(counts):
-    counts = _validate_counts_vector(counts)
-    return (counts == 2).sum()
-
-
-def _p_evenness(counts, sample_ids):
+def _p_evenness(counts):
     counts = _validate_counts_vector(counts)
     return _shannon(counts, base=np.e) / np.log(
         skbio.diversity.alpha.sobs(counts=counts))
