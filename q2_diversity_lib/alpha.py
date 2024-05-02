@@ -70,7 +70,6 @@ def _skbio_alpha_diversity_from_1d(v, metric):
                                              counts=v,
                                              ids=['placeholder', ],
                                              validate=False)
-    print(result.iloc[0])
     return result.iloc[0]
 
 
