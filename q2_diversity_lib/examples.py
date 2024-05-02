@@ -322,8 +322,8 @@ def beta_passthrough_n_jobs_example(use):
     result, = use.action(
         use.UsageAction(plugin_id='diversity_lib',
                         action_id='beta_passthrough'),
-        use.UsageInputs(table=ft, metric='kulsinski', n_jobs=1),
-        use.UsageOutputNames(distance_matrix='kulsinski_dm')
+        use.UsageInputs(table=ft, metric='euclidean', n_jobs=1),
+        use.UsageOutputNames(distance_matrix='euclidean_dm')
     )
     result.assert_output_type('DistanceMatrix')
 
