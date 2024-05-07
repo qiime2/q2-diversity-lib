@@ -23,9 +23,11 @@ from ._util import (_validate_tables,
                     _validate_requested_cpus,
                     _omp_cmd_wrapper)
 
-from .skbio._methods import (_berger_parker, _brillouin_d, _simpsons_dominance,
-                             _esty_ci, _goods_coverage, _margalef, _mcintosh_d,
-                             _strong, _shannon, _p_evenness)
+from q2_diversity_lib.skbio._methods import (_berger_parker, _brillouin_d,
+                                             _simpsons_dominance, _esty_ci,
+                                             _goods_coverage, _margalef,
+                                             _mcintosh_d, _strong, _shannon,
+                                             _p_evenness)
 
 METRICS = {
     'PHYLO': {
