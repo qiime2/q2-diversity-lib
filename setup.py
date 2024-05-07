@@ -25,8 +25,7 @@ setup(
     license="BSD-3-Clause",
     package_data={
         'q2_diversity_lib': ['citations.bib'],
-        'q2_diversity_lib.tests': ['data/*'],
-        'q2_diversity_lib.skbio': ['*']
+        'q2_diversity_lib.tests': ['data/*']
     },
     zip_safe=False,
 )
