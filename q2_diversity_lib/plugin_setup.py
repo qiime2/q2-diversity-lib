@@ -15,7 +15,7 @@ from q2_types.sample_data import AlphaDiversity, SampleData
 from q2_types.distance_matrix import DistanceMatrix
 from unifrac._meta import CONSOLIDATIONS
 
-from . import alpha, beta, skbio, __version__, examples
+from . import alpha, beta, __version__, examples
 
 citations = Citations.load('citations.bib', package='q2_diversity_lib')
 plugin = Plugin(
