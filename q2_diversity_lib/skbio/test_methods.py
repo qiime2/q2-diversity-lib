@@ -3,9 +3,10 @@ import numpy.testing as npt
 
 from qiime2.plugin.testing import TestPluginBase
 
-from _methods import (_berger_parker, _brillouin_d, _simpsons_dominance,
-                      _esty_ci, _goods_coverage, _margalef, _mcintosh_d,
-                      _strong)
+from q2_diversity_lib.skbio._methods import (_berger_parker, _brillouin_d,
+                                             _simpsons_dominance, _esty_ci,
+                                             _goods_coverage, _margalef,
+                                             _mcintosh_d, _strong)
 
 
 class SkbioTests(TestPluginBase):
