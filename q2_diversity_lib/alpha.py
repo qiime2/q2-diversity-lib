@@ -61,6 +61,15 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
     vec = AlphaDiversityFormat()
     cmd = ['faithpd', '-i', str(table), '-t', str(phylogeny), '-o', str(vec)]
     _omp_cmd_wrapper(threads, cmd)
+
+    # this is needed to prevent #SampleID from being retained as the
+    # index name in the faith PD vector
+    # (consistent with the other diversity outputs)
+    df = pd.read_csv(str(vec), sep='\t')
+    df.set_index('#SampleID', inplace=True)
+    df.index.name = None
+    df.to_csv(str(vec), sep='\t', header=True)
+
     return vec
 
 
