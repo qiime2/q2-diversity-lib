@@ -13,6 +13,8 @@ import numpy.testing as npt
 import pandas as pd
 import pandas.testing as pdt
 import biom
+import os
+import tempfile
 
 from qiime2.plugin.testing import TestPluginBase
 from qiime2 import Artifact
@@ -92,6 +94,16 @@ class FaithPDTests(TestPluginBase):
         with self.assertRaises(CalledProcessError):
             obs = self.fn(table=self.tbl, phylogeny=tree)
             self.assertTrue('not a subset of the tree tips' in obs.stderr)
+
+    def test_no_index_name(self):
+        res, = self.fn(table=self.tbl, phylogeny=self.tre)
+        with tempfile.TemporaryDirectory('w+') as tmp:
+            res_fp = res.save(tmp)
+            res_fp = res.extract(res_fp, tmp)
+            faithpd_fp = os.path.join(res_fp, 'data', 'alpha-diversity.tsv')
+            with open(faithpd_fp, 'r') as fh:
+                data = fh.read()
+                self.assertNotIn('#SampleID', data)
 
 
 class ObservedFeaturesTests(TestPluginBase):

@@ -65,8 +65,8 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
     # this is needed to prevent #SampleID from being retained as the
     # index name in the faith PD vector
     # (consistent with the other diversity outputs)
-    df = pd.read_csv(str(vec), sep='\t')
-    df.set_index('#SampleID', inplace=True)
+    df = pd.read_csv(str(vec), sep='\t', header=0)
+    df.set_index(df.columns[0], inplace=True)
     df.index.name = None
     df.to_csv(str(vec), sep='\t', header=True)
 
