@@ -77,3 +77,7 @@ node_modules
 
 # project notes
 notes/
+
+# Version file from versioningit
+_version.py
+
