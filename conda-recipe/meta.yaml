@@ -28,6 +28,7 @@ requirements:
   - unifrac {{ unifrac }}
   - unifrac-binaries {{ unifrac_binaries }}
   build:
+  - python {{ python }}
   - setuptools
   - versioningit
 test:
