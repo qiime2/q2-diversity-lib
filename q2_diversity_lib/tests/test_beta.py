@@ -5,14 +5,13 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-import os
+import importlib.resources
 from subprocess import CalledProcessError
 
 import numpy as np
 import numpy.testing as npt
 import biom
 import skbio
-import pkg_resources
 
 from qiime2.plugin.testing import TestPluginBase
 from qiime2 import Artifact
@@ -322,8 +321,7 @@ class BetaPhylogeneticMetaPassthroughTests(TestPluginBase):
 
         # checking parity with the unifrac.meta tests
         def unifrac_data(fn):
-            path = os.path.join('data', fn)
-            return pkg_resources.resource_filename('unifrac.tests', path)
+            return importlib.resources.files('unifrac') / 'tests' / 'data' / fn
 
         self.tables = [
             Artifact.import_data('FeatureTable[Frequency]',
