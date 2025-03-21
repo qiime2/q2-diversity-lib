@@ -7,15 +7,17 @@
 # ----------------------------------------------------------------------------
 
 import biom
+import importlib.resources
 import numpy as np
-import pkg_resources
 
 from qiime2 import Artifact
 
 
 def get_test_data_path(filename):
-    return pkg_resources.resource_filename('q2_diversity_lib.tests',
-                                           f'data/{filename}')
+    return (
+        importlib.resources.files('q2_diversity_lib') /
+        'tests' / 'data' / filename
+    )
 
 
 s_ids_1 = ['S1', 'S2', 'S3', 'S4', 'S5']
