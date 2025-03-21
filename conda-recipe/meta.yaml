@@ -20,8 +20,8 @@ requirements:
   - numpy {{ numpy }}
   - pandas {{ pandas }}
   - psutil
-  - qiime2 {{ qiime2_epoch }}.*
-  - q2-types {{ qiime2_epoch }}.*
+  - qiime2 >={{ qiime2 }}
+  - q2-types >={{ q2_types }}
   - scikit-bio {{ scikit_bio }}
   - scikit-learn {{ scikit_learn }}
   - scipy {{ scipy }}
