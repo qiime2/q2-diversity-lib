@@ -23,6 +23,8 @@ from ._util import (_validate_tables,
                     _validate_requested_cpus,
                     _omp_cmd_wrapper)
 
+from qiime2.plugin.util import transform
+
 from q2_diversity_lib.skbio._methods import (_berger_parker, _brillouin_d,
                                              _simpsons_dominance, _esty_ci,
                                              _goods_coverage, _margalef,
@@ -58,8 +60,17 @@ METRICS = {
 @_validate_requested_cpus
 def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
              threads: int = 1) -> AlphaDiversityFormat:
+    # create id mapping
+    # if sample_id are floats b/c faith_pd will truncate
+    table_df = table.view(pd.DataFrame)
+    real_index = table_df.index
+    temp_ids = ['q2..' + str(i) for i in table_df.index]
+    id_mapping = pd.DataFrame(index=temp_ids, data={"real_id": real_index})
+    table_df.index = temp_ids
+    btable = transform(table_df, to_type=BIOMV210Format)
+
     vec = AlphaDiversityFormat()
-    cmd = ['faithpd', '-i', str(table), '-t', str(phylogeny), '-o', str(vec)]
+    cmd = ['faithpd', '-i', str(btable), '-t', str(phylogeny), '-o', str(vec)]
     _omp_cmd_wrapper(threads, cmd)
 
     # this is needed to prevent #SampleID from being retained as the
@@ -67,8 +78,12 @@ def faith_pd(table: BIOMV210Format, phylogeny: NewickFormat,
     # (consistent with the other diversity outputs)
     df = pd.read_csv(str(vec), sep='\t', header=0)
     df.set_index(df.columns[0], inplace=True)
-    df.index.name = None
-    df.to_csv(str(vec), sep='\t', header=True)
+    # set original sample_ids back
+    temp_df = id_mapping.join(df)
+    temp_df.reset_index(drop=True, inplace=True)
+    temp_df.set_index("real_id", inplace=True)
+    temp_df.index.name = None
+    temp_df.to_csv(str(vec), sep='\t', header=True)
 
     return vec
 
