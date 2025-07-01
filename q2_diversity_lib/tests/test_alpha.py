@@ -102,6 +102,14 @@ class FaithPDTests(TestPluginBase):
             data = fh.read()
             self.assertNotIn('#SampleID', data)
 
+    def test_float_ids(self):
+        table = self.tbl.view(pd.DataFrame)
+        table.index = ['0.0000', '10.0000', '100.00', '1.000', '1.010']
+        table_art = Artifact.import_data('FeatureTable[Frequency]', table)
+        faith_pd, = self.fn(table=table_art, phylogeny=self.tre)
+        fp_series = faith_pd.view(pd.Series)
+        self.assertTrue(table.index.equals(fp_series.index))
+
 
 class ObservedFeaturesTests(TestPluginBase):
     package = 'q2_diversity_lib.tests'
