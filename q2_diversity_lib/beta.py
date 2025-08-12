@@ -70,7 +70,7 @@ def beta_passthrough(table: biom.Table, metric: str, pseudocount: int = 1,
     def jensen_shannon(x, y, **kwds):
         return jensenshannon(x, y)
 
-    counts = table.matrix_data.toarray().T
+    counts = table.matrix_data.toarray().T.copy()
     sample_ids = table.ids(axis='sample')
     if metric == 'aitchison':
         counts += pseudocount
@@ -170,7 +170,7 @@ def beta_phylogenetic_meta_passthrough(tables: BIOMV210Format,
 @_validate_tables
 @_validate_requested_cpus
 def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
-    counts = table.matrix_data.toarray().T
+    counts = table.matrix_data.toarray().T.copy()
     sample_ids = table.ids(axis='sample')
     return skbio.diversity.beta_diversity(
         metric='braycurtis',
@@ -185,7 +185,7 @@ def bray_curtis(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
 @_validate_tables
 @_validate_requested_cpus
 def jaccard(table: biom.Table, n_jobs: int = 1) -> skbio.DistanceMatrix:
-    counts = table.matrix_data.toarray().T
+    counts = table.matrix_data.toarray().T.copy()
     sample_ids = table.ids(axis='sample')
     return skbio.diversity.beta_diversity(
         metric='jaccard',
