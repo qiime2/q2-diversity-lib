@@ -141,6 +141,7 @@ plugin.methods.register_function(
     description="Compute Shannon's Entropy for each sample in a "
                 "feature table",
     examples={'basic': examples.shannon_entropy_example,
+              'base_e': examples.shannon_base_e_example,
               'dropping undefined samples': examples.shannon_drop_example},
     citations=[citations['shannon1948communication']]
 )
