@@ -134,7 +134,11 @@ def pielou_evenness(table: biom.Table,
 
 @_validate_tables
 def shannon_entropy(table: biom.Table,
-                    drop_undefined_samples: bool = False) -> pd.Series:
+                    drop_undefined_samples: bool = False,
+                    base: float = 2) -> pd.Series:
+    if base == 'e':
+        base = np.e
+
     if drop_undefined_samples:
         table = table.remove_empty(inplace=False)
 
@@ -143,7 +147,7 @@ def shannon_entropy(table: biom.Table,
         # using in-house metrics temporarily
         # results.append(_skbio_alpha_diversity_from_1d(v, 'shannon'))
         v = np.reshape(v, (1, len(v)))
-        results.extend([_shannon(c)for c in v])
+        results.extend([_shannon(c, base=base)for c in v])
     results = pd.Series(results, index=table.ids(), name='shannon_entropy')
     return results
 
