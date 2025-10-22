@@ -123,8 +123,9 @@ plugin.methods.register_function(
     function=alpha.shannon_entropy,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
     parameters={'drop_undefined_samples': Bool,
-                'base': Float % Range(0, None, inclusive_start=False) |
-                        Str % Choices('e')},
+                'base':
+                    Float % Range(0, None, inclusive_start=False) |
+                    Str % Choices('e')},
     outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={'table': "The feature table containing the samples "
                         "for which Shannon's Entropy should be computed."},
