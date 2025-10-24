@@ -122,20 +122,26 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=alpha.shannon_entropy,
     inputs={'table': FeatureTable[Frequency | RelativeFrequency]},
-    parameters={'drop_undefined_samples': Bool},
+    parameters={'drop_undefined_samples': Bool,
+                'base':
+                    Float % Range(0, None, inclusive_start=False) |
+                    Str % Choices('e')},
     outputs=[('vector', SampleData[AlphaDiversity])],
     input_descriptions={'table': "The feature table containing the samples "
                         "for which Shannon's Entropy should be computed."},
     parameter_descriptions={'drop_undefined_samples': "Samples with no "
                             "observed features produce undefined (NaN) values."
                             " If true, these samples are dropped from the "
-                            "output vector."},
+                            "output vector.",
+                            'base': "The logarithm base used in calculations."
+                            },
     output_descriptions={'vector': "Vector containing per-sample values "
                                    "for Shannon's Entropy."},
     name="Shannon's Entropy",
     description="Compute Shannon's Entropy for each sample in a "
                 "feature table",
     examples={'basic': examples.shannon_entropy_example,
+              'base_e': examples.shannon_base_e_example,
               'dropping undefined samples': examples.shannon_drop_example},
     citations=[citations['shannon1948communication']]
 )

@@ -213,9 +213,21 @@ class ShannonEntropyTests(TestPluginBase):
                  'S5': 1.584962500721156, 'S6': 2},
                 name='shannon_entropy')
 
-    def test_method(self):
+    def test_method_base_2(self):
         actual = shannon_entropy(table=self.input_table)
         pdt.assert_series_equal(actual, self.expected)
+
+    def test_method_base_e(self):
+        # Calculated w skbio 0.6.2 and vegan 2.6-8
+        expected = pd.Series(
+                {'S1': np.NaN, 'S2': 0, 'S3': 0.693147180,
+                 'S4': np.NaN, 'S5': 1.098612288, 'S6': 1.386294361},
+                name='shannon_entropy')
+
+        # passing e as a string here rather than numpy.e, as that's how it'll
+        # come in from the Method
+        actual = shannon_entropy(table=self.input_table, base='e')
+        pdt.assert_series_equal(actual, expected)
 
     def test_accepted_types_have_consistent_behavior(self):
         freq_table = self.input_table

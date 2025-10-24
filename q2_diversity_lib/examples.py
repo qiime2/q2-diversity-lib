@@ -116,6 +116,21 @@ def shannon_entropy_example(use):
     result.assert_output_type('SampleData[AlphaDiversity]')
 
 
+def shannon_base_e_example(use):
+    ft = use.init_artifact('feature_table', ft1_factory)
+    use.comment("Set the logarithm base to e for the Shannon calculation. ")
+    use.comment("This will result in values that match those produced by ")
+    use.comment("vegan and scikit-bio.")
+
+    result, = use.action(
+        use.UsageAction(plugin_id='diversity_lib',
+                        action_id='shannon_entropy'),
+        use.UsageInputs(table=ft, base='e'),
+        use.UsageOutputNames(vector='shannon_vector')
+    )
+    result.assert_output_type('SampleData[AlphaDiversity]')
+
+
 def shannon_drop_example(use):
     ft = use.init_artifact('feature_table', ft1_factory)
     result, = use.action(
