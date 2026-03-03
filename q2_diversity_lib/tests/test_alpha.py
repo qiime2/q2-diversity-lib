@@ -154,7 +154,7 @@ class PielouEvennessTests(TestPluginBase):
                                       ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
         # Calculated by hand:
         self.expected = pd.Series(
-                {'S1': np.NaN, 'S2': np.NaN, 'S3': 1, 'S4': 1,
+                {'S1': np.nan, 'S2': np.nan, 'S3': 1, 'S4': 1,
                  'S5': 1, 'S6': 0.946394630357186},
                 name='pielou_evenness')
 
@@ -189,8 +189,8 @@ class PielouEvennessTests(TestPluginBase):
                                          [0, 0, 0, 1, 0, 1]]),
                                ['A', 'B', 'C'],
                                ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
-        expected = pd.Series({'S1': np.NaN, 'S2': np.NaN, 'S3': np.NaN,
-                              'S4': np.NaN, 'S5': 1, 'S6': 1},
+        expected = pd.Series({'S1': np.nan, 'S2': np.nan, 'S3': np.nan,
+                              'S4': np.nan, 'S5': 1, 'S6': 1},
                              name='pielou_evenness')
         actual = pielou_evenness(table=NaN_table, drop_undefined_samples=False)
         pdt.assert_series_equal(actual, expected)
@@ -209,7 +209,7 @@ class ShannonEntropyTests(TestPluginBase):
                                       ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'])
         # Calculated by hand:
         self.expected = pd.Series(
-                {'S1': np.NaN, 'S2': 0, 'S3': 1, 'S4': np.NaN,
+                {'S1': np.nan, 'S2': 0, 'S3': 1, 'S4': np.nan,
                  'S5': 1.584962500721156, 'S6': 2},
                 name='shannon_entropy')
 
@@ -220,8 +220,8 @@ class ShannonEntropyTests(TestPluginBase):
     def test_method_base_e(self):
         # Calculated w skbio 0.6.2 and vegan 2.6-8
         expected = pd.Series(
-                {'S1': np.NaN, 'S2': 0, 'S3': 0.693147180,
-                 'S4': np.NaN, 'S5': 1.098612288, 'S6': 1.386294361},
+                {'S1': np.nan, 'S2': 0, 'S3': 0.693147180,
+                 'S4': np.nan, 'S5': 1.098612288, 'S6': 1.386294361},
                 name='shannon_entropy')
 
         # passing e as a string here rather than numpy.e, as that's how it'll
