@@ -39,7 +39,7 @@ METRICS = {
         'UNIMPL': {'cityblock', 'euclidean', 'seuclidean', 'sqeuclidean',
                    'cosine', 'correlation', 'hamming', 'chebyshev', 'canberra',
                    'yule', 'matching', 'dice',
-                   'rogerstanimoto', 'russellrao', 'sokalmichener',
+                   'rogerstanimoto', 'russellrao',
                    'sokalsneath', 'minkowski', 'aitchison', 'canberra_adkins',
                    'jensenshannon'}
     },
