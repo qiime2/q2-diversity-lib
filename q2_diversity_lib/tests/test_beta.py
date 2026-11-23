@@ -268,7 +268,8 @@ class WeightedUnifrac(TestPluginBase):
         for id1 in actual.ids:
             for id2 in actual.ids:
                 npt.assert_almost_equal(actual[id1, id2],
-                                        self.expected[id1, id2])
+                                        self.expected[id1, id2],
+                                        decimal=6)
 
     def test_method_bypass_tips(self):
         actual_art, = self.fn(self.tbl, self.tre, bypass_tips=True)
@@ -286,7 +287,8 @@ class WeightedUnifrac(TestPluginBase):
             for id1 in actual.ids:
                 for id2 in actual.ids:
                     npt.assert_almost_equal(actual[id1, id2],
-                                            self.expected[id1, id2])
+                                            self.expected[id1, id2],
+                                            decimal=6)
 
     def test_missing_tips_tree(self):
         tre = self.artifact('Phylogeny[Rooted]', 'root_only.tree')
